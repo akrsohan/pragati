@@ -149,8 +149,25 @@ function formatSocialLink(type: 'facebook' | 'telegram' | 'whatsapp', input?: st
 }
 
 export default function App() {
-  // Navigation (Default to login so users must login/signup first)
-  const [currentPage, setCurrentPage] = useState<PageType>('login');
+  // Navigation (Default to saved page or login)
+  const [currentPage, setCurrentPage] = useState<PageType>(() => {
+    try {
+      const saved = localStorage.getItem('pragatii_active_page');
+      if (saved && ['discover', 'dashboard', 'roadmap', 'leaderboard', 'profile', 'admin', 'feedback'].includes(saved)) {
+        return saved as PageType;
+      }
+    } catch (e) {}
+    return 'login';
+  });
+
+  // Keep track of active page in localStorage for seamless tab switching & refreshes
+  useEffect(() => {
+    try {
+      if (currentPage && currentPage !== 'login' && currentPage !== 'signup' && currentPage !== 'profile-setup') {
+        localStorage.setItem('pragatii_active_page', currentPage);
+      }
+    } catch (e) {}
+  }, [currentPage]);
   const [discoverView, setDiscoverView] = useState<'main' | 'fields' | 'field-skills' | 'all-skills'>('main');
   const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
@@ -492,7 +509,18 @@ export default function App() {
             if (!profile.profile_completed) {
               setCurrentPage('profile-setup');
             } else {
-              setCurrentPage('discover');
+              setCurrentPage(prev => {
+                if (prev === 'login' || prev === 'signup') {
+                  try {
+                    const saved = localStorage.getItem('pragatii_active_page');
+                    if (saved && ['discover', 'dashboard', 'roadmap', 'leaderboard', 'profile', 'admin', 'feedback'].includes(saved)) {
+                      return saved as PageType;
+                    }
+                  } catch (e) {}
+                  return 'discover';
+                }
+                return prev;
+              });
             }
           }
         } else {
@@ -548,7 +576,20 @@ export default function App() {
           if (!profile.profile_completed) {
             setCurrentPage('profile-setup');
           } else {
-            setCurrentPage('discover');
+            setCurrentPage(prev => {
+              // ONLY redirect if user is coming from login or signup screen
+              // Never redirect active browsing sessions on tab switch or token refresh!
+              if (prev === 'login' || prev === 'signup') {
+                try {
+                  const saved = localStorage.getItem('pragatii_active_page');
+                  if (saved && ['discover', 'dashboard', 'roadmap', 'leaderboard', 'profile', 'admin', 'feedback'].includes(saved)) {
+                    return saved as PageType;
+                  }
+                } catch (e) {}
+                return 'discover';
+              }
+              return prev;
+            });
           }
           setIsAuthLoading(false);
         }
@@ -558,6 +599,9 @@ export default function App() {
           setActiveProgress(null);
           setUserBadgeIds([]);
           setCurrentPage('login');
+          try {
+            localStorage.removeItem('pragatii_active_page');
+          } catch (e) {}
           setIsAuthLoading(false);
         }
       }
