@@ -56,7 +56,6 @@ export const SkillModal: React.FC<SkillModalProps> = ({
       learner_count: initialData?.learner_count || 1,
       step_count: initialData?.step_count || 3
     });
-    onClose();
   };
 
   return (
@@ -204,7 +203,6 @@ export const FieldModal: React.FC<FieldModalProps> = ({
       description: description.trim(),
       icon: icon.trim() || '💻'
     });
-    onClose();
   };
 
   return (
@@ -740,14 +738,129 @@ export const SqlCodeModal: React.FC<SqlCodeModalProps> = ({ isOpen, onClose }) =
   if (!isOpen) return null;
 
   const sqlCode = `-- =========================================================================
--- SkillTrack DIU — Supabase Database Tables for Roadmap & Resources
+-- SkillTrack DIU — Complete Supabase Database Schema
 -- Run this in your Supabase SQL Editor (Dashboard -> SQL Editor -> New Query)
 -- =========================================================================
 
--- 1. Table for Roadmap Curriculum Steps
+-- 1. Table for Profiles (Student & Admin Accounts)
+CREATE TABLE IF NOT EXISTS public.profiles (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    email TEXT,
+    full_name TEXT,
+    avatar_url TEXT,
+    department TEXT DEFAULT '',
+    roll_number TEXT DEFAULT '',
+    batch_number TEXT DEFAULT '',
+    fb_link TEXT,
+    telegram_link TEXT,
+    whatsapp_link TEXT,
+    profile_completed BOOLEAN DEFAULT false,
+    points INT DEFAULT 0,
+    current_streak INT DEFAULT 0,
+    longest_streak INT DEFAULT 0,
+    last_activity_date TEXT,
+    is_admin BOOLEAN DEFAULT false,
+    is_banned BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- In case profiles table already exists, add missing columns:
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS department TEXT DEFAULT '';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS roll_number TEXT DEFAULT '';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS batch_number TEXT DEFAULT '';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS fb_link TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS telegram_link TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS whatsapp_link TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS profile_completed BOOLEAN DEFAULT false;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS points INT DEFAULT 0;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS current_streak INT DEFAULT 0;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS longest_streak INT DEFAULT 0;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS last_activity_date TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT false;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_banned BOOLEAN DEFAULT false;
+
+-- Enable RLS for Profiles
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public Read Profiles" ON public.profiles FOR SELECT USING (true);
+CREATE POLICY "Users Update Own Profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Users Insert Own Profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
+
+-- 2. Table for Field / Categories
+CREATE TABLE IF NOT EXISTS public.fields (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT,
+    icon TEXT DEFAULT '💻',
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Enable RLS for Fields
+ALTER TABLE public.fields ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public Read Fields"
+ON public.fields FOR SELECT
+USING (true);
+
+CREATE POLICY "Admin Insert Fields"
+ON public.fields FOR INSERT
+WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_admin = true));
+
+CREATE POLICY "Admin Update Fields"
+ON public.fields FOR UPDATE
+USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_admin = true));
+
+CREATE POLICY "Admin Delete Fields"
+ON public.fields FOR DELETE
+USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_admin = true));
+
+
+-- 2. Table for Centralized Skills
+CREATE TABLE IF NOT EXISTS public.skills (
+    id TEXT PRIMARY KEY,
+    field_id TEXT REFERENCES public.fields(id) ON DELETE RESTRICT,
+    name TEXT NOT NULL,
+    description TEXT,
+    order_index INT DEFAULT 1,
+    icon TEXT DEFAULT '★',
+    bg_color TEXT DEFAULT '#6c5ce7',
+    difficulty TEXT DEFAULT 'Beginner',
+    avg_days TEXT DEFAULT '3 days',
+    learner_count INT DEFAULT 0,
+    step_count INT DEFAULT 3,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Index for skill category lookup
+CREATE INDEX IF NOT EXISTS idx_skills_field_id ON public.skills (field_id);
+
+-- Enable RLS for Skills
+ALTER TABLE public.skills ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public Read Skills"
+ON public.skills FOR SELECT
+USING (true);
+
+CREATE POLICY "Admin Insert Skills"
+ON public.skills FOR INSERT
+WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_admin = true));
+
+CREATE POLICY "Admin Update Skills"
+ON public.skills FOR UPDATE
+USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_admin = true));
+
+CREATE POLICY "Admin Delete Skills"
+ON public.skills FOR DELETE
+USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_admin = true));
+
+
+-- 3. Table for Roadmap Curriculum Steps
 CREATE TABLE IF NOT EXISTS public.roadmap_steps (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    skill_id TEXT NOT NULL,
+    skill_id TEXT NOT NULL REFERENCES public.skills(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
     description TEXT,
     step_order INT DEFAULT 1,
@@ -755,29 +868,24 @@ CREATE TABLE IF NOT EXISTS public.roadmap_steps (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Index for instant skill roadmap lookups
 CREATE INDEX IF NOT EXISTS idx_roadmap_steps_skill_id ON public.roadmap_steps (skill_id);
 
--- Enable Row Level Security (RLS)
 ALTER TABLE public.roadmap_steps ENABLE ROW LEVEL SECURITY;
 
--- Allow everyone to read roadmap steps
 CREATE POLICY "Public Read Roadmap Steps"
 ON public.roadmap_steps FOR SELECT
 USING (true);
 
--- Allow authenticated users / admins to manage steps
 CREATE POLICY "Admin All Roadmap Steps"
 ON public.roadmap_steps FOR ALL
 USING (auth.role() = 'authenticated')
 WITH CHECK (auth.role() = 'authenticated');
 
 
--- 2. Table for Official Documentation & Learning References
--- (Supports Direct PDFs, Google Drive Folders, Web Docs, YouTube, GitHub, Articles)
+-- 4. Table for Official Documentation & Learning References
 CREATE TABLE IF NOT EXISTS public.skill_resources (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    skill_id TEXT NOT NULL,
+    skill_id TEXT NOT NULL REFERENCES public.skills(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
     type TEXT NOT NULL CHECK (type IN ('document', 'reference')),
     format TEXT NOT NULL DEFAULT 'link' CHECK (format IN ('pdf', 'drive', 'link', 'youtube', 'github', 'article')),
@@ -786,25 +894,21 @@ CREATE TABLE IF NOT EXISTS public.skill_resources (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Index for skill resources lookups
 CREATE INDEX IF NOT EXISTS idx_skill_resources_skill_id ON public.skill_resources (skill_id);
 
--- Enable Row Level Security (RLS)
 ALTER TABLE public.skill_resources ENABLE ROW LEVEL SECURITY;
 
--- Allow everyone to read resources
 CREATE POLICY "Public Read Skill Resources"
 ON public.skill_resources FOR SELECT
 USING (true);
 
--- Allow authenticated users / admins to insert, update, delete
 CREATE POLICY "Admin All Skill Resources"
 ON public.skill_resources FOR ALL
 USING (auth.role() = 'authenticated')
 WITH CHECK (auth.role() = 'authenticated');
 
 
--- 3. Storage Bucket Setup for PDF direct uploads:
+-- 5. Storage Bucket Setup for PDF Direct Uploads:
 -- Go to Supabase Dashboard -> Storage -> Create new bucket:
 -- Bucket Name: "skill-materials"
 -- Public Bucket: ON (Checked)

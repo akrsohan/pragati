@@ -65,6 +65,97 @@ export const initialSkills: Skill[] = [
     avg_days: '2 days',
     learner_count: 42,
     step_count: 3
+  },
+  {
+    id: 'skill-css',
+    field_id: 'field-1',
+    name: 'CSS',
+    description: 'Master modern layouts with Flexbox, CSS Grid, animations and responsive design',
+    order_index: 2,
+    icon: 'C',
+    bg_color: '#0984e3',
+    difficulty: 'Beginner',
+    avg_days: '3 days',
+    learner_count: 38,
+    step_count: 3
+  },
+  {
+    id: 'skill-js',
+    field_id: 'field-1',
+    name: 'JavaScript',
+    description: 'Core ES6+, asynchronous programming, closures, DOM manipulation and event loop',
+    order_index: 3,
+    icon: 'JS',
+    bg_color: '#fdcb6e',
+    difficulty: 'Intermediate',
+    avg_days: '5 days',
+    learner_count: 56,
+    step_count: 4
+  },
+  {
+    id: 'skill-react',
+    field_id: 'field-1',
+    name: 'React.js',
+    description: 'Component architecture, Hooks, Context, performance optimization and state management',
+    order_index: 4,
+    icon: '⚛️',
+    bg_color: '#00cec9',
+    difficulty: 'Intermediate',
+    avg_days: '6 days',
+    learner_count: 49,
+    step_count: 4
+  },
+  {
+    id: 'skill-c',
+    field_id: 'field-general',
+    name: 'C Programming',
+    description: 'Pointers, manual memory allocation, structs, linked lists and low-level fundamentals',
+    order_index: 5,
+    icon: 'C',
+    bg_color: '#6c5ce7',
+    difficulty: 'Intermediate',
+    avg_days: '4 days',
+    learner_count: 31,
+    step_count: 3
+  },
+  {
+    id: 'skill-python',
+    field_id: 'field-4',
+    name: 'Python',
+    description: 'Data structures, OOP, file handling, automation, scripting and ML fundamentals',
+    order_index: 6,
+    icon: '🐍',
+    bg_color: '#00b894',
+    difficulty: 'Beginner',
+    avg_days: '4 days',
+    learner_count: 64,
+    step_count: 3
+  },
+  {
+    id: 'skill-git',
+    field_id: 'field-general',
+    name: 'Git & GitHub',
+    description: 'Version control, branching strategies, merge conflicts, pull requests and collaboration',
+    order_index: 7,
+    icon: '🐙',
+    bg_color: '#e17055',
+    difficulty: 'Beginner',
+    avg_days: '2 days',
+    learner_count: 45,
+    step_count: 3
+  },
+  {
+    id: 'skill-sql',
+    field_id: 'field-3',
+    name: 'SQL & Relational DBs',
+    description: 'Schema normalization, complex queries, joins, indexes, ACID transactions and PostgreSQL',
+    order_index: 8,
+    icon: '🗄️',
+    bg_color: '#2d3436',
+    difficulty: 'Intermediate',
+    avg_days: '4 days',
+    learner_count: 33,
+    step_count: 3
   }
 ];
 

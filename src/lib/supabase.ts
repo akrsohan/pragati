@@ -2,7 +2,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 function sanitizeSupabaseUrl(rawUrl?: string): string {
-  if (!rawUrl) return 'https://xoqurxmldvpalbemkvde.supabase.co';
+  if (!rawUrl) return 'https://widsraiveayakfturkdh.supabase.co';
   // Remove wrapping quotes and whitespace
   let clean = rawUrl.trim().replace(/^["']|["']$/g, '').trim();
   // Ensure standard protocol
@@ -14,23 +14,23 @@ function sanitizeSupabaseUrl(rawUrl?: string): string {
   // Strip accidental path segments like /auth/v1, /rest/v1, /v1 if entered by mistake
   clean = clean.replace(/\/(auth|rest)\/v\d+.*$/i, '');
   clean = clean.replace(/\/+$/, '');
-  return clean || 'https://xoqurxmldvpalbemkvde.supabase.co';
+  return clean || 'https://widsraiveayakfturkdh.supabase.co';
 }
 
 function sanitizeSupabaseKey(rawKey?: string): string {
-  if (!rawKey) return 'sb_publishable_pKMZg7wObeIN3xXVFr0_GA_c_kEbblJ';
+  if (!rawKey) return 'sb_publishable_juieP4oEwxQ-yU7lfpKXng_muEi53GK';
   return rawKey.trim().replace(/^["']|["']$/g, '').trim();
 }
 
 const rawSupabaseUrl = 
   (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_SUPABASE_URL) || 
   (typeof import.meta !== 'undefined' && (import.meta as any).env?.NEXT_PUBLIC_SUPABASE_URL) || 
-  'https://xoqurxmldvpalbemkvde.supabase.co';
+  'https://widsraiveayakfturkdh.supabase.co';
 
 const rawSupabaseAnonKey = 
   (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_SUPABASE_ANON_KEY) || 
   (typeof import.meta !== 'undefined' && (import.meta as any).env?.NEXT_PUBLIC_SUPABASE_ANON_KEY) || 
-  'sb_publishable_pKMZg7wObeIN3xXVFr0_GA_c_kEbblJ';
+  'sb_publishable_juieP4oEwxQ-yU7lfpKXng_muEi53GK';
 
 export const supabaseUrl = sanitizeSupabaseUrl(rawSupabaseUrl);
 export const supabaseAnonKey = sanitizeSupabaseKey(rawSupabaseAnonKey);

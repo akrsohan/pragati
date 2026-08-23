@@ -279,12 +279,29 @@ export async function updateProfile(userId: string, updates: Partial<Profile>): 
     if (updates.is_admin !== undefined) payload.is_admin = updates.is_admin;
     if (updates.is_banned !== undefined) payload.is_banned = updates.is_banned;
 
-    const { error } = await supabase
+    let { error } = await supabase
       .from('profiles')
       .upsert({
         id: userId,
         ...payload
       }, { onConflict: 'id' });
+
+    // If specific columns don't exist yet in Supabase schema cache (PGRST204)
+    if (error && (error.code === 'PGRST204' || error.message?.includes("column of 'profiles'"))) {
+      console.warn('[Supabase updateProfile schema notice, attempting minimal fallback]:', error.message);
+      // Strip optional extended columns and attempt core update
+      const minimalPayload: Record<string, any> = { id: userId };
+      if (updates.email !== undefined) minimalPayload.email = updates.email;
+      if (updates.full_name !== undefined) minimalPayload.full_name = updates.full_name;
+      if (updates.avatar_url !== undefined) minimalPayload.avatar_url = updates.avatar_url;
+      if (updates.is_admin !== undefined) minimalPayload.is_admin = updates.is_admin;
+
+      const retryRes = await supabase.from('profiles').upsert(minimalPayload, { onConflict: 'id' });
+      if (!retryRes.error) {
+        return { success: true };
+      }
+      error = retryRes.error;
+    }
 
     if (error) {
       console.error('[Supabase updateProfile error]:', error.message, error);
@@ -332,7 +349,7 @@ export async function ensureProfile(user: { id: string; email?: string; full_nam
   };
 
   try {
-    const { error } = await supabase.from('profiles').upsert({
+    let { error } = await supabase.from('profiles').upsert({
       id: newProfile.id,
       email: newProfile.email,
       full_name: newProfile.full_name,
@@ -346,6 +363,17 @@ export async function ensureProfile(user: { id: string; email?: string; full_nam
       is_admin: newProfile.is_admin,
       is_banned: newProfile.is_banned
     }, { onConflict: 'id' });
+
+    if (error && (error.code === 'PGRST204' || error.message?.includes("column of 'profiles'"))) {
+      const minimalPayload = {
+        id: newProfile.id,
+        email: newProfile.email,
+        full_name: newProfile.full_name,
+        is_admin: newProfile.is_admin
+      };
+      const retry = await supabase.from('profiles').upsert(minimalPayload, { onConflict: 'id' });
+      error = retry.error;
+    }
 
     if (error) {
       console.warn('[Supabase ensureProfile error]:', error.message);
@@ -1314,6 +1342,235 @@ export async function addRoadmapStepToDb(stepData: Omit<RoadmapStep, 'id'>): Pro
   } catch (err) {}
 
   return newStep;
+}
+
+export async function fetchAllFieldsDb(): Promise<Field[]> {
+  try {
+    const { data, error } = await supabase
+      .from('fields')
+      .select('*')
+      .order('name', { ascending: true });
+
+    if (error) {
+      console.error('[Supabase fetchAllFieldsDb error]:', error.message);
+      return getStoredFields();
+    }
+
+    if (data && Array.isArray(data) && data.length > 0) {
+      const formatted: Field[] = data.map((row: any) => ({
+        id: row.id,
+        name: row.name,
+        description: row.description || '',
+        icon: row.icon || '💻',
+        color: '#00b894'
+      }));
+      saveStoredFields(formatted);
+      return formatted;
+    } else if (!error && (!data || data.length === 0)) {
+      // Seed initial fields to Supabase once if table is empty
+      console.log('[Supabase] Fields table is empty. Seeding initial fields...');
+      for (const f of initialFields) {
+        await supabase.from('fields').upsert({
+          id: f.id,
+          name: f.name,
+          description: f.description,
+          icon: f.icon
+        });
+      }
+      saveStoredFields(initialFields);
+      return initialFields;
+    }
+  } catch (e: any) {
+    console.error('Exception in fetchAllFieldsDb:', e);
+  }
+  return getStoredFields();
+}
+
+export async function saveFieldToDb(field: Field): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { error } = await supabase
+      .from('fields')
+      .upsert({
+        id: field.id,
+        name: field.name,
+        description: field.description,
+        icon: field.icon
+      });
+
+    if (error) {
+      console.error('[Supabase saveField error]:', error.message);
+      return { success: false, error: error.message };
+    }
+
+    // Only update cache after successful database confirmation
+    const localFields = getStoredFields();
+    const exists = localFields.some(f => f.id === field.id);
+    const updated = exists
+      ? localFields.map(f => f.id === field.id ? field : f)
+      : [...localFields, field];
+    saveStoredFields(updated);
+
+    return { success: true };
+  } catch (err: any) {
+    console.error('[Supabase saveField exception]:', err);
+    return { success: false, error: err?.message || 'Database error occurred' };
+  }
+}
+
+export async function deleteFieldFromDb(fieldId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Check if dependent skills exist in Supabase
+    const { data: dependentSkills, error: checkError } = await supabase
+      .from('skills')
+      .select('id, name')
+      .eq('field_id', fieldId);
+
+    if (checkError) {
+      console.warn('[Supabase deleteField dependency check warning]:', checkError.message);
+    } else if (dependentSkills && dependentSkills.length > 0) {
+      return { 
+        success: false, 
+        error: `This field contains ${dependentSkills.length} skill(s). Move or delete those skills first.` 
+      };
+    }
+
+    const { error } = await supabase
+      .from('fields')
+      .delete()
+      .eq('id', fieldId);
+
+    if (error) {
+      console.error('[Supabase deleteField error]:', error.message);
+      return { success: false, error: error.message };
+    }
+
+    // Update cache only after successful DB deletion
+    const localFields = getStoredFields();
+    const updated = localFields.filter(f => f.id !== fieldId);
+    saveStoredFields(updated);
+
+    return { success: true };
+  } catch (err: any) {
+    console.error('[Supabase deleteField exception]:', err);
+    return { success: false, error: err?.message || 'Database error occurred' };
+  }
+}
+
+export async function fetchAllSkillsDb(): Promise<Skill[]> {
+  try {
+    const { data, error } = await supabase
+      .from('skills')
+      .select('*')
+      .order('order_index', { ascending: true });
+
+    if (error) {
+      console.error('[Supabase fetchAllSkillsDb error]:', error.message);
+      return getStoredSkills();
+    }
+
+    if (data && Array.isArray(data) && data.length > 0) {
+      const formatted: Skill[] = data.map((row: any) => ({
+        id: row.id,
+        field_id: row.field_id,
+        name: row.name,
+        description: row.description || '',
+        order_index: Number(row.order_index) || 1,
+        icon: row.icon || '★',
+        bg_color: row.bg_color || '#6c5ce7',
+        difficulty: row.difficulty || 'Beginner',
+        avg_days: row.avg_days || '3 days',
+        learner_count: Number(row.learner_count) || 0,
+        step_count: Number(row.step_count) || 3
+      }));
+      saveStoredSkills(formatted);
+      return formatted;
+    } else if (!error && (!data || data.length === 0)) {
+      // Seed initial skills to Supabase once if table is empty
+      console.log('[Supabase] Skills table is empty. Seeding initial skills...');
+      for (const s of initialSkills) {
+        await supabase.from('skills').upsert({
+          id: s.id,
+          field_id: s.field_id,
+          name: s.name,
+          description: s.description,
+          order_index: s.order_index,
+          icon: s.icon,
+          bg_color: s.bg_color,
+          difficulty: s.difficulty,
+          avg_days: s.avg_days,
+          learner_count: s.learner_count,
+          step_count: s.step_count
+        });
+      }
+      saveStoredSkills(initialSkills);
+      return initialSkills;
+    }
+  } catch (e: any) {
+    console.error('Exception in fetchAllSkillsDb:', e);
+  }
+  return getStoredSkills();
+}
+
+export async function saveSkillToDb(skill: Skill): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { error } = await supabase
+      .from('skills')
+      .upsert({
+        id: skill.id,
+        field_id: skill.field_id,
+        name: skill.name,
+        description: skill.description,
+        order_index: skill.order_index,
+        icon: skill.icon,
+        bg_color: skill.bg_color,
+        difficulty: skill.difficulty,
+        avg_days: skill.avg_days,
+        learner_count: skill.learner_count,
+        step_count: skill.step_count
+      });
+
+    if (error) {
+      console.error('[Supabase saveSkill error]:', error.message);
+      return { success: false, error: error.message };
+    }
+
+    // Only update cache after DB confirms success
+    const localSkills = getStoredSkills();
+    const exists = localSkills.some(s => s.id === skill.id);
+    const updated = exists
+      ? localSkills.map(s => s.id === skill.id ? skill : s)
+      : [...localSkills, skill];
+    saveStoredSkills(updated);
+
+    return { success: true };
+  } catch (err: any) {
+    console.error('[Supabase saveSkill exception]:', err);
+    return { success: false, error: err?.message || 'Database error occurred' };
+  }
+}
+
+export async function deleteSkillFromDb(skillId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { error } = await supabase
+      .from('skills')
+      .delete()
+      .eq('id', skillId);
+
+    if (error) {
+      console.error('[Supabase deleteSkill error]:', error.message);
+      return { success: false, error: error.message };
+    }
+
+    // Only update cache after DB confirms deletion
+    const localSkills = getStoredSkills();
+    const updated = localSkills.filter(s => s.id !== skillId);
+    saveStoredSkills(updated);
+
+    return { success: true };
+  } catch (err: any) {
+    console.error('[Supabase deleteSkill exception]:', err);
+    return { success: false, error: err?.message || 'Database error occurred' };
+  }
 }
 
 export async function deleteRoadmapStepFromDb(skillId: string, stepId: string): Promise<boolean> {

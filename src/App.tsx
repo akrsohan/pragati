@@ -65,6 +65,12 @@ import {
   fetchAllRoadmapSteps,
   addRoadmapStepToDb,
   deleteRoadmapStepFromDb,
+  fetchAllFieldsDb,
+  saveFieldToDb,
+  deleteFieldFromDb,
+  fetchAllSkillsDb,
+  saveSkillToDb,
+  deleteSkillFromDb,
   resetAllDataToDefaults
 } from './lib/supabaseService';
 import { 
@@ -397,7 +403,7 @@ export default function App() {
       const liveStats = await getAdminStats();
       setAdminStats(liveStats);
 
-      // 4. Fetch live Roadmap steps & Skill Resources
+      // 4. Fetch live Roadmap steps, Skill Resources, Fields & Skills
       const liveSteps = await fetchAllRoadmapSteps();
       if (liveSteps && Object.keys(liveSteps).length > 0) {
         setRoadmapSteps(liveSteps);
@@ -406,6 +412,16 @@ export default function App() {
       const liveResources = await getAllSkillResources();
       if (liveResources && Object.keys(liveResources).length > 0) {
         setSkillResources(liveResources);
+      }
+
+      const liveFields = await fetchAllFieldsDb();
+      if (liveFields && liveFields.length > 0) {
+        setFields(liveFields);
+      }
+
+      const liveSkills = await fetchAllSkillsDb();
+      if (liveSkills && liveSkills.length > 0) {
+        setSkills(liveSkills);
       }
 
       // 5. Fetch specific user data if logged in
@@ -1153,13 +1169,12 @@ export default function App() {
   };
 
   // Admin Add/Edit Skill
-  const handleSaveSkill = (skillData: Partial<Skill>) => {
-    let updatedSkills: Skill[];
+  const handleSaveSkill = async (skillData: Partial<Skill>) => {
+    let targetSkill: Skill;
     if (editingSkill) {
-      updatedSkills = skills.map(s => s.id === editingSkill.id ? { ...s, ...skillData } as Skill : s);
-      showToast(`Updated skill: ${skillData.name}`);
+      targetSkill = { ...editingSkill, ...skillData } as Skill;
     } else {
-      const newSkill: Skill = {
+      targetSkill = {
         id: `skill-${Date.now()}`,
         field_id: skillData.field_id || (fields[0]?.id || 'field-1'),
         name: skillData.name || 'New Skill',
@@ -1172,11 +1187,20 @@ export default function App() {
         learner_count: 0,
         step_count: 3
       };
-      updatedSkills = [...skills, newSkill];
-      showToast(`Added new skill: ${newSkill.name}`);
     }
+
+    const result = await saveSkillToDb(targetSkill);
+    if (!result.success) {
+      showToast(`Failed to save skill: ${result.error || 'Database error'}`);
+      return;
+    }
+
+    const updatedSkills = editingSkill
+      ? skills.map(s => s.id === editingSkill.id ? targetSkill : s)
+      : [...skills, targetSkill];
+
     setSkills(updatedSkills);
-    saveStoredSkills(updatedSkills);
+    showToast(editingSkill ? `Updated skill: ${targetSkill.name}` : `Added new skill: ${targetSkill.name}`);
     setIsSkillModalOpen(false);
     setEditingSkill(null);
   };
@@ -1188,12 +1212,17 @@ export default function App() {
       isOpen: true,
       title: 'Delete Skill Track',
       itemTitle: skillToDelete.name,
-      message: `Are you sure you want to permanently delete "${skillToDelete.name}"? This will also remove its associated roadmap steps.`,
+      message: `Are you sure you want to permanently delete "${skillToDelete.name}" from Supabase database and UI?`,
       confirmLabel: 'Delete Skill',
-      onConfirm: () => {
+      onConfirm: async () => {
+        const result = await deleteSkillFromDb(skillId);
+        if (!result.success) {
+          showToast(`Failed to delete skill: ${result.error || 'Database error'}`);
+          return;
+        }
+
         const updatedSkills = skills.filter(s => s.id !== skillId);
         setSkills(updatedSkills);
-        saveStoredSkills(updatedSkills);
 
         // Clean up roadmap steps for this skill
         const updatedSteps = { ...roadmapSteps };
@@ -1201,29 +1230,37 @@ export default function App() {
         setRoadmapSteps(updatedSteps);
         saveStoredRoadmapSteps(updatedSteps);
 
-        showToast(`Skill "${skillToDelete.name}" deleted`);
+        showToast(`Skill "${skillToDelete.name}" deleted successfully.`);
       }
     });
   };
 
-  const handleSaveField = (fieldData: Partial<Field>) => {
-    let updatedFields: Field[];
+  const handleSaveField = async (fieldData: Partial<Field>) => {
+    let targetField: Field;
     if (editingField) {
-      updatedFields = fields.map(f => f.id === editingField.id ? { ...f, ...fieldData } as Field : f);
-      showToast(`Updated field: ${fieldData.name}`);
+      targetField = { ...editingField, ...fieldData } as Field;
     } else {
-      const newField: Field = {
+      targetField = {
         id: fieldData.id || `field-${Date.now()}`,
         name: fieldData.name || 'New Field',
         description: fieldData.description || '',
         icon: fieldData.icon || '💻',
         color: fieldData.color || '#00b894'
       };
-      updatedFields = [...fields, newField];
-      showToast(`Added new field: ${newField.name}`);
     }
+
+    const result = await saveFieldToDb(targetField);
+    if (!result.success) {
+      showToast(`Failed to save field category: ${result.error || 'Database error'}`);
+      return;
+    }
+
+    const updatedFields = editingField
+      ? fields.map(f => f.id === editingField.id ? targetField : f)
+      : [...fields, targetField];
+
     setFields(updatedFields);
-    saveStoredFields(updatedFields);
+    showToast(editingField ? `Updated field: ${targetField.name}` : `Added new field: ${targetField.name}`);
     setIsFieldModalOpen(false);
     setEditingField(null);
   };
@@ -1231,17 +1268,29 @@ export default function App() {
   const handleDeleteField = (fieldId: string) => {
     const fieldToDelete = fields.find(f => f.id === fieldId);
     if (!fieldToDelete) return;
+
+    const hasDependentSkills = skills.some(s => s.field_id === fieldId);
+    if (hasDependentSkills) {
+      showToast('This field contains skills. Move or delete those skills first.');
+      return;
+    }
+
     setDeleteConfirmState({
       isOpen: true,
       title: 'Delete Field Category',
       itemTitle: fieldToDelete.name,
-      message: `Are you sure you want to permanently delete category "${fieldToDelete.name}"?`,
+      message: `Are you sure you want to permanently delete category "${fieldToDelete.name}" from Supabase database?`,
       confirmLabel: 'Delete Category',
-      onConfirm: () => {
+      onConfirm: async () => {
+        const result = await deleteFieldFromDb(fieldId);
+        if (!result.success) {
+          showToast(result.error || 'Failed to delete field category from Supabase database.');
+          return;
+        }
+
         const updatedFields = fields.filter(f => f.id !== fieldId);
         setFields(updatedFields);
-        saveStoredFields(updatedFields);
-        showToast(`Field category "${fieldToDelete.name}" deleted`);
+        showToast(`Field category "${fieldToDelete.name}" deleted successfully.`);
       }
     });
   };
@@ -2169,29 +2218,47 @@ export default function App() {
                     })}
                 </div>
 
+                {skills.filter(s => (!fieldFilter || s.field_id === fieldFilter) && (!skillFilter || s.id === skillFilter) && (s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.description.toLowerCase().includes(searchQuery.toLowerCase()))).length === 0 && (
+                  <div className="p-8 text-center bg-white rounded-2xl border border-dashed border-[#e4e5ee] my-4">
+                    <span className="text-3xl block mb-2">⚡</span>
+                    <div className="text-sm font-bold text-[#1a1c2e]">No skills available yet.</div>
+                    <p className="text-xs text-[#8a8ca3] mt-1">
+                      {skills.length === 0 ? 'Skills will appear here once configured in the database.' : 'No skills matched your filter criteria.'}
+                    </p>
+                  </div>
+                )}
+
                 {/* Category Exploration Banner */}
                 <div className="mt-10 mb-4 section-title">Explore by Domain</div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  {fields.map(f => (
-                    <div 
-                      key={f.id}
-                      onClick={() => {
-                        setSelectedFieldId(f.id);
-                        setDiscoverView('field-skills');
-                      }}
-                      className="domain-card-item p-5 rounded-2xl bg-white border border-[#e4e5ee] hover:border-[#6c5ce7] transition-all cursor-pointer shadow-xs hover:shadow-md flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-3.5">
-                        <span className="domain-card-icon text-2xl">{f.icon}</span>
-                        <div>
-                          <div className="font-bold text-sm text-[#1a1c2e]">{f.name}</div>
-                          <div className="text-xs text-[#8a8ca3]">{skills.filter(s => s.field_id === f.id).length} Roadmaps</div>
+                {fields.length === 0 ? (
+                  <div className="p-6 text-center bg-white rounded-2xl border border-dashed border-[#e4e5ee]">
+                    <span className="text-2xl block mb-1">🧭</span>
+                    <div className="text-sm font-bold text-[#1a1c2e]">No fields available yet.</div>
+                    <p className="text-xs text-[#8a8ca3] mt-1">Field categories will appear once created in the database.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {fields.map(f => (
+                      <div 
+                        key={f.id}
+                        onClick={() => {
+                          setSelectedFieldId(f.id);
+                          setDiscoverView('field-skills');
+                        }}
+                        className="domain-card-item p-5 rounded-2xl bg-white border border-[#e4e5ee] hover:border-[#6c5ce7] transition-all cursor-pointer shadow-xs hover:shadow-md flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-3.5">
+                          <span className="domain-card-icon text-2xl">{f.icon}</span>
+                          <div>
+                            <div className="font-bold text-sm text-[#1a1c2e]">{f.name}</div>
+                            <div className="text-xs text-[#8a8ca3]">{skills.filter(s => s.field_id === f.id).length} Roadmaps</div>
+                          </div>
                         </div>
+                        <ChevronRight className="w-4 h-4 text-[#8a8ca3]" />
                       </div>
-                      <ChevronRight className="w-4 h-4 text-[#8a8ca3]" />
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </>
             )}
 
@@ -3724,56 +3791,93 @@ export default function App() {
                 </div>
               )}
 
-            {/* TAB 2: FIELDS & SKILLS */}
+            {/* TAB 2: SKILL TRACKS */}
             {adminTab === 'skills' && (
-              <div className="admin-table">
-                <div className="admin-table-head">
-                  <div>Skill Track</div>
-                  <div>Parent Field</div>
-                  <div>Difficulty</div>
-                  <div>Avg Duration</div>
-                  <div>Steps Count</div>
-                  <div>Actions</div>
+              <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <div className="text-sm font-bold text-[#1a1c2e]">Global Skill Tracks</div>
+                    <div className="text-xs text-[#8a8ca3]">Centrally synchronized in Supabase database</div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setEditingSkill(null);
+                      setIsSkillModalOpen(true);
+                    }}
+                    className="px-3.5 py-2 bg-[#6c5ce7] text-white text-xs font-bold rounded-lg hover:opacity-90 flex items-center gap-1.5"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Add Skill Track
+                  </button>
                 </div>
 
-                {skills.map((s) => {
-                  const parentField = fields.find(f => f.id === s.field_id);
-                  const stepsCount = roadmapSteps[s.id]?.length || 3;
-                  return (
-                    <div key={s.id} className="admin-table-row">
-                      <div className="font-bold flex items-center gap-2">
-                        <span 
-                          className="w-7 h-7 rounded-lg text-white font-bold flex items-center justify-center text-xs"
-                          style={{ background: s.bg_color || '#6c5ce7' }}
-                        >
-                          {s.icon}
-                        </span>
-                        {s.name}
-                      </div>
-                      <div>{parentField?.name || 'General'}</div>
-                      <div>{s.difficulty || 'Beginner'}</div>
-                      <div>{s.avg_days || '3 days'}</div>
-                      <div className="font-bold">{stepsCount} steps</div>
-                      <div>
-                        <button 
-                          className="admin-action-btn hover:bg-slate-100"
-                          onClick={() => {
-                            setEditingSkill(s);
-                            setIsSkillModalOpen(true);
-                          }}
-                        >
-                          Edit
-                        </button>
-                        <button 
-                          className="admin-action-btn danger hover:bg-red-50"
-                          onClick={() => handleDeleteSkill(s.id)}
-                        >
-                          Delete
-                        </button>
-                      </div>
+                {skills.length === 0 ? (
+                  <div className="p-8 text-center bg-[#f8f9fc] rounded-xl border border-dashed border-[#e4e5ee] my-2">
+                    <span className="text-3xl block mb-2">⚡</span>
+                    <div className="text-sm font-bold text-[#1a1c2e]">No skills available yet.</div>
+                    <p className="text-xs text-[#8a8ca3] mt-1 mb-4">Add your first skill track to populate the Supabase database.</p>
+                    <button
+                      onClick={() => {
+                        setEditingSkill(null);
+                        setIsSkillModalOpen(true);
+                      }}
+                      className="px-4 py-2 bg-[#6c5ce7] text-white text-xs font-bold rounded-lg hover:opacity-90 inline-flex items-center gap-1.5"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Add First Skill
+                    </button>
+                  </div>
+                ) : (
+                  <div className="admin-table">
+                    <div className="admin-table-head">
+                      <div>Skill Track</div>
+                      <div>Parent Field</div>
+                      <div>Difficulty</div>
+                      <div>Avg Duration</div>
+                      <div>Steps Count</div>
+                      <div>Actions</div>
                     </div>
-                  );
-                })}
+
+                    {skills.map((s) => {
+                      const parentField = fields.find(f => f.id === s.field_id);
+                      const stepsCount = roadmapSteps[s.id]?.length || 3;
+                      return (
+                        <div key={s.id} className="admin-table-row">
+                          <div className="font-bold flex items-center gap-2">
+                            <span 
+                              className="w-7 h-7 rounded-lg text-white font-bold flex items-center justify-center text-xs"
+                              style={{ background: s.bg_color || '#6c5ce7' }}
+                            >
+                              {s.icon}
+                            </span>
+                            {s.name}
+                          </div>
+                          <div>{parentField?.name || 'General'}</div>
+                          <div>{s.difficulty || 'Beginner'}</div>
+                          <div>{s.avg_days || '3 days'}</div>
+                          <div className="font-bold">{stepsCount} steps</div>
+                          <div>
+                            <button 
+                              className="admin-action-btn hover:bg-slate-100"
+                              onClick={() => {
+                                setEditingSkill(s);
+                                setIsSkillModalOpen(true);
+                              }}
+                            >
+                              Edit
+                            </button>
+                            <button 
+                              className="admin-action-btn danger hover:bg-red-50"
+                              onClick={() => handleDeleteSkill(s.id)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 
