@@ -22,7 +22,7 @@ export function getStoredFields(): Field[] {
       }
     }
   } catch (e) {}
-  return initialFields;
+  return [];
 }
 
 export function saveStoredFields(fieldsList: Field[]) {
@@ -41,7 +41,7 @@ export function getStoredSkills(): Skill[] {
       }
     }
   } catch (e) {}
-  return initialSkills;
+  return [];
 }
 
 export function saveStoredSkills(skillsList: Skill[]) {
@@ -60,7 +60,7 @@ export function getStoredRoadmapSteps(): Record<string, RoadmapStep[]> {
       }
     }
   } catch (e) {}
-  return initialRoadmapSteps;
+  return {};
 }
 
 export function saveStoredRoadmapSteps(stepsMap: Record<string, RoadmapStep[]>) {
@@ -79,7 +79,7 @@ export function getStoredSkillResources(): Record<string, SkillResource[]> {
       }
     }
   } catch (e) {}
-  return initialSkillResources;
+  return {};
 }
 
 export function saveStoredSkillResources(resMap: Record<string, SkillResource[]>) {
@@ -90,10 +90,10 @@ export function saveStoredSkillResources(resMap: Record<string, SkillResource[]>
 
 export function resetAllDataToDefaults() {
   try {
-    localStorage.removeItem(STORAGE_FIELDS_KEY);
-    localStorage.removeItem(STORAGE_SKILLS_KEY);
-    localStorage.removeItem(STORAGE_ROADMAP_STEPS_KEY);
-    localStorage.removeItem(STORAGE_RESOURCES_KEY);
+    saveStoredFields(initialFields);
+    saveStoredSkills(initialSkills);
+    saveStoredRoadmapSteps(initialRoadmapSteps);
+    saveStoredSkillResources(initialSkillResources);
   } catch (e) {}
 }
 
@@ -1093,8 +1093,8 @@ export async function getAllSkillResources(skillId?: string): Promise<Record<str
 
     const { data, error } = await query;
 
-    if (!error && data && Array.isArray(data) && data.length > 0) {
-      const mergedMap: Record<string, SkillResource[]> = { ...localMap };
+    if (!error && data && Array.isArray(data)) {
+      const mergedMap: Record<string, SkillResource[]> = skillId ? { ...localMap, [skillId]: [] } : {};
       
       data.forEach((row: any) => {
         const item: SkillResource = {
@@ -1111,13 +1111,7 @@ export async function getAllSkillResources(skillId?: string): Promise<Record<str
         if (!mergedMap[item.skill_id]) {
           mergedMap[item.skill_id] = [];
         }
-        // Avoid duplicate ids
-        const exists = mergedMap[item.skill_id].findIndex(r => r.id === item.id);
-        if (exists >= 0) {
-          mergedMap[item.skill_id][exists] = item;
-        } else {
-          mergedMap[item.skill_id].push(item);
-        }
+        mergedMap[item.skill_id].push(item);
       });
 
       saveStoredSkillResources(mergedMap);
@@ -1260,8 +1254,8 @@ export async function fetchAllRoadmapSteps(): Promise<Record<string, RoadmapStep
       .select('*')
       .order('step_order', { ascending: true });
 
-    if (!error && data && Array.isArray(data) && data.length > 0) {
-      const dbMap: Record<string, RoadmapStep[]> = { ...localMap };
+    if (!error && data && Array.isArray(data)) {
+      const dbMap: Record<string, RoadmapStep[]> = {};
       data.forEach((row: any) => {
         const item: RoadmapStep = {
           id: row.id,
@@ -1275,12 +1269,7 @@ export async function fetchAllRoadmapSteps(): Promise<Record<string, RoadmapStep
         if (!dbMap[item.skill_id]) {
           dbMap[item.skill_id] = [];
         }
-        const exists = dbMap[item.skill_id].findIndex(s => s.id === item.id);
-        if (exists >= 0) {
-          dbMap[item.skill_id][exists] = item;
-        } else {
-          dbMap[item.skill_id].push(item);
-        }
+        dbMap[item.skill_id].push(item);
       });
 
       // Sort each skill's steps by step_order
@@ -1356,7 +1345,7 @@ export async function fetchAllFieldsDb(): Promise<Field[]> {
       return getStoredFields();
     }
 
-    if (data && Array.isArray(data) && data.length > 0) {
+    if (data && Array.isArray(data)) {
       const formatted: Field[] = data.map((row: any) => ({
         id: row.id,
         name: row.name,
@@ -1366,19 +1355,6 @@ export async function fetchAllFieldsDb(): Promise<Field[]> {
       }));
       saveStoredFields(formatted);
       return formatted;
-    } else if (!error && (!data || data.length === 0)) {
-      // Seed initial fields to Supabase once if table is empty
-      console.log('[Supabase] Fields table is empty. Seeding initial fields...');
-      for (const f of initialFields) {
-        await supabase.from('fields').upsert({
-          id: f.id,
-          name: f.name,
-          description: f.description,
-          icon: f.icon
-        });
-      }
-      saveStoredFields(initialFields);
-      return initialFields;
     }
   } catch (e: any) {
     console.error('Exception in fetchAllFieldsDb:', e);
@@ -1468,7 +1444,7 @@ export async function fetchAllSkillsDb(): Promise<Skill[]> {
       return getStoredSkills();
     }
 
-    if (data && Array.isArray(data) && data.length > 0) {
+    if (data && Array.isArray(data)) {
       const formatted: Skill[] = data.map((row: any) => ({
         id: row.id,
         field_id: row.field_id,
@@ -1484,26 +1460,6 @@ export async function fetchAllSkillsDb(): Promise<Skill[]> {
       }));
       saveStoredSkills(formatted);
       return formatted;
-    } else if (!error && (!data || data.length === 0)) {
-      // Seed initial skills to Supabase once if table is empty
-      console.log('[Supabase] Skills table is empty. Seeding initial skills...');
-      for (const s of initialSkills) {
-        await supabase.from('skills').upsert({
-          id: s.id,
-          field_id: s.field_id,
-          name: s.name,
-          description: s.description,
-          order_index: s.order_index,
-          icon: s.icon,
-          bg_color: s.bg_color,
-          difficulty: s.difficulty,
-          avg_days: s.avg_days,
-          learner_count: s.learner_count,
-          step_count: s.step_count
-        });
-      }
-      saveStoredSkills(initialSkills);
-      return initialSkills;
     }
   } catch (e: any) {
     console.error('Exception in fetchAllSkillsDb:', e);
