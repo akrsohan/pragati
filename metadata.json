@@ -1,6 +1,6 @@
 {
-  "name": "SkillTrack DIU",
-  "description": "Gamified skill roadmap and leaderboard platform for Daffodil International University students",
+  "name": "Pragatii",
+  "description": "Gamified skill roadmap, learning sprints, and leaderboard platform for students",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

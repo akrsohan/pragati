@@ -400,10 +400,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="visual">
           <div className="brand">
             <div className="logo-icon inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#37f0ff]/10 text-[#37f0ff] mb-4 border border-[#37f0ff]/30 shadow-lg shadow-[#37f0ff]/20 text-xl font-black">
-              DIU
+              P
             </div>
             <h1>
-              {formMode === 'signup' ? 'Join DIU CSE SkillTrack' : 'Welcome Back'}
+              {formMode === 'signup' ? 'Join Pragatii' : 'Welcome to Pragatii'}
             </h1>
             <p>
               {formMode === 'signup' 
@@ -417,7 +417,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="formside">
           {/* LOGIN PANEL */}
           <div className={`panel ${formMode === 'login' ? 'active' : ''}`} id="loginPanel">
-            <div className="toggle-title">DIU CSE Skill Portal</div>
+            <div className="toggle-title">Pragatii Skill Hub</div>
             <h2>Log in</h2>
 
             {authError && (
@@ -494,7 +494,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
           {/* SIGNUP PANEL */}
           <div className={`panel ${formMode === 'signup' ? 'active' : ''}`} id="signupPanel">
-            <div className="toggle-title">DIU CSE Skill Portal</div>
+            <div className="toggle-title">Pragatii Skill Hub</div>
             <h2>Sign up</h2>
 
             {authError && (
@@ -581,7 +581,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
           {/* FORGOT PASSWORD PANEL */}
           <div className={`panel ${formMode === 'forgot' ? 'active' : ''}`} id="forgotPanel">
-            <div className="toggle-title">DIU CSE Skill Portal</div>
+            <div className="toggle-title">Pragatii Skill Hub</div>
             <h2>Account Recovery</h2>
 
             {authError && (

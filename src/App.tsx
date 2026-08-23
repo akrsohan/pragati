@@ -1411,7 +1411,7 @@ export default function App() {
             </div>
             <h1 className="text-2xl font-black mb-2 text-white">Account Suspended</h1>
             <p className="text-slate-300 text-sm mb-6 leading-relaxed">
-              Your account (<span className="text-[#37f0ff] font-semibold">{currentUser.full_name}</span>) has been banned and suspended by the system administrator. You cannot access SkillTrack resources, roadmaps, or leaderboards until your account is unbanned.
+              Your account (<span className="text-[#37f0ff] font-semibold">{currentUser.full_name}</span>) has been banned and suspended by the system administrator. You cannot access Pragatii resources, roadmaps, or leaderboards until your account is unbanned.
             </p>
             <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-6 text-xs text-slate-400 space-y-1">
               <div>Contact DIU Admin / Support:</div>

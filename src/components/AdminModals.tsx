@@ -738,7 +738,7 @@ export const SqlCodeModal: React.FC<SqlCodeModalProps> = ({ isOpen, onClose }) =
   if (!isOpen) return null;
 
   const sqlCode = `-- =========================================================================
--- SkillTrack DIU — Complete Supabase Database Schema
+-- Pragatii — Complete Supabase Database Schema
 -- Run this in your Supabase SQL Editor (Dashboard -> SQL Editor -> New Query)
 -- =========================================================================
 

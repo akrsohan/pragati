@@ -94,18 +94,18 @@ export const Navbar: React.FC<NavbarProps> = ({
           }}
           role="button"
           tabIndex={0}
-          title="Go to SkillTrack Home (Discover)"
+          title="Go to Pragatii Home (Discover)"
           id="navbar-brand-logo"
         >
           <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-[#6c5ce7] to-[#37f0ff] flex items-center justify-center text-white font-black text-lg shadow-md shadow-[#6c5ce7]/30 group-hover:scale-105 transition-transform">
-            S
+            P
           </div>
           <div className="flex flex-col">
             <span className="font-extrabold text-xl sm:text-2xl tracking-tight text-white leading-none">
-              SkillTrack
+              Pragatii
             </span>
             <span className="text-[11px] uppercase font-bold tracking-widest text-[#37f0ff] mt-1.5">
-              DIU Student Hub
+              Skill &amp; Growth Hub
             </span>
           </div>
         </div>

@@ -32,14 +32,14 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, currentUser, onOpenS
           <div className="md:col-span-1 space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#6c5ce7] to-[#37f0ff] flex items-center justify-center text-white font-black text-xl shadow-md shadow-[#6c5ce7]/30">
-                S
+                P
               </div>
               <span className="text-2xl font-black text-white tracking-wider">
-                SkillTrack
+                Pragatii
               </span>
             </div>
             <p className="text-sm text-[#9ca3af] leading-relaxed">
-              Empowering DIU students and engineering cohorts with gamified skill sprints, structured roadmaps, and peer competition.
+              Empowering students and engineering cohorts with gamified skill sprints, structured roadmaps, and peer competition.
             </p>
           </div>
 
@@ -185,7 +185,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, currentUser, onOpenS
         {/* Bottom Copyright & Legal Links */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-[#6b7280]">
           <div>
-            © {new Date().getFullYear()} SKILLTRACK DIU. ALL RIGHTS RESERVED.
+            © {new Date().getFullYear()} PRAGATII. ALL RIGHTS RESERVED.
           </div>
           <div className="flex items-center gap-6">
             <button onClick={() => alert('Privacy Policy: All student data is securely managed and protected.')} className="hover:text-white transition-colors cursor-pointer">
