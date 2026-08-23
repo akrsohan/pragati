@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { PageType, Profile } from '../types';
 import { Facebook, Mail, MessageSquare, Compass, Trophy, LayoutDashboard } from 'lucide-react';
+import { PragatiiLogo } from './PragatiiLogo';
 
 interface FooterProps {
   onNavigate: (page: PageType) => void;
@@ -31,8 +32,8 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, currentUser, onOpenS
           {/* Col 1: Brand & Bio */}
           <div className="md:col-span-1 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#6c5ce7] to-[#37f0ff] flex items-center justify-center text-white font-black text-xl shadow-md shadow-[#6c5ce7]/30">
-                P
+              <div className="shrink-0 flex items-center justify-center">
+                <PragatiiLogo size={42} />
               </div>
               <span className="text-2xl font-black text-white tracking-wider">
                 Pragatii

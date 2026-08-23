@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { PageType, Profile } from '../types';
 import { getMainName } from '../lib/nameHelper';
+import { PragatiiLogo } from './PragatiiLogo';
 import { 
   Shield, 
   User, 
@@ -80,14 +81,23 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'leaderboard' as PageType, label: 'Leaderboard', icon: Trophy },
   ];
 
+  const isDark = theme === 'dark';
+
   return (
-    <header className="sticky top-0 z-40 bg-[#161828] border-b border-white/10 shadow-lg shadow-black/20" id="app-navbar-header">
+    <header 
+      className={`sticky top-0 z-40 transition-colors duration-200 ${
+        isDark 
+          ? 'bg-[#161828]/95 backdrop-blur-md border-b border-white/10 shadow-lg shadow-black/20' 
+          : 'bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm shadow-slate-900/5'
+      }`} 
+      id="app-navbar-header"
+    >
       {/* Top Navbar Row */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-4 sm:py-5 flex items-center justify-between gap-4 sm:gap-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3.5 sm:py-4 flex items-center justify-between gap-4 sm:gap-6">
         
         {/* Brand Logo & Title */}
         <div 
-          className="logo cursor-pointer hover:opacity-90 transition-all group flex items-center gap-3.5 select-none shrink-0" 
+          className="logo cursor-pointer hover:opacity-95 transition-all group flex items-center gap-3 select-none shrink-0" 
           onClick={() => {
             handleNav('discover');
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -97,21 +107,32 @@ export const Navbar: React.FC<NavbarProps> = ({
           title="Go to Pragatii Home (Discover)"
           id="navbar-brand-logo"
         >
-          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-[#6c5ce7] to-[#37f0ff] flex items-center justify-center text-white font-black text-lg shadow-md shadow-[#6c5ce7]/30 group-hover:scale-105 transition-transform">
-            P
+          <div className="shrink-0 flex items-center justify-center">
+            <PragatiiLogo size={46} theme={theme} />
           </div>
           <div className="flex flex-col">
-            <span className="font-extrabold text-xl sm:text-2xl tracking-tight text-white leading-none">
+            <span className={`font-extrabold text-xl sm:text-2xl tracking-tight leading-none ${
+              isDark ? 'text-white' : 'text-slate-900'
+            }`}>
               Pragatii
             </span>
-            <span className="text-[11px] uppercase font-bold tracking-widest text-[#37f0ff] mt-1.5">
+            <span className={`text-[10px] sm:text-[11px] uppercase font-bold tracking-widest mt-1.5 ${
+              isDark ? 'text-[#37f0ff]' : 'text-blue-600'
+            }`}>
               Skill &amp; Growth Hub
             </span>
           </div>
         </div>
 
         {/* Main Desktop Navigation Links (Spacious, Single Line, Crisp Separation) */}
-        <div className="hidden md:flex items-center gap-2.5 bg-[#0e101a] p-2 rounded-2xl border border-white/10 shadow-inner" id="navbar-links">
+        <div 
+          className={`hidden md:flex items-center gap-2.5 p-1.5 rounded-2xl border transition-colors ${
+            isDark 
+              ? 'bg-[#0e101a] border-white/10 shadow-inner' 
+              : 'bg-slate-100/90 border-slate-200/90 shadow-inner'
+          }`} 
+          id="navbar-links"
+        >
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentPage === item.id;
@@ -119,15 +140,19 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button 
                 key={item.id}
                 type="button"
-                className={`px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base font-extrabold transition-all flex items-center gap-2.5 select-none whitespace-nowrap cursor-pointer ${
+                className={`px-5 sm:px-6 py-2.5 rounded-xl text-sm sm:text-base font-extrabold transition-all flex items-center gap-2.5 select-none whitespace-nowrap cursor-pointer ${
                   isActive 
                     ? 'bg-[#6c5ce7] text-white shadow-md shadow-[#6c5ce7]/40 ring-1 ring-white/20' 
-                    : 'text-[#9ca3af] hover:text-white hover:bg-white/5'
+                    : isDark 
+                      ? 'text-[#9ca3af] hover:text-white hover:bg-white/5'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
                 }`}
                 onClick={() => handleNav(item.id)}
                 id={`nav-link-${item.id}`}
               >
-                <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${isActive ? 'text-white' : 'text-[#8a8ca3]'}`} />
+                <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                  isActive ? 'text-white' : (isDark ? 'text-[#8a8ca3]' : 'text-slate-500')
+                }`} />
                 <span>{item.label}</span>
               </button>
             );
@@ -136,10 +161,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           {currentUser.is_admin && (
             <button 
               type="button"
-              className={`px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base font-extrabold transition-all flex items-center gap-2 select-none whitespace-nowrap cursor-pointer ${
+              className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm sm:text-base font-extrabold transition-all flex items-center gap-2 select-none whitespace-nowrap cursor-pointer ${
                 currentPage === 'admin' 
                   ? 'bg-purple-600 text-white shadow-md shadow-purple-600/40 ring-1 ring-purple-300/30' 
-                  : 'text-purple-300 hover:text-white hover:bg-purple-500/15'
+                  : isDark
+                    ? 'text-purple-300 hover:text-white hover:bg-purple-500/15'
+                    : 'text-purple-700 hover:text-purple-900 hover:bg-purple-100/70'
               }`}
               onClick={() => handleNav('admin')}
               id="nav-link-admin"
@@ -158,7 +185,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               onClick={onToggleTheme}
-              className="relative flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[#0e101a] hover:bg-white/10 border border-white/10 shadow-inner transition-all group focus:outline-none focus:ring-2 focus:ring-purple-400 cursor-pointer"
+              className={`relative flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-2xl border shadow-inner transition-all group focus:outline-none focus:ring-2 focus:ring-purple-400 cursor-pointer ${
+                isDark 
+                  ? 'bg-[#0e101a] hover:bg-white/10 border-white/10 text-white' 
+                  : 'bg-slate-100 hover:bg-slate-200/80 border-slate-200 text-slate-700'
+              }`}
               title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               aria-label="Toggle theme mode"
               id="navbar-theme-toggle-btn"
@@ -166,7 +197,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               {theme === 'dark' ? (
                 <Sun className="w-5 h-5 text-amber-400 group-hover:rotate-45 transition-transform duration-300" />
               ) : (
-                <Moon className="w-5 h-5 text-indigo-300 group-hover:-rotate-12 transition-transform duration-300" />
+                <Moon className="w-5 h-5 text-indigo-600 group-hover:-rotate-12 transition-transform duration-300" />
               )}
             </button>
           )}
@@ -433,7 +464,14 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* Responsive Secondary Nav Bar (For mobile & smaller screens: smooth, spacious single horizontal line) */}
-      <div className="md:hidden border-t border-white/5 bg-[#121422] px-4 py-2 flex items-center justify-start gap-2.5 overflow-x-auto no-scrollbar" id="mobile-navbar-links">
+      <div 
+        className={`md:hidden border-t px-4 py-2 flex items-center justify-start gap-2.5 overflow-x-auto no-scrollbar transition-colors ${
+          isDark 
+            ? 'border-white/10 bg-[#121422]' 
+            : 'border-slate-200 bg-slate-50/95'
+        }`} 
+        id="mobile-navbar-links"
+      >
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentPage === item.id;
@@ -444,12 +482,14 @@ export const Navbar: React.FC<NavbarProps> = ({
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 select-none whitespace-nowrap shrink-0 cursor-pointer ${
                 isActive 
                   ? 'bg-[#6c5ce7] text-white shadow-md shadow-[#6c5ce7]/40 ring-1 ring-white/20' 
-                  : 'text-[#9ca3af] hover:text-white hover:bg-white/5'
+                  : isDark
+                    ? 'text-[#9ca3af] hover:text-white hover:bg-white/5'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
               }`}
               onClick={() => handleNav(item.id)}
               id={`mobile-nav-${item.id}`}
             >
-              <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-[#8a8ca3]'}`} />
+              <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : (isDark ? 'text-[#8a8ca3]' : 'text-slate-500')}`} />
               <span>{item.label}</span>
             </button>
           );
@@ -461,7 +501,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 select-none whitespace-nowrap shrink-0 cursor-pointer ${
               currentPage === 'admin' 
                 ? 'bg-purple-600 text-white shadow-md shadow-purple-600/40 ring-1 ring-purple-300/30' 
-                : 'text-purple-300 hover:text-white hover:bg-purple-500/15'
+                : isDark
+                  ? 'text-purple-300 hover:text-white hover:bg-purple-500/15'
+                  : 'text-purple-700 hover:text-purple-900 hover:bg-purple-100'
             }`}
             onClick={() => handleNav('admin')}
             id="mobile-nav-admin"
@@ -474,7 +516,11 @@ export const Navbar: React.FC<NavbarProps> = ({
         {onToggleTheme && (
           <button 
             type="button"
-            className="px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 select-none whitespace-nowrap shrink-0 text-amber-300 hover:text-white hover:bg-white/5 cursor-pointer ml-auto"
+            className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 select-none whitespace-nowrap shrink-0 cursor-pointer ml-auto ${
+              isDark 
+                ? 'text-amber-300 hover:text-white hover:bg-white/5' 
+                : 'text-indigo-600 hover:text-indigo-900 hover:bg-slate-200/60'
+            }`}
             onClick={onToggleTheme}
             id="mobile-nav-theme-toggle"
             title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
@@ -486,7 +532,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               </>
             ) : (
               <>
-                <Moon className="w-3.5 h-3.5 text-indigo-300" />
+                <Moon className="w-3.5 h-3.5 text-indigo-600" />
                 <span>Dark</span>
               </>
             )}

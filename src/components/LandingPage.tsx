@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCcw, AlertCircle, Eye, EyeOff, KeyRound } from 'lucide-react';
+import { PragatiiLogo } from './PragatiiLogo';
 
 interface LandingPageProps {
   authMode: 'login' | 'signup';
@@ -399,8 +400,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         {/* Visual Side */}
         <div className="visual">
           <div className="brand">
-            <div className="logo-icon inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#37f0ff]/10 text-[#37f0ff] mb-4 border border-[#37f0ff]/30 shadow-lg shadow-[#37f0ff]/20 text-xl font-black">
-              P
+            <div className="logo-icon inline-flex items-center justify-center mb-5">
+              <PragatiiLogo size={110} />
             </div>
             <h1>
               {formMode === 'signup' ? 'Join Pragatii' : 'Welcome to Pragatii'}
