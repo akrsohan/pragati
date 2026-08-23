@@ -19,10 +19,11 @@ export const PragatiiLogo: React.FC<PragatiiLogoProps> = ({
     <div className={`inline-flex items-center gap-3 select-none ${className}`}>
       {/* 
         Pragatii Official Brandmark:
+        - 100% Transparent Interior: The center hole of 'P' is completely hollow, revealing the underlying background (Light or Dark)
         - Tall, prominent 3D 'P' with long elegant vertical stem extending down
-        - Top flowing sapphire crest & deep midnight navy face
+        - Top flowing sapphire crest & deep midnight navy left stem
         - Golden amber 3D beveled outer loop
-        - Upward surging financial growth graph line (3 nodes + 3D golden arrowhead)
+        - Upward surging financial growth graph line (3 nodes + 3D golden arrowhead) passing through the hollow center
         - Lower stem warm copper-bronze gradient
         - Super crisp, ultra-clear 'ragatii' cursive typography with perfect theme-aware contrast
       */}
@@ -53,8 +54,8 @@ export const PragatiiLogo: React.FC<PragatiiLogoProps> = ({
             <stop offset="100%" stopColor={isDark ? "#142042" : "#0E1635"} />
           </linearGradient>
 
-          {/* 3. Main 'P' Satin Navy / Deep Indigo Face Gradient */}
-          <linearGradient id="pMainNavy" x1="125" y1="95" x2="270" y2="350" gradientUnits="userSpaceOnUse">
+          {/* 3. Main 'P' Left Vertical Column Gradient */}
+          <linearGradient id="pMainNavy" x1="125" y1="95" x2="200" y2="350" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stopColor={isDark ? "#3d5da6" : "#2D4685"} />
             <stop offset="20%" stopColor={isDark ? "#2b437e" : "#203369"} />
             <stop offset="55%" stopColor={isDark ? "#1f3263" : "#16234D"} />
@@ -62,16 +63,8 @@ export const PragatiiLogo: React.FC<PragatiiLogoProps> = ({
             <stop offset="100%" stopColor={isDark ? "#0f1a38" : "#0A1026"} />
           </linearGradient>
 
-          {/* 4. Front Loop Inner Volume */}
-          <linearGradient id="pLoopFace" x1="160" y1="135" x2="290" y2="250" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor={isDark ? "#4365b3" : "#2E4888"} />
-            <stop offset="35%" stopColor={isDark ? "#2d4787" : "#1F3266"} />
-            <stop offset="80%" stopColor={isDark ? "#1e3161" : "#142044"} />
-            <stop offset="100%" stopColor={isDark ? "#142247" : "#0E1530"} />
-          </linearGradient>
-
-          {/* 5. Long Lower Stem Warm Copper / Bronze Gradient */}
-          <linearGradient id="pLongStemCopper" x1="140" y1="260" x2="200" y2="395" gradientUnits="userSpaceOnUse">
+          {/* 4. Long Lower Stem Warm Copper / Bronze Gradient */}
+          <linearGradient id="pLongStemCopper" x1="130" y1="260" x2="195" y2="395" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stopColor={isDark ? "#1e3161" : "#142044"} />
             <stop offset="35%" stopColor="#452a3a" />
             <stop offset="65%" stopColor="#874735" />
@@ -79,7 +72,7 @@ export const PragatiiLogo: React.FC<PragatiiLogoProps> = ({
             <stop offset="100%" stopColor="#cf724a" />
           </linearGradient>
 
-          {/* 6. Metallic Golden Arrow Gradient */}
+          {/* 5. Metallic Golden Arrow Gradient */}
           <linearGradient id="pArrowGold" x1="270" y1="190" x2="415" y2="95" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stopColor="#B36718" />
             <stop offset="40%" stopColor="#E29A2B" />
@@ -87,7 +80,7 @@ export const PragatiiLogo: React.FC<PragatiiLogoProps> = ({
             <stop offset="100%" stopColor="#FEE592" />
           </linearGradient>
 
-          {/* 7. Trendline Diagonal Gradient */}
+          {/* 6. Trendline Diagonal Gradient */}
           <linearGradient id="pTrendLine" x1="115" y1="270" x2="360" y2="120" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stopColor={isDark ? "#1f3366" : "#142046"} />
             <stop offset="35%" stopColor={isDark ? "#355299" : "#23386E"} />
@@ -95,9 +88,9 @@ export const PragatiiLogo: React.FC<PragatiiLogoProps> = ({
             <stop offset="100%" stopColor="#DF9B2C" />
           </linearGradient>
 
-          {/* 8. Crisp 'ragatii' Text Gradient */}
+          {/* 7. Crisp 'ragatii' Text Gradient */}
           <linearGradient id="pRagatiiLightGrad" x1="200" y1="330" x2="440" y2="360" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#101c3d" />
+            <stop offset="0%" stopColor="#0d1b3e" />
             <stop offset="50%" stopColor="#152857" />
             <stop offset="100%" stopColor="#1a326b" />
           </linearGradient>
@@ -130,7 +123,7 @@ export const PragatiiLogo: React.FC<PragatiiLogoProps> = ({
 
         <g filter="url(#pDropShadow)">
           {/* ======================================================== */}
-          {/* 1. GOLDEN 3D OUTER LOOP OF 'P' (Right Side Curve)        */}
+          {/* 1. GOLDEN 3D OUTER LOOP OF 'P' (Right Side Arch)         */}
           {/* ======================================================== */}
           <path
             d="M 230 92 C 318 92 384 130 384 205 C 384 266 330 300 248 300 L 220 300 C 290 276 334 238 334 198 C 334 140 282 122 225 122 Z"
@@ -146,32 +139,26 @@ export const PragatiiLogo: React.FC<PragatiiLogoProps> = ({
           />
 
           {/* ======================================================== */}
-          {/* 3. TALL, PROMINENT 3D 'P' BODY WITH LONG LOWER STEM      */}
+          {/* 3. TALL 3D 'P' LEFT PILLAR / VERTICAL STEM               */}
           {/* ======================================================== */}
-          {/* Full vertical column of P starting at top (y=92) and extending far down (y=388) */}
+          {/* Left Vertical Stem of P running down to y=390 (No solid center fill) */}
           <path
-            d="M 128 92 C 190 84 298 90 326 126 C 290 120 234 122 196 134 C 166 144 158 160 158 188 L 158 320 C 158 358 174 382 196 390 C 172 396 142 384 132 354 C 124 316 124 236 124 148 C 124 108 124 98 128 92 Z"
+            d="M 128 92 C 160 86 172 104 172 134 L 172 320 C 172 358 184 382 196 390 C 172 396 142 384 132 354 C 124 316 124 236 124 148 C 124 108 124 98 128 92 Z"
             fill="url(#pMainNavy)"
             stroke={isDark ? "rgba(147, 197, 253, 0.25)" : "none"}
             strokeWidth={isDark ? "1.5" : "0"}
           />
 
-          {/* Curved Front Face of the P Loop */}
-          <path
-            d="M 158 136 C 186 128 274 126 310 158 C 334 182 336 218 310 246 C 286 270 242 280 186 280 L 158 280 L 158 140 Z"
-            fill="url(#pLoopFace)"
-          />
-
           {/* Long Lower Stem Copper/Bronze Gradient Extension */}
           <path
-            d="M 124 280 L 158 280 L 158 320 C 158 358 174 382 196 390 C 172 396 142 384 132 354 C 126 330 124 305 124 280 Z"
+            d="M 124 280 L 172 280 L 172 320 C 172 358 184 382 196 390 C 172 396 142 384 132 354 C 126 330 124 305 124 280 Z"
             fill="url(#pLongStemCopper)"
           />
 
           {/* ======================================================== */}
-          {/* 4. GROWTH GRAPH TRENDLINE & 3D ARROW                     */}
+          {/* 4. GROWTH GRAPH TRENDLINE & 3D ARROW (Across Hollow Hole) */}
           {/* ======================================================== */}
-          {/* Slicing diagonal line across the P */}
+          {/* Slicing diagonal line across the hollow P center */}
           <path
             d="M 120 270 L 226 182 L 268 210 L 368 128"
             stroke="url(#pTrendLine)"
