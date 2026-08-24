@@ -108,6 +108,7 @@ import {
   Eye,
   EyeOff,
   Link2,
+  Layers,
   X,
   RotateCcw
 } from 'lucide-react';
@@ -2485,7 +2486,7 @@ export default function App() {
               </div>
             </div>
 
-            <div className="w-full max-w-4xl mx-auto">
+            <div className="w-full max-w-7xl mx-auto">
               
               {/* Header info */}
               <div className="roadmap-header-card p-6 sm:p-7 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
@@ -2531,38 +2532,59 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Steps List */}
-              <div className="flex items-center justify-between mb-4 px-1">
-                <div className="section-title" style={{ margin: 0 }}>Roadmap Curriculum &amp; Milestones</div>
-                <span className="text-xs text-[#8a8ca3] font-semibold">{currentSkillSteps.length} Steps to Complete</span>
-              </div>
-
-              {currentSkillSteps.length === 0 ? (
-                <div className="bg-white rounded-2xl p-8 text-center text-[#8a8ca3] text-xs border border-[#e4e5ee] shadow-2xs">
-                  No roadmap steps listed yet for this skill track.
-                </div>
-              ) : (
-                <div className="roadmap-journey-track space-y-3">
-                  {currentSkillSteps.map((st, idx) => (
-                    <div key={st.id} className="step-card" id={`step-card-${st.id}`}>
-                      <div className="step-num">{idx + 1}</div>
-                      <div className="step-body">
-                        <h5>{st.title}</h5>
-                        <p>{st.description}</p>
+              {/* Side-by-Side Two Columns: Roadmap Curriculum (Left) & Official Resources (Right) */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                
+                {/* Column 1: Roadmap Curriculum & Milestones */}
+                <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-7 border border-slate-200 shadow-xs flex flex-col">
+                  <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-2xl bg-[#6c5ce7]/10 text-[#6c5ce7] border border-[#6c5ce7]/20 flex items-center justify-center font-bold shrink-0 shadow-2xs">
+                        <Layers className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                          Roadmap Curriculum &amp; Milestones
+                        </h4>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Step-by-step milestones to master {currentSkill.name}
+                        </p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                    <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-purple-50 text-[#6c5ce7] border border-purple-100 shadow-2xs whitespace-nowrap">
+                      {currentSkillSteps.length} Steps
+                    </span>
+                  </div>
 
-              {/* Dedicated Official Documentation & References Section */}
-              <SkillResourcesSection
-                skill={currentSkill}
-                resources={skillResources[currentSkill.id] || []}
-                isAdmin={Boolean(currentUser?.is_admin)}
-                onAddResource={() => setIsResourceModalOpen(true)}
-                onDeleteResource={(resId) => handleDeleteResource(resId, currentSkill.id)}
-              />
+                  {currentSkillSteps.length === 0 ? (
+                    <div className="bg-slate-50/60 rounded-2xl p-8 text-center text-slate-400 text-xs border border-dashed border-slate-200">
+                      No roadmap steps listed yet for this skill track.
+                    </div>
+                  ) : (
+                    <div className="roadmap-journey-track space-y-3 max-h-[640px] overflow-y-auto pr-1">
+                      {currentSkillSteps.map((st, idx) => (
+                        <div key={st.id} className="step-card" id={`step-card-${st.id}`}>
+                          <div className="step-num">{idx + 1}</div>
+                          <div className="step-body">
+                            <h5>{st.title}</h5>
+                            <p>{st.description}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Column 2: Dedicated Official Documentation & References Section */}
+                <SkillResourcesSection
+                  skill={currentSkill}
+                  resources={skillResources[currentSkill.id] || []}
+                  isAdmin={Boolean(currentUser?.is_admin)}
+                  onAddResource={() => setIsResourceModalOpen(true)}
+                  onDeleteResource={(resId) => handleDeleteResource(resId, currentSkill.id)}
+                />
+
+              </div>
 
             </div>
 
@@ -2577,7 +2599,7 @@ export default function App() {
         <div className="page" id="page-dashboard">
           <div className="page-tag">PAGE 6 — DASHBOARD / ACTIVE CHALLENGE</div>
 
-          <div className="content w-full max-w-5xl mx-auto">
+          <div className="content w-full max-w-7xl mx-auto">
             
             {/* Real Stats Mini Grid */}
             <div className="stat-mini-grid mb-6">
@@ -2631,181 +2653,195 @@ export default function App() {
             {/* Active Challenge Card */}
             {activeProgress && activeProgress.status === 'in_progress' ? (
               <>
-                <div className="active-card shadow-xs border border-[#e4e5ee]" id="dashboard-active-challenge-card">
+                {/* 1. Timer & Header Card */}
+                <div className="active-card shadow-xs border border-[#e4e5ee] mb-6" id="dashboard-active-challenge-card">
                   
                   {/* Header info */}
-                <div className="active-card-top pb-4 border-b border-[#f0f1f7]">
-                  <div className="active-card-title min-w-0 flex-1">
-                    <span 
-                      className="skill-3d-badge w-12 h-12 min-w-12 rounded-xl text-white font-extrabold flex items-center justify-center text-xl"
-                      style={{ background: skills.find(s => s.id === activeProgress.skill_id)?.bg_color || '#6c5ce7' }}
-                    >
-                      {skills.find(s => s.id === activeProgress.skill_id)?.icon || '⚡'}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <h4 className="font-extrabold text-lg text-[#1a1c2e] leading-tight truncate">
-                          {skills.find(s => s.id === activeProgress.skill_id)?.name || 'Active Skill'}
-                        </h4>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#f1eefe] text-[#6c5ce7] border border-[#6c5ce7]/20 shadow-2xs">
-                          Active Challenge
-                        </span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#e6faf5] text-[#00b894] border border-[#00b894]/20 shadow-2xs">
-                          {skills.find(s => s.id === activeProgress.skill_id)?.difficulty || 'Sprint'}
-                        </span>
+                  <div className="active-card-top pb-4 border-b border-[#f0f1f7]">
+                    <div className="active-card-title min-w-0 flex-1">
+                      <span 
+                        className="skill-3d-badge w-12 h-12 min-w-12 rounded-xl text-white font-extrabold flex items-center justify-center text-xl"
+                        style={{ background: skills.find(s => s.id === activeProgress.skill_id)?.bg_color || '#6c5ce7' }}
+                      >
+                        {skills.find(s => s.id === activeProgress.skill_id)?.icon || '⚡'}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <h4 className="font-extrabold text-lg text-[#1a1c2e] leading-tight truncate">
+                            {skills.find(s => s.id === activeProgress.skill_id)?.name || 'Active Skill'}
+                          </h4>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#f1eefe] text-[#6c5ce7] border border-[#6c5ce7]/20 shadow-2xs">
+                            Active Challenge
+                          </span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#e6faf5] text-[#00b894] border border-[#00b894]/20 shadow-2xs">
+                            {skills.find(s => s.id === activeProgress.skill_id)?.difficulty || 'Sprint'}
+                          </span>
+                        </div>
+                        <p className="text-xs text-[#8a8ca3] whitespace-normal break-words leading-relaxed">
+                          {skills.find(s => s.id === activeProgress.skill_id)?.description || 'Finish all checkpoints before the deadline to earn points & streak!'}
+                        </p>
                       </div>
-                      <p className="text-xs text-[#8a8ca3] whitespace-normal break-words leading-relaxed">
-                        {skills.find(s => s.id === activeProgress.skill_id)?.description || 'Finish all checkpoints before the deadline to earn points & streak!'}
-                      </p>
                     </div>
-                  </div>
-                  <div className="active-badge self-start sm:self-auto shrink-0">
-                    <span className="w-2 h-2 rounded-full bg-[#00b894] animate-pulse"></span>
-                    <span>LIVE CHALLENGE</span>
-                  </div>
-                </div>
-
-                {/* Real Live Countdown Timer */}
-                <div className="my-6">
-                  <div className="flex items-center justify-between mb-2.5">
-                    <span className="text-xs font-bold text-[#8a8ca3] uppercase tracking-wider">Time Remaining:</span>
-                    <span className="text-xs font-extrabold text-[#6c5ce7] bg-[#f1eefe] px-2.5 py-0.5 rounded-full border border-[#6c5ce7]/20">
-                      {timeRemaining.percent}% time left
-                    </span>
-                  </div>
-                  
-                  <div className="countdown-grid">
-                    <div className="count-unit">
-                      <b>{String(timeRemaining.days).padStart(2, '0')}</b>
-                      <span>Days</span>
-                    </div>
-                    <div className="count-unit">
-                      <b>{String(timeRemaining.hours).padStart(2, '0')}</b>
-                      <span>Hours</span>
-                    </div>
-                    <div className="count-unit">
-                      <b>{String(timeRemaining.minutes).padStart(2, '0')}</b>
-                      <span>Mins</span>
-                    </div>
-                    <div className="count-unit">
-                      <b>{String(timeRemaining.seconds).padStart(2, '0')}</b>
-                      <span>Secs</span>
+                    <div className="active-badge self-start sm:self-auto shrink-0">
+                      <span className="w-2 h-2 rounded-full bg-[#00b894] animate-pulse"></span>
+                      <span>LIVE CHALLENGE</span>
                     </div>
                   </div>
 
-                  {/* Progress bar */}
-                  <div className="w-full bg-[#f0f1f7] h-3 rounded-full overflow-hidden border border-[#e4e5ee] mt-3.5 p-0.5 shadow-inner">
-                    <div 
-                      className="bg-linear-to-r from-[#6c5ce7] via-[#8477f3] to-[#a29bfe] h-full rounded-full transition-all duration-1000 shadow-xs"
-                      style={{ width: `${timeRemaining.percent}%` }}
-                    />
-                  </div>
-                </div>
-
-                {/* Roadmap Curriculum & Milestones for Active Challenge */}
-                <div className="mb-6 pt-4 border-t border-[#f0f1f7]">
-                  <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-                    <div>
-                      <div className="section-title" style={{ fontSize: '14px', margin: 0 }}>
-                        Roadmap Curriculum &amp; Milestones
-                      </div>
-                      <p className="text-xs text-[#8a8ca3] mt-0.5">
-                        Follow each curriculum step and check off your completed milestones as you build.
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold px-2.5 py-1 bg-[#f7f8fc] border border-[#e4e5ee] rounded-md text-[#1a1c2e] shadow-2xs">
-                        {(activeProgress.steps_completed || []).length} / {(roadmapSteps[activeProgress.skill_id] || []).length} Steps Completed
+                  {/* Real Live Countdown Timer */}
+                  <div className="mt-5">
+                    <div className="flex items-center justify-between mb-2.5">
+                      <span className="text-xs font-bold text-[#8a8ca3] uppercase tracking-wider">Time Remaining:</span>
+                      <span className="text-xs font-extrabold text-[#6c5ce7] bg-[#f1eefe] px-2.5 py-0.5 rounded-full border border-[#6c5ce7]/20">
+                        {timeRemaining.percent}% time left
                       </span>
                     </div>
+                    
+                    <div className="countdown-grid">
+                      <div className="count-unit">
+                        <b>{String(timeRemaining.days).padStart(2, '0')}</b>
+                        <span>Days</span>
+                      </div>
+                      <div className="count-unit">
+                        <b>{String(timeRemaining.hours).padStart(2, '0')}</b>
+                        <span>Hours</span>
+                      </div>
+                      <div className="count-unit">
+                        <b>{String(timeRemaining.minutes).padStart(2, '0')}</b>
+                        <span>Mins</span>
+                      </div>
+                      <div className="count-unit">
+                        <b>{String(timeRemaining.seconds).padStart(2, '0')}</b>
+                        <span>Secs</span>
+                      </div>
+                    </div>
+
+                    {/* Progress bar */}
+                    <div className="w-full bg-[#f0f1f7] h-3 rounded-full overflow-hidden border border-[#e4e5ee] mt-3.5 p-0.5 shadow-inner">
+                      <div 
+                        className="bg-linear-to-r from-[#6c5ce7] via-[#8477f3] to-[#a29bfe] h-full rounded-full transition-all duration-1000 shadow-xs"
+                        style={{ width: `${timeRemaining.percent}%` }}
+                      />
+                    </div>
                   </div>
 
-                  <div className="space-y-3">
-                    {(roadmapSteps[activeProgress.skill_id] || []).map((step, idx) => {
-                      const isChecked = (activeProgress.steps_completed || []).includes(step.step_order);
-                      return (
-                        <div 
-                          key={step.id}
-                          onClick={() => handleToggleStep(step.step_order)}
-                          className={`milestone-check-card p-4 rounded-xl border flex items-start gap-3.5 cursor-pointer transition-all ${isChecked ? 'milestone-checked bg-[#00b894]/8 border-[#00b894]/40 shadow-xs' : 'bg-white border-[#e4e5ee] hover:border-[#6c5ce7] hover:bg-[#fafbff]'}`}
-                        >
-                          <div className={`milestone-checkbox w-5 h-5 min-w-5 rounded-md mt-0.5 flex items-center justify-center text-xs font-extrabold transition-all ${isChecked ? 'bg-[#00b894] text-white shadow-2xs' : 'border-2 border-[#c8cad6] text-transparent'}`}>
-                            ✓
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
-                              <div className={`text-sm font-bold ${isChecked ? 'text-[#00b894] line-through' : 'text-[#1a1c2e]'}`}>
-                                Step {idx + 1}: {step.title}
-                              </div>
-                              {isChecked && (
-                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#00b894]/15 text-[#00b894] border border-[#00b894]/30 shadow-2xs">
-                                  Completed
-                                </span>
-                              )}
-                            </div>
+                </div>
 
-                            {step.description && (
-                              <p className={`text-xs leading-relaxed whitespace-normal break-words mt-1 ${isChecked ? 'text-[#00b894]/80' : 'text-[#5a5c73]'}`}>
-                                {step.description}
-                              </p>
-                            )}
+                {/* 2. Side-by-Side: Active Milestones Checklist (Left) & Official Resources (Right) */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start mb-8">
+                  
+                  {/* Left Column: Roadmap Milestones Checklist & Action Buttons */}
+                  <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-7 border border-slate-200 shadow-xs flex flex-col justify-between">
+                    <div>
+                      {/* Header */}
+                      <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4 flex-wrap gap-2">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200/60 flex items-center justify-center font-bold shrink-0 shadow-2xs">
+                            <CheckCircle2 className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <h4 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                              Roadmap Curriculum &amp; Milestones
+                            </h4>
+                            <p className="text-xs text-slate-500 mt-0.5">
+                              Check off each milestone as you build
+                            </p>
                           </div>
                         </div>
-                      );
-                    })}
+
+                        <span className="text-xs font-bold px-2.5 py-1 bg-[#f7f8fc] border border-[#e4e5ee] rounded-md text-[#1a1c2e] shadow-2xs">
+                          {(activeProgress.steps_completed || []).length} / {(roadmapSteps[activeProgress.skill_id] || []).length} Completed
+                        </span>
+                      </div>
+
+                      {/* Interactive Step Checkcards */}
+                      <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
+                        {(roadmapSteps[activeProgress.skill_id] || []).map((step, idx) => {
+                          const isChecked = (activeProgress.steps_completed || []).includes(step.step_order);
+                          return (
+                            <div 
+                              key={step.id}
+                              onClick={() => handleToggleStep(step.step_order)}
+                              className={`milestone-check-card p-4 rounded-xl border flex items-start gap-3.5 cursor-pointer transition-all ${isChecked ? 'milestone-checked bg-[#00b894]/8 border-[#00b894]/40 shadow-xs' : 'bg-white border-[#e4e5ee] hover:border-[#6c5ce7] hover:bg-[#fafbff]'}`}
+                            >
+                              <div className={`milestone-checkbox w-5 h-5 min-w-5 rounded-md mt-0.5 flex items-center justify-center text-xs font-extrabold transition-all ${isChecked ? 'bg-[#00b894] text-white shadow-2xs' : 'border-2 border-[#c8cad6] text-transparent'}`}>
+                                ✓
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
+                                  <div className={`text-sm font-bold ${isChecked ? 'text-[#00b894] line-through' : 'text-[#1a1c2e]'}`}>
+                                    Step {idx + 1}: {step.title}
+                                  </div>
+                                  {isChecked && (
+                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#00b894]/15 text-[#00b894] border border-[#00b894]/30 shadow-2xs">
+                                      Completed
+                                    </span>
+                                  )}
+                                </div>
+
+                                {step.description && (
+                                  <p className={`text-xs leading-relaxed whitespace-normal break-words mt-1 ${isChecked ? 'text-[#00b894]/80' : 'text-[#5a5c73]'}`}>
+                                    {step.description}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Challenge Action Controls */}
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-5 mt-5 border-t border-slate-100">
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <button 
+                          onClick={handleCompleteActiveChallenge}
+                          className="btn-complete-3d px-4 py-2.5 text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer select-none"
+                          id="btn-complete-challenge"
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>Complete Challenge (+10 pts)</span>
+                        </button>
+
+                        <button 
+                          onClick={() => setIsAddTimeModalOpen(true)}
+                          className="btn-secondary-3d px-3.5 py-2.5 bg-white border border-[#e4e5ee] text-[#1a1c2e] hover:bg-[#f4f5f8] text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer select-none"
+                          id="btn-add-extra-time"
+                        >
+                          <Clock className="w-4 h-4 text-[#6c5ce7]" />
+                          <span>Add Extra Time</span>
+                        </button>
+                      </div>
+
+                      <button 
+                        onClick={() => setIsCancelModalOpen(true)}
+                        className="btn-cancel-3d px-3.5 py-2 text-red-500 hover:bg-red-50 border border-transparent hover:border-red-200 text-xs font-bold rounded-xl transition-all text-center sm:text-right cursor-pointer select-none"
+                        id="btn-cancel-challenge"
+                      >
+                        Cancel Challenge
+                      </button>
+                    </div>
+
                   </div>
+
+                  {/* Right Column: Official Documentation & References */}
+                  {(() => {
+                    const activeSkillObj = skills.find(s => s.id === activeProgress.skill_id) || currentSkill;
+                    return (
+                      <SkillResourcesSection
+                        skill={activeSkillObj}
+                        resources={skillResources[activeProgress.skill_id] || []}
+                        isAdmin={Boolean(currentUser?.is_admin)}
+                        onAddResource={() => {
+                          setSelectedSkillId(activeProgress.skill_id);
+                          setIsResourceModalOpen(true);
+                        }}
+                        onDeleteResource={(resId) => handleDeleteResource(resId, activeProgress.skill_id)}
+                      />
+                    );
+                  })()}
+
                 </div>
-
-                {/* Challenge Action Controls */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-5 border-t border-[#f0f1f7]">
-                  <div className="flex flex-wrap items-center gap-2.5">
-                    <button 
-                      onClick={handleCompleteActiveChallenge}
-                      className="btn-complete-3d px-5 py-3 text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer select-none"
-                      id="btn-complete-challenge"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>Complete Challenge (+10 pts)</span>
-                    </button>
-
-                    <button 
-                      onClick={() => setIsAddTimeModalOpen(true)}
-                      className="btn-secondary-3d px-4 py-3 bg-white border border-[#e4e5ee] text-[#1a1c2e] hover:bg-[#f4f5f8] text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer select-none"
-                      id="btn-add-extra-time"
-                    >
-                      <Clock className="w-4 h-4 text-[#6c5ce7]" />
-                      <span>Add Extra Time</span>
-                    </button>
-                  </div>
-
-                  <button 
-                    onClick={() => setIsCancelModalOpen(true)}
-                    className="btn-cancel-3d px-4 py-2.5 text-red-500 hover:bg-red-50 border border-transparent hover:border-red-200 text-xs font-bold rounded-xl transition-all text-center sm:text-right cursor-pointer select-none"
-                    id="btn-cancel-challenge"
-                  >
-                    Cancel Challenge
-                  </button>
-                </div>
-
-              </div>
-
-              {/* Official Documentation & Reference for Active Challenge */}
-              {(() => {
-                const activeSkillObj = skills.find(s => s.id === activeProgress.skill_id) || currentSkill;
-                return (
-                  <SkillResourcesSection
-                    skill={activeSkillObj}
-                    resources={skillResources[activeProgress.skill_id] || []}
-                    isAdmin={Boolean(currentUser?.is_admin)}
-                    onAddResource={() => {
-                      setSelectedSkillId(activeProgress.skill_id);
-                      setIsResourceModalOpen(true);
-                    }}
-                    onDeleteResource={(resId) => handleDeleteResource(resId, activeProgress.skill_id)}
-                    className="mb-8 mt-0"
-                  />
-                );
-              })()}
               </>
             ) : (
               <div className="empty-state-3d bg-white border border-[#e4e5ee] rounded-2xl p-8 mb-8 text-center shadow-xs">

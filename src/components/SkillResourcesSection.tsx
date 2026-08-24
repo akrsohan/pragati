@@ -171,15 +171,15 @@ export const SkillResourcesSection: React.FC<SkillResourcesSectionProps> = ({
 
   return (
     <div 
-      className={`resource-section-3d bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-7 border border-slate-200 shadow-xs mt-6 transition-all ${className}`} 
+      className={`resource-section-3d bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-7 border border-slate-200 shadow-xs transition-all ${className}`} 
       id="official-documentation-resources"
     >
       {/* 1. Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
         
         {/* Title and Icon */}
         <div className="flex items-start sm:items-center gap-3.5 min-w-0">
-          <div className="w-11 h-11 rounded-2xl bg-[#6c5ce7]/10 text-[#6c5ce7] border border-[#6c5ce7]/20 flex items-center justify-center font-bold shrink-0 shadow-2xs">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[#6c5ce7]/10 text-[#6c5ce7] border border-[#6c5ce7]/20 flex items-center justify-center font-bold shrink-0 shadow-2xs">
             <BookOpen className="w-5 h-5" />
           </div>
           
@@ -202,7 +202,7 @@ export const SkillResourcesSection: React.FC<SkillResourcesSectionProps> = ({
         {isAdmin && onAddResource && (
           <button
             onClick={onAddResource}
-            className="admin-add-btn-3d self-start md:self-auto px-4 py-2.5 bg-[#6c5ce7] hover:bg-[#5848c2] text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shadow-2xs hover:shadow-xs cursor-pointer shrink-0"
+            className="admin-add-btn-3d self-start sm:self-auto px-4 py-2.5 bg-[#6c5ce7] hover:bg-[#5848c2] text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shadow-2xs hover:shadow-xs cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span>Add Resource / PDF</span>
@@ -216,7 +216,7 @@ export const SkillResourcesSection: React.FC<SkillResourcesSectionProps> = ({
           <div className="inline-flex items-center gap-1.5 p-1 bg-slate-100/90 rounded-xl border border-slate-200/80 overflow-x-auto max-w-full">
             <button
               onClick={() => setActiveTab('all')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
                 activeTab === 'all' 
                   ? 'bg-white text-slate-900 shadow-2xs' 
                   : 'text-slate-600 hover:text-slate-900'
@@ -230,7 +230,7 @@ export const SkillResourcesSection: React.FC<SkillResourcesSectionProps> = ({
 
             <button
               onClick={() => setActiveTab('documents')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
                 activeTab === 'documents' 
                   ? 'bg-white text-slate-900 shadow-2xs' 
                   : 'text-slate-600 hover:text-slate-900'
@@ -245,7 +245,7 @@ export const SkillResourcesSection: React.FC<SkillResourcesSectionProps> = ({
 
             <button
               onClick={() => setActiveTab('references')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
                 activeTab === 'references' 
                   ? 'bg-white text-slate-900 shadow-2xs' 
                   : 'text-slate-600 hover:text-slate-900'
@@ -273,15 +273,15 @@ export const SkillResourcesSection: React.FC<SkillResourcesSectionProps> = ({
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4.5 my-3">
+        <div className="grid grid-cols-1 gap-3.5 my-3 max-h-[640px] overflow-y-auto pr-1">
           {displayedResources.map((res) => (
             <div 
               key={res.id} 
-              className="resource-card-3d bg-white hover:bg-slate-50/50 border border-slate-200 rounded-2xl p-5 transition-all flex flex-col justify-between group"
+              className="resource-card-3d bg-white hover:bg-slate-50/50 border border-slate-200 rounded-2xl p-4.5 sm:p-5 transition-all flex flex-col justify-between group shadow-2xs hover:shadow-xs"
             >
               <div>
                 {/* Format Tag on Left & Admin Delete on Right */}
-                <div className="flex items-center justify-between gap-2 mb-3">
+                <div className="flex items-center justify-between gap-2 mb-2.5">
                   {getFormatBadge(res)}
                   
                   {isAdmin && onDeleteResource && (
@@ -302,14 +302,14 @@ export const SkillResourcesSection: React.FC<SkillResourcesSectionProps> = ({
 
                 {/* Material Description */}
                 {res.description && (
-                  <p className="text-xs sm:text-sm text-slate-500 mt-1.5 line-clamp-2 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-slate-500 mt-1 line-clamp-2 leading-relaxed">
                     {res.description}
                   </p>
                 )}
               </div>
 
               {/* Card Footer: Domain source & Direct Action CTA Button */}
-              <div className="pt-3.5 mt-4 border-t border-slate-100 flex items-center justify-between gap-3">
+              <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between gap-3">
                 <span className="text-[11px] font-mono text-slate-400 truncate max-w-[130px] sm:max-w-[170px]" title={res.url}>
                   {getCleanDomain(res.url)}
                 </span>
