@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PageType, Profile } from '../types';
-import { Facebook, Mail, MessageSquare, Compass, Trophy, LayoutDashboard } from 'lucide-react';
+import { Facebook, Mail, MessageSquare, Compass, Trophy, LayoutDashboard, CheckCircle2, Loader2 } from 'lucide-react';
 import { PragatiiLogo } from './PragatiiLogo';
+import { subscribeToNewsletter, getNewsletterSubscribersCount } from '../lib/supabaseService';
 
 interface FooterProps {
   onNavigate: (page: PageType) => void;
@@ -11,14 +12,32 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ onNavigate, currentUser, onOpenSendFeedback }) => {
   const [newsletterEmail, setNewsletterEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [subscriberCount, setSubscriberCount] = useState<number>(1);
 
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    getNewsletterSubscribersCount().then(count => setSubscriberCount(count));
+  }, []);
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newsletterEmail.trim()) {
-      setSubscribed(true);
+    if (!newsletterEmail.trim() || isSubmitting) return;
+
+    setIsSubmitting(true);
+    setStatusMessage(null);
+
+    const res = await subscribeToNewsletter(newsletterEmail);
+    setIsSubmitting(false);
+
+    if (res.success) {
+      setStatusMessage({ type: 'success', text: res.message });
       setNewsletterEmail('');
-      setTimeout(() => setSubscribed(false), 5000);
+      getNewsletterSubscribersCount().then(count => setSubscriberCount(count));
+      setTimeout(() => setStatusMessage(null), 6000);
+    } else {
+      setStatusMessage({ type: 'error', text: res.message });
+      setTimeout(() => setStatusMessage(null), 4000);
     }
   };
 
@@ -166,18 +185,32 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, currentUser, onOpenS
               </div>
               <button 
                 type="submit"
-                className="w-full py-3 bg-white hover:bg-slate-100 text-[#12141c] text-sm font-bold rounded-xl transition-all shadow-sm cursor-pointer"
+                disabled={isSubmitting}
+                className="w-full py-3 bg-white hover:bg-slate-100 disabled:opacity-60 text-[#12141c] text-sm font-bold rounded-xl transition-all shadow-sm cursor-pointer flex items-center justify-center gap-2"
               >
-                Join
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-[#12141c]" />
+                    <span>Subscribing...</span>
+                  </>
+                ) : (
+                  <span>Join</span>
+                )}
               </button>
-              {subscribed && (
-                <div className="text-xs text-emerald-400 font-semibold">
-                  ✓ Successfully subscribed!
+              {statusMessage && (
+                <div className={`text-xs font-semibold flex items-center gap-1.5 p-2 rounded-lg ${
+                  statusMessage.type === 'success' 
+                    ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20' 
+                    : 'text-rose-400 bg-rose-500/10 border border-rose-500/20'
+                }`}>
+                  {statusMessage.type === 'success' && <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />}
+                  <span>{statusMessage.text}</span>
                 </div>
               )}
             </form>
-            <div className="text-xs text-[#6b7280] mt-3">
-              Join <span className="text-white font-bold">1</span> active subscribers
+            <div className="text-xs text-[#6b7280] mt-3 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Join <span className="text-white font-bold">{subscriberCount}</span> active subscribers</span>
             </div>
           </div>
 

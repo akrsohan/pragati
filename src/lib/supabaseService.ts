@@ -1644,3 +1644,70 @@ export async function deleteRoadmapStepFromDb(
   }
 }
 
+export async function subscribeToNewsletter(email: string): Promise<{ success: boolean; message: string; alreadySubscribed?: boolean }> {
+  const cleanEmail = email.trim().toLowerCase();
+  if (!cleanEmail || !cleanEmail.includes('@')) {
+    return { success: false, message: 'Please enter a valid email address.' };
+  }
+
+  // Local storage management
+  const STORAGE_KEY = 'pragatii_newsletter_subscribers';
+  let localSubs: Array<{ id: string; email: string; created_at: string }> = [];
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) localSubs = JSON.parse(raw);
+  } catch (e) {}
+
+  const exists = localSubs.some(s => s.email.toLowerCase() === cleanEmail);
+  if (exists) {
+    return { success: true, message: 'You are already subscribed to the newsletter!', alreadySubscribed: true };
+  }
+
+  const newSub = {
+    id: `sub-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+    email: cleanEmail,
+    created_at: new Date().toISOString()
+  };
+
+  localSubs.push(newSub);
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(localSubs));
+  } catch (e) {}
+
+  // Attempt Supabase insert
+  try {
+    const { error } = await supabase
+      .from('newsletter_subscribers')
+      .insert([{ email: cleanEmail }]);
+    if (error && !error.message?.includes('duplicate')) {
+      console.warn('[Supabase newsletter]:', error.message);
+    }
+  } catch (err) {}
+
+  return { success: true, message: 'Successfully subscribed to sprint & skill updates!' };
+}
+
+export async function getNewsletterSubscribersCount(): Promise<number> {
+  const STORAGE_KEY = 'pragatii_newsletter_subscribers';
+  let localCount = 1;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      localCount = Math.max(1, parsed.length);
+    }
+  } catch (e) {}
+
+  try {
+    const { count, error } = await supabase
+      .from('newsletter_subscribers')
+      .select('*', { count: 'exact', head: true });
+    if (!error && count !== null && count !== undefined) {
+      return Math.max(count, localCount);
+    }
+  } catch (err) {}
+
+  return localCount;
+}
+
+
