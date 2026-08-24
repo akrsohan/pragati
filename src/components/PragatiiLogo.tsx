@@ -11,7 +11,7 @@ export const PragatiiLogo: React.FC<PragatiiLogoProps> = ({
   className = '',
   size = 52,
   showText = false,
-  theme = 'dark',
+  theme = 'light',
 }) => {
   const isDark = theme === 'dark';
 
@@ -19,209 +19,236 @@ export const PragatiiLogo: React.FC<PragatiiLogoProps> = ({
     <div className={`inline-flex items-center gap-3 select-none ${className}`}>
       {/* 
         Pragatii Official Brandmark:
-        - 100% Transparent Interior: The center hole of 'P' is completely hollow, revealing the underlying background (Light or Dark)
-        - Tall, prominent 3D 'P' with long elegant vertical stem extending down
-        - Top flowing sapphire crest & deep midnight navy left stem
-        - Golden amber 3D beveled outer loop
-        - Upward surging financial growth graph line (3 nodes + 3D golden arrowhead) passing through the hollow center
-        - Lower stem warm copper-bronze gradient
-        - Super crisp, ultra-clear 'ragatii' cursive typography with perfect theme-aware contrast
+        - 100% Faithful Recreation of the provided Brand Identity:
+        - Stylized 3D letter 'P' with sapphire navy curves and golden amber volumetric arch
+        - Hollow transparent interior
+        - Ascending financial growth trendline with 3 circular nodes and 3D golden arrowhead
+        - Warm copper/bronze bottom gradient on the vertical stem
+        - Elegant cursive 'ragatii' calligraphy with dynamic brush accents over the 'ii'
       */}
       <svg
         width={size}
         height={size}
-        viewBox="0 0 520 520"
+        viewBox="0 0 500 500"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="shrink-0 transition-transform duration-200"
+        className="shrink-0 transition-transform duration-200 hover:scale-[1.02]"
         style={{ overflow: 'visible' }}
       >
         <defs>
-          {/* 1. Golden Outer Loop & 3D Bevel Gradient */}
-          <linearGradient id="pGoldBevel" x1="230" y1="85" x2="390" y2="280" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#F3C863" />
-            <stop offset="25%" stopColor="#DF9830" />
-            <stop offset="60%" stopColor="#BA6818" />
-            <stop offset="85%" stopColor="#8C440E" />
-            <stop offset="100%" stopColor="#5E2A08" />
+          {/* 1. Golden Outer Loop 3D Gradient */}
+          <linearGradient id="pragatiiGoldLoop" x1="220" y1="60" x2="420" y2="280" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#F9D976" />
+            <stop offset="20%" stopColor="#F39C12" />
+            <stop offset="50%" stopColor="#D68910" />
+            <stop offset="80%" stopColor="#A0522D" />
+            <stop offset="100%" stopColor="#6E2C00" />
           </linearGradient>
 
-          {/* 2. Top Wing / Crest Sweep Gradient */}
-          <linearGradient id="pTopWing" x1="120" y1="85" x2="310" y2="135" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor={isDark ? "#3b5998" : "#253D7A"} />
-            <stop offset="35%" stopColor={isDark ? "#283e75" : "#1C2C5E"} />
-            <stop offset="70%" stopColor={isDark ? "#1d2e5a" : "#141F48"} />
-            <stop offset="100%" stopColor={isDark ? "#142042" : "#0E1635"} />
+          {/* 2. Top Navy Wing / Crest Sweep */}
+          <linearGradient id="pragatiiTopWing" x1="90" y1="50" x2="340" y2="120" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor={isDark ? "#3b5998" : "#243c7b"} />
+            <stop offset="35%" stopColor={isDark ? "#283e75" : "#1b2c5e"} />
+            <stop offset="70%" stopColor={isDark ? "#1a2c5a" : "#132047"} />
+            <stop offset="100%" stopColor={isDark ? "#101d3d" : "#0d1633"} />
           </linearGradient>
 
-          {/* 3. Main 'P' Left Vertical Column Gradient */}
-          <linearGradient id="pMainNavy" x1="125" y1="95" x2="200" y2="350" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor={isDark ? "#3d5da6" : "#2D4685"} />
-            <stop offset="20%" stopColor={isDark ? "#2b437e" : "#203369"} />
-            <stop offset="55%" stopColor={isDark ? "#1f3263" : "#16234D"} />
-            <stop offset="85%" stopColor={isDark ? "#17254c" : "#101838"} />
-            <stop offset="100%" stopColor={isDark ? "#0f1a38" : "#0A1026"} />
+          {/* 3. Main Sapphire Navy Vertical Stem */}
+          <linearGradient id="pragatiiStemNavy" x1="85" y1="60" x2="195" y2="340" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor={isDark ? "#4568b2" : "#2c488f"} />
+            <stop offset="25%" stopColor={isDark ? "#2f4c87" : "#1f366e"} />
+            <stop offset="60%" stopColor={isDark ? "#1d3260" : "#15254f"} />
+            <stop offset="85%" stopColor={isDark ? "#142345" : "#0e1937"} />
+            <stop offset="100%" stopColor={isDark ? "#0c152b" : "#080f22"} />
           </linearGradient>
 
-          {/* 4. Long Lower Stem Warm Copper / Bronze Gradient */}
-          <linearGradient id="pLongStemCopper" x1="130" y1="260" x2="195" y2="395" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor={isDark ? "#1e3161" : "#142044"} />
-            <stop offset="35%" stopColor="#452a3a" />
-            <stop offset="65%" stopColor="#874735" />
-            <stop offset="90%" stopColor="#b86140" />
-            <stop offset="100%" stopColor="#cf724a" />
+          {/* 4. Lower Stem Warm Copper / Bronze Tip */}
+          <linearGradient id="pragatiiStemCopper" x1="90" y1="280" x2="185" y2="420" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor={isDark ? "#1d3260" : "#15254f"} />
+            <stop offset="35%" stopColor="#482736" />
+            <stop offset="65%" stopColor="#8d4b31" />
+            <stop offset="90%" stopColor="#be673b" />
+            <stop offset="100%" stopColor="#d98254" />
           </linearGradient>
 
-          {/* 5. Metallic Golden Arrow Gradient */}
-          <linearGradient id="pArrowGold" x1="270" y1="190" x2="415" y2="95" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#B36718" />
-            <stop offset="40%" stopColor="#E29A2B" />
-            <stop offset="80%" stopColor="#F6C958" />
-            <stop offset="100%" stopColor="#FEE592" />
+          {/* 5. Golden Arrowhead & Shaft Gradient */}
+          <linearGradient id="pragatiiArrowGold" x1="280" y1="180" x2="445" y2="70" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#C0721B" />
+            <stop offset="30%" stopColor="#E69F2A" />
+            <stop offset="70%" stopColor="#F7CD59" />
+            <stop offset="100%" stopColor="#FFECA1" />
           </linearGradient>
 
-          {/* 6. Trendline Diagonal Gradient */}
-          <linearGradient id="pTrendLine" x1="115" y1="270" x2="360" y2="120" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor={isDark ? "#1f3366" : "#142046"} />
-            <stop offset="35%" stopColor={isDark ? "#355299" : "#23386E"} />
-            <stop offset="65%" stopColor="#9e662c" />
-            <stop offset="100%" stopColor="#DF9B2C" />
+          {/* Arrowhead Highlight Facet */}
+          <linearGradient id="pragatiiArrowFacetLight" x1="360" y1="75" x2="445" y2="70" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#FFF2B8" />
+            <stop offset="100%" stopColor="#F3B336" />
           </linearGradient>
 
-          {/* 7. Crisp 'ragatii' Text Gradient */}
-          <linearGradient id="pRagatiiLightGrad" x1="200" y1="330" x2="440" y2="360" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#0d1b3e" />
-            <stop offset="50%" stopColor="#152857" />
-            <stop offset="100%" stopColor="#1a326b" />
+          {/* Arrowhead Shadow Facet */}
+          <linearGradient id="pragatiiArrowFacetDark" x1="360" y1="135" x2="445" y2="70" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#B26514" />
+            <stop offset="100%" stopColor="#E39423" />
           </linearGradient>
 
-          <linearGradient id="pRagatiiDarkGrad" x1="200" y1="330" x2="440" y2="360" gradientUnits="userSpaceOnUse">
+          {/* 6. Growth Chart Path Gradient */}
+          <linearGradient id="pragatiiTrendLine" x1="50" y1="270" x2="380" y2="90" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor={isDark ? "#284485" : "#172957"} />
+            <stop offset="35%" stopColor={isDark ? "#3f64b8" : "#243c7b"} />
+            <stop offset="65%" stopColor="#a7682a" />
+            <stop offset="100%" stopColor="#E6A12E" />
+          </linearGradient>
+
+          {/* 7. 'ragatii' Text Gradient */}
+          <linearGradient id="pragatiiTextLight" x1="170" y1="330" x2="460" y2="390" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#0f1f4b" />
+            <stop offset="50%" stopColor="#182d63" />
+            <stop offset="100%" stopColor="#1e3878" />
+          </linearGradient>
+
+          <linearGradient id="pragatiiTextDark" x1="170" y1="330" x2="460" y2="390" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stopColor="#93c5fd" />
             <stop offset="50%" stopColor="#60a5fa" />
             <stop offset="100%" stopColor="#38bdf8" />
           </linearGradient>
 
           {/* Data Node Gradients */}
-          <radialGradient id="pNodeNavy" cx="35%" cy="35%" r="65%">
-            <stop offset="0%" stopColor={isDark ? "#4c73cc" : "#2E4A8C"} />
-            <stop offset="100%" stopColor="#101834" />
+          <radialGradient id="pragatiiNodeBlue" cx="35%" cy="35%" r="65%">
+            <stop offset="0%" stopColor={isDark ? "#5986eb" : "#3257a8"} />
+            <stop offset="100%" stopColor="#0e1733" />
           </radialGradient>
-          <radialGradient id="pNodeBronze" cx="35%" cy="35%" r="65%">
-            <stop offset="0%" stopColor="#965B43" />
-            <stop offset="100%" stopColor="#4A2B1E" />
+          <radialGradient id="pragatiiNodeBronze" cx="35%" cy="35%" r="65%">
+            <stop offset="0%" stopColor="#ad6a4f" />
+            <stop offset="100%" stopColor="#4e2b1b" />
           </radialGradient>
-          <radialGradient id="pNodeGold" cx="35%" cy="35%" r="65%">
-            <stop offset="0%" stopColor="#B57B3D" />
-            <stop offset="100%" stopColor="#5E381A" />
+          <radialGradient id="pragatiiNodeGold" cx="35%" cy="35%" r="65%">
+            <stop offset="0%" stopColor="#d2964e" />
+            <stop offset="100%" stopColor="#633914" />
           </radialGradient>
 
           {/* Subtle Drop Shadow */}
-          <filter id="pDropShadow" x="-10%" y="-10%" width="125%" height="125%">
-            <feDropShadow dx="0" dy="4" stdDeviation="5" floodColor="#000000" floodOpacity={isDark ? "0.35" : "0.15"} />
+          <filter id="pragatiiDropShadow" x="-10%" y="-10%" width="125%" height="125%">
+            <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#000000" floodOpacity={isDark ? "0.4" : "0.15"} />
           </filter>
         </defs>
 
-        <g filter="url(#pDropShadow)">
+        <g filter="url(#pragatiiDropShadow)">
           {/* ======================================================== */}
-          {/* 1. GOLDEN 3D OUTER LOOP OF 'P' (Right Side Arch)         */}
+          {/* 1. GOLDEN 3D OUTER LOOP OF 'P' (Right Volumetric Arch)   */}
           {/* ======================================================== */}
           <path
-            d="M 230 92 C 318 92 384 130 384 205 C 384 266 330 300 248 300 L 220 300 C 290 276 334 238 334 198 C 334 140 282 122 225 122 Z"
-            fill="url(#pGoldBevel)"
+            d="M 235 70 C 330 70 405 110 405 195 C 405 264 344 306 250 306 L 220 306 C 298 280 348 238 348 190 C 348 126 290 105 228 105 Z"
+            fill="url(#pragatiiGoldLoop)"
+          />
+
+          {/* Golden Loop Inner 3D Highlight Rim */}
+          <path
+            d="M 235 72 C 322 72 396 108 396 195 C 396 230 375 262 335 284 C 362 258 378 226 378 190 C 378 132 322 107 245 107 Z"
+            fill="#FFE89C"
+            opacity="0.35"
           />
 
           {/* ======================================================== */}
-          {/* 2. TOP WING / CREST OF 'P' (Left-to-Right Aerodynamic)   */}
+          {/* 2. TOP SAPPHIRE CREST / WING (Smooth Aerodynamic Flow)    */}
           {/* ======================================================== */}
           <path
-            d="M 120 92 C 182 82 284 84 336 124 C 282 104 200 102 120 122 Z"
-            fill="url(#pTopWing)"
+            d="M 95 72 C 160 58 280 62 350 108 C 290 85 200 82 95 105 Z"
+            fill="url(#pragatiiTopWing)"
           />
 
           {/* ======================================================== */}
-          {/* 3. TALL 3D 'P' LEFT PILLAR / VERTICAL STEM               */}
+          {/* 3. TALL 3D 'P' VERTICAL COLUMN / SAPPHIRE STEM           */}
           {/* ======================================================== */}
-          {/* Left Vertical Stem of P running down to y=390 (No solid center fill) */}
           <path
-            d="M 128 92 C 160 86 172 104 172 134 L 172 320 C 172 358 184 382 196 390 C 172 396 142 384 132 354 C 124 316 124 236 124 148 C 124 108 124 98 128 92 Z"
-            fill="url(#pMainNavy)"
-            stroke={isDark ? "rgba(147, 197, 253, 0.25)" : "none"}
-            strokeWidth={isDark ? "1.5" : "0"}
+            d="M 102 72 C 145 64 165 86 165 120 L 165 315 C 165 365 180 402 195 412 C 166 418 128 402 114 366 C 102 324 100 230 100 135 C 100 92 100 80 102 72 Z"
+            fill="url(#pragatiiStemNavy)"
           />
 
-          {/* Long Lower Stem Copper/Bronze Gradient Extension */}
+          {/* Stem Front Highlight Curve */}
           <path
-            d="M 124 280 L 172 280 L 172 320 C 172 358 184 382 196 390 C 172 396 142 384 132 354 C 126 330 124 305 124 280 Z"
-            fill="url(#pLongStemCopper)"
+            d="M 108 80 C 138 74 150 92 150 125 L 150 300 C 144 260 144 140 108 80 Z"
+            fill="#60A5FA"
+            opacity="0.22"
+          />
+
+          {/* Lower Stem Warm Copper / Bronze Extension */}
+          <path
+            d="M 100 275 L 165 275 L 165 315 C 165 365 180 402 195 412 C 166 418 128 402 114 366 C 106 338 102 308 100 275 Z"
+            fill="url(#pragatiiStemCopper)"
           />
 
           {/* ======================================================== */}
-          {/* 4. GROWTH GRAPH TRENDLINE & 3D ARROW (Across Hollow Hole) */}
+          {/* 4. GROWTH GRAPH TRENDLINE & 3D ARROW                     */}
           {/* ======================================================== */}
-          {/* Slicing diagonal line across the hollow P center */}
+          {/* Diagonal Surge Line across the P */}
           <path
-            d="M 120 270 L 226 182 L 268 210 L 368 128"
-            stroke="url(#pTrendLine)"
-            strokeWidth="16"
+            d="M 60 272 L 182 178 L 235 210 L 372 108"
+            stroke="url(#pragatiiTrendLine)"
+            strokeWidth="17"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
 
-          {/* Top-Right Golden Arrow Shaft Segment */}
+          {/* Golden Upper Segment towards Arrow */}
           <path
-            d="M 268 210 L 374 120"
-            stroke="url(#pArrowGold)"
-            strokeWidth="16"
+            d="M 235 210 L 382 98"
+            stroke="url(#pragatiiArrowGold)"
+            strokeWidth="17"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
 
-          {/* Golden 3D Arrowhead Surging Upwards */}
-          <path
-            d="M 342 108 L 404 96 L 388 158 L 362 134 Z"
-            fill="url(#pArrowGold)"
-            stroke="#DF9928"
-            strokeWidth="1.5"
-          />
+          {/* 3D Arrowhead Facets */}
+          <g>
+            {/* Top Light Facet */}
+            <path
+              d="M 345 84 L 436 68 L 388 116 Z"
+              fill="url(#pragatiiArrowFacetLight)"
+              stroke="#D68910"
+              strokeWidth="1"
+            />
+            {/* Bottom Dark Facet */}
+            <path
+              d="M 388 116 L 436 68 L 416 142 Z"
+              fill="url(#pragatiiArrowFacetDark)"
+              stroke="#B26514"
+              strokeWidth="1"
+            />
+          </g>
 
-          {/* Three Strategic Growth Nodes */}
-          {/* Node 1: Base Starting Dot (on left stem) */}
-          <circle cx="120" cy="270" r="15" fill="url(#pNodeNavy)" stroke={isDark ? "#60a5fa" : "#2C488C"} strokeWidth="2.5" />
+          {/* Three Growth Nodes (Dots) */}
+          {/* Node 1: Base Anchor Dot on left stem */}
+          <circle cx="60" cy="272" r="16" fill="url(#pragatiiNodeBlue)" stroke={isDark ? "#60a5fa" : "#2C4A90"} strokeWidth="2.5" />
           
-          {/* Node 2: Peak Pivot Dot */}
-          <circle cx="226" cy="182" r="13" fill="url(#pNodeBronze)" stroke="#9E6850" strokeWidth="2" />
+          {/* Node 2: Middle Pivot Dot */}
+          <circle cx="182" cy="178" r="14" fill="url(#pragatiiNodeBronze)" stroke="#A06248" strokeWidth="2" />
 
-          {/* Node 3: Dip Valley Dot */}
-          <circle cx="268" cy="210" r="13" fill="url(#pNodeGold)" stroke="#BD7D3A" strokeWidth="2" />
+          {/* Node 3: Dip / Launching Dot */}
+          <circle cx="235" cy="210" r="14" fill="url(#pragatiiNodeGold)" stroke="#C6853C" strokeWidth="2" />
 
           {/* ======================================================== */}
-          {/* 5. ULTRA-CLEAR & HIGH-LEGIBILITY 'ragatii' SCRIPT        */}
+          {/* 5. 'ragatii' CURSIVE SCRIPT CALLIGRAPHY                  */}
           {/* ======================================================== */}
-          {/* 
-            Rendered with high-precision calligraphy for 100% clarity:
-            In Dark Mode: Bright luminous cyan-sapphire for instant readability on dark background.
-            In Light Mode: Rich royal deep navy for high-contrast readability on white background.
-          */}
           <text
             x="320"
-            y="356"
+            y="372"
             textAnchor="middle"
-            fontFamily="'Dancing Script', 'Caveat', 'Brush Script MT', 'Pacifico', cursive, sans-serif"
-            fontSize="68"
-            fontWeight="bold"
+            fontFamily="'Dancing Script', 'Alex Brush', 'Caveat', 'Brush Script MT', cursive, sans-serif"
+            fontSize="76"
+            fontWeight="700"
             fontStyle="italic"
-            letterSpacing="2.5"
-            fill={isDark ? "url(#pRagatiiDarkGrad)" : "url(#pRagatiiLightGrad)"}
+            letterSpacing="2"
+            fill={isDark ? "url(#pragatiiTextDark)" : "url(#pragatiiTextLight)"}
             stroke={isDark ? "#38bdf8" : "none"}
-            strokeWidth={isDark ? "1" : "0"}
+            strokeWidth={isDark ? "0.8" : "0"}
           >
             ragatii
           </text>
 
-          {/* Stylish Calligraphic Brush Accent Flicks at top-right */}
-          <g fill={isDark ? "#38bdf8" : "#152857"}>
-            <path d="M 431 304 C 441 302 452 300 461 299 C 452 303 443 309 435 314 Z" />
-            <path d="M 443 310 C 451 308 459 306 465 305 C 457 309 450 314 445 318 Z" opacity="0.8" />
+          {/* Dynamic Brush Accents above the 'ii' */}
+          <g fill={isDark ? "#38bdf8" : "#182d63"}>
+            <path d="M 432 312 C 443 310 455 307 465 306 C 455 311 445 318 436 324 Z" />
+            <path d="M 445 319 C 454 316 462 314 469 313 C 460 318 452 324 446 328 Z" opacity="0.85" />
           </g>
         </g>
       </svg>
@@ -241,3 +268,4 @@ export const PragatiiLogo: React.FC<PragatiiLogoProps> = ({
 };
 
 export default PragatiiLogo;
+

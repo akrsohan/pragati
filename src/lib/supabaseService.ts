@@ -1183,21 +1183,57 @@ export async function addSkillResource(resData: Omit<SkillResource, 'id'>): Prom
 /**
  * Delete a Skill Resource
  */
-export async function deleteSkillResource(id: string, skillId: string): Promise<boolean> {
+export async function deleteSkillResource(
+  param1: string,
+  param2?: string
+): Promise<{ success: boolean; error?: string }> {
   const localMap = getStoredSkillResources();
-  if (localMap[skillId]) {
-    localMap[skillId] = localMap[skillId].filter(r => r.id !== id);
-    saveStoredSkillResources(localMap);
+
+  let targetId = param1;
+  let targetSkillId = param2;
+
+  // Detect which parameter is the resource ID vs skill ID
+  for (const [sId, resList] of Object.entries(localMap)) {
+    if (resList.some(r => r.id === param1)) {
+      targetId = param1;
+      targetSkillId = sId;
+      break;
+    }
+    if (param2 && resList.some(r => r.id === param2)) {
+      targetId = param2;
+      targetSkillId = sId;
+      break;
+    }
   }
 
+  // Update local cache
+  if (targetSkillId && localMap[targetSkillId]) {
+    localMap[targetSkillId] = localMap[targetSkillId].filter(r => r.id !== targetId && r.id !== param1 && (param2 ? r.id !== param2 : true));
+  }
+  Object.keys(localMap).forEach(key => {
+    localMap[key] = localMap[key].filter(r => r.id !== targetId && r.id !== param1 && (param2 ? r.id !== param2 : true));
+  });
+  saveStoredSkillResources(localMap);
+
   try {
-    await supabase
+    const { error } = await supabase
       .from('skill_resources')
       .delete()
-      .eq('id', id);
-  } catch (err) {}
+      .eq('id', targetId);
 
-  return true;
+    if (error) {
+      console.error('[Supabase deleteSkillResource error]:', error.message);
+      if (param2 && param2 !== targetId) {
+        await supabase.from('skill_resources').delete().eq('id', param2);
+      }
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err: any) {
+    console.error('[Supabase deleteSkillResource exception]:', err);
+    return { success: false, error: err?.message || 'Database error occurred' };
+  }
 }
 
 /**
@@ -1507,6 +1543,19 @@ export async function saveSkillToDb(skill: Skill): Promise<{ success: boolean; e
 
 export async function deleteSkillFromDb(skillId: string): Promise<{ success: boolean; error?: string }> {
   try {
+    // 1. Delete associated roadmap steps from Supabase first
+    await supabase
+      .from('roadmap_steps')
+      .delete()
+      .eq('skill_id', skillId);
+
+    // 2. Delete associated skill resources from Supabase
+    await supabase
+      .from('skill_resources')
+      .delete()
+      .eq('skill_id', skillId);
+
+    // 3. Delete the skill itself from Supabase
     const { error } = await supabase
       .from('skills')
       .delete()
@@ -1522,6 +1571,18 @@ export async function deleteSkillFromDb(skillId: string): Promise<{ success: boo
     const updated = localSkills.filter(s => s.id !== skillId);
     saveStoredSkills(updated);
 
+    const localSteps = getStoredRoadmapSteps();
+    if (localSteps[skillId]) {
+      delete localSteps[skillId];
+      saveStoredRoadmapSteps(localSteps);
+    }
+
+    const localRes = getStoredSkillResources();
+    if (localRes[skillId]) {
+      delete localRes[skillId];
+      saveStoredSkillResources(localRes);
+    }
+
     return { success: true };
   } catch (err: any) {
     console.error('[Supabase deleteSkill exception]:', err);
@@ -1529,20 +1590,57 @@ export async function deleteSkillFromDb(skillId: string): Promise<{ success: boo
   }
 }
 
-export async function deleteRoadmapStepFromDb(skillId: string, stepId: string): Promise<boolean> {
+export async function deleteRoadmapStepFromDb(
+  param1: string, 
+  param2?: string
+): Promise<{ success: boolean; error?: string }> {
   const localMap = getStoredRoadmapSteps();
-  if (localMap[skillId]) {
-    localMap[skillId] = localMap[skillId].filter(s => s.id !== stepId);
-    saveStoredRoadmapSteps(localMap);
+
+  let targetStepId = param1;
+  let targetSkillId = param2;
+
+  // Search local map to identify which parameter is the step ID vs skill ID
+  for (const [sId, steps] of Object.entries(localMap)) {
+    if (steps.some(st => st.id === param1)) {
+      targetStepId = param1;
+      targetSkillId = sId;
+      break;
+    }
+    if (param2 && steps.some(st => st.id === param2)) {
+      targetStepId = param2;
+      targetSkillId = sId;
+      break;
+    }
   }
 
+  // Update local cache
+  if (targetSkillId && localMap[targetSkillId]) {
+    localMap[targetSkillId] = localMap[targetSkillId].filter(s => s.id !== targetStepId && s.id !== param1 && (param2 ? s.id !== param2 : true));
+  }
+  Object.keys(localMap).forEach(key => {
+    localMap[key] = localMap[key].filter(s => s.id !== targetStepId && s.id !== param1 && (param2 ? s.id !== param2 : true));
+  });
+  saveStoredRoadmapSteps(localMap);
+
   try {
-    await supabase
+    const { error } = await supabase
       .from('roadmap_steps')
       .delete()
-      .eq('id', stepId);
-  } catch (err) {}
+      .eq('id', targetStepId);
 
-  return true;
+    if (error) {
+      console.error('[Supabase deleteRoadmapStep error]:', error.message);
+      // Fallback: If param2 was passed and differs, try deleting with param2
+      if (param2 && param2 !== targetStepId) {
+        await supabase.from('roadmap_steps').delete().eq('id', param2);
+      }
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err: any) {
+    console.error('[Supabase deleteRoadmapStep exception]:', err);
+    return { success: false, error: err?.message || 'Database error occurred' };
+  }
 }
 

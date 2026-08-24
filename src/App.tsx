@@ -1371,14 +1371,18 @@ export default function App() {
       message: `Are you sure you want to delete step "${stepToDelete?.title || ''}"?`,
       confirmLabel: 'Delete Step',
       onConfirm: async () => {
-        await deleteRoadmapStepFromDb(stepId, skillId);
+        const result = await deleteRoadmapStepFromDb(stepId, skillId);
+        if (!result.success) {
+          showToast(`Failed to delete step from database: ${result.error || 'Unknown error'}`);
+          return;
+        }
         const updatedSteps = {
           ...roadmapSteps,
           [skillId]: (roadmapSteps[skillId] || []).filter(st => st.id !== stepId)
         };
         setRoadmapSteps(updatedSteps);
         saveStoredRoadmapSteps(updatedSteps);
-        showToast(`Roadmap step deleted`);
+        showToast(`Roadmap step deleted successfully`);
       }
     });
   };
@@ -1410,7 +1414,11 @@ export default function App() {
       message: `Are you sure you want to delete "${resToDelete?.title || ''}"? Learners will no longer see this material.`,
       confirmLabel: 'Delete Resource',
       onConfirm: async () => {
-        await deleteSkillResource(resourceId, skillId);
+        const result = await deleteSkillResource(resourceId, skillId);
+        if (!result.success) {
+          showToast(`Failed to delete resource: ${result.error || 'Unknown error'}`);
+          return;
+        }
         const updated = {
           ...skillResources,
           [skillId]: (skillResources[skillId] || []).filter(r => r.id !== resourceId)
