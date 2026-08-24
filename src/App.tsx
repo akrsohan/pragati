@@ -284,7 +284,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
 
   // Leaderboard Batch Filter
-  const [selectedBatchFilter, setSelectedBatchFilter] = useState<string>('Batch 55');
+  const [selectedBatchFilter, setSelectedBatchFilter] = useState<string>('All departments');
 
   // Admin Tab State
   const [adminTab, setAdminTab] = useState<'users' | 'fields' | 'skills' | 'steps' | 'feedback'>('users');
@@ -2941,9 +2941,6 @@ export default function App() {
         const userRank = filteredLeaderboardProfiles.findIndex(p => p.id === currentUser.id) + 1;
         const batchTabs = [
           { id: 'All departments', label: 'All Students' },
-          { id: 'Batch 55', label: 'Batch 55' },
-          { id: 'Batch 56', label: 'Batch 56' },
-          { id: 'Batch 57', label: 'Batch 57' },
         ];
 
         return (
