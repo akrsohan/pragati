@@ -3005,9 +3005,6 @@ export default function App() {
               {/* Filter Tabs */}
               <div className="lb-filter-row">
                 {batchTabs.map(tab => {
-                  const count = tab.id === 'All departments' 
-                    ? profiles.length 
-                    : profiles.filter(p => p.batch_number === tab.id).length;
                   const isActive = selectedBatchFilter === tab.id;
 
                   return (
@@ -3019,9 +3016,6 @@ export default function App() {
                       id={`btn-lb-filter-${tab.id.replace(/\s+/g, '-').toLowerCase()}`}
                     >
                       <span>{tab.label}</span>
-                      <span className={`text-[11px] px-1.5 py-0.5 rounded-full ${isActive ? 'bg-white/20 text-white' : 'bg-[#f1f5f9] text-[#64748b]'}`}>
-                        {count}
-                      </span>
                     </button>
                   );
                 })}
