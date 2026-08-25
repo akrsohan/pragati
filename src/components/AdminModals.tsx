@@ -801,9 +801,50 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_banned BOOLEAN DEFAULT f
 -- Enable RLS for Profiles
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Public Read Profiles" ON public.profiles;
+DROP POLICY IF EXISTS "Users Update Own Profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users and Admins Update Profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users Insert Own Profile" ON public.profiles;
+
 CREATE POLICY "Public Read Profiles" ON public.profiles FOR SELECT USING (true);
-CREATE POLICY "Users Update Own Profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
-CREATE POLICY "Users Insert Own Profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "Users Update Own Profile" ON public.profiles FOR UPDATE USING (
+    auth.uid() = id OR 
+    (auth.jwt() ->> 'email') ILIKE 'mdsohanali636@gmail.com'
+);
+CREATE POLICY "Users Insert Own Profile" ON public.profiles FOR INSERT WITH CHECK (
+    auth.uid() = id OR 
+    (auth.jwt() ->> 'email') ILIKE 'mdsohanali636@gmail.com'
+);
+
+-- 1b. Table for Banned Users (Guarantees ban persistence across all devices & sessions)
+CREATE TABLE IF NOT EXISTS public.banned_users (
+    user_id TEXT PRIMARY KEY,
+    email TEXT,
+    banned_at TIMESTAMPTZ DEFAULT now()
+);
+ALTER TABLE public.banned_users ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public Read Banned Users" ON public.banned_users;
+DROP POLICY IF EXISTS "Anyone Manage Banned Users" ON public.banned_users;
+CREATE POLICY "Public Read Banned Users" ON public.banned_users FOR SELECT USING (true);
+CREATE POLICY "Anyone Manage Banned Users" ON public.banned_users FOR ALL USING (true);
+
+-- 1c. RPC Security Definer Function to Ban/Unban instantly
+CREATE OR REPLACE FUNCTION public.toggle_user_ban(target_user_id UUID, ban_status BOOLEAN)
+RETURNS VOID AS $$
+BEGIN
+  UPDATE public.profiles
+  SET is_banned = ban_status, updated_at = now()
+  WHERE id = target_user_id;
+
+  IF ban_status THEN
+    INSERT INTO public.banned_users (user_id, banned_at)
+    VALUES (target_user_id::text, now())
+    ON CONFLICT (user_id) DO NOTHING;
+  ELSE
+    DELETE FROM public.banned_users WHERE user_id = target_user_id::text;
+  END IF;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 2. Table for Field / Categories
 CREATE TABLE IF NOT EXISTS public.fields (

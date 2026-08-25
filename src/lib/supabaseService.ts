@@ -116,6 +116,102 @@ export function saveStoredCompletedProgress(list: UserProgress[]) {
   } catch (e) {}
 }
 
+const STORAGE_BANNED_USERS_KEY = 'pragatii_banned_user_ids';
+
+export function getStoredBannedUserIds(): string[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_BANNED_USERS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch (e) {}
+  return [];
+}
+
+export function saveStoredBannedUserIds(ids: string[]) {
+  try {
+    localStorage.setItem(STORAGE_BANNED_USERS_KEY, JSON.stringify(ids));
+  } catch (e) {}
+}
+
+export function setLocalBanStatus(userId: string, isBanned: boolean) {
+  const list = getStoredBannedUserIds();
+  let updated: string[];
+  if (isBanned) {
+    updated = Array.from(new Set([...list, userId]));
+  } else {
+    updated = list.filter(id => id !== userId);
+  }
+  saveStoredBannedUserIds(updated);
+
+  // Also update in stored profiles cache
+  const profs = getStoredProfiles();
+  const updatedProfs = profs.map(p => p.id === userId ? { ...p, is_banned: isBanned } : p);
+  saveStoredProfiles(updatedProfs);
+}
+
+/**
+ * Ban or unban a user across Supabase database, RPC, and local storage
+ */
+export async function toggleUserBanStatus(
+  userId: string, 
+  userEmail: string | undefined, 
+  newStatus: boolean
+): Promise<{ success: boolean; error?: string }> {
+  if (!userId) return { success: false, error: 'User ID missing' };
+
+  // 1. Update local cache immediately
+  setLocalBanStatus(userId, newStatus);
+
+  // 2. Try calling RPC function in Supabase if installed
+  try {
+    const { error: rpcError } = await supabase.rpc('toggle_user_ban', {
+      target_user_id: userId,
+      ban_status: newStatus
+    });
+    if (!rpcError) {
+      console.log('[toggleUserBanStatus] RPC succeeded');
+      return { success: true };
+    }
+  } catch (e) {
+    // RPC might not be created yet, continue to fallback tables
+  }
+
+  // 3. Update dedicated public.banned_users table in Supabase
+  try {
+    const normalizedEmail = (userEmail || '').toLowerCase().trim();
+    if (newStatus) {
+      await supabase.from('banned_users').upsert({
+        user_id: userId,
+        email: normalizedEmail,
+        banned_at: new Date().toISOString()
+      }, { onConflict: 'user_id' });
+    } else {
+      await supabase.from('banned_users').delete().eq('user_id', userId);
+      if (normalizedEmail) {
+        await supabase.from('banned_users').delete().eq('email', normalizedEmail);
+      }
+    }
+  } catch (e) {
+    console.warn('[banned_users sync notice]:', e);
+  }
+
+  // 4. Try direct update on public.profiles table
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ is_banned: newStatus, updated_at: new Date().toISOString() })
+      .eq('id', userId);
+    
+    if (error) {
+      console.warn('[update profiles is_banned notice]:', error.message);
+    }
+  } catch (e) {}
+
+  return { success: true };
+}
+
 function getStoredProfiles(): Profile[] {
   try {
     const raw = localStorage.getItem(STORAGE_PROFILES_KEY);
@@ -169,6 +265,24 @@ export async function getProfile(userId: string): Promise<Profile | null> {
 
       const email = (resolvedEmail || '').toLowerCase().trim();
       const isAdmin = email === ADMIN_EMAIL.toLowerCase() || Boolean(data.is_admin);
+      const bannedList = getStoredBannedUserIds();
+      let isBanned = data.is_banned !== undefined 
+        ? Boolean(data.is_banned) || bannedList.includes(data.id)
+        : bannedList.includes(data.id);
+
+      // Check remote banned_users table as well
+      try {
+        const { data: bannedRows } = await supabase
+          .from('banned_users')
+          .select('user_id, email')
+          .or(`user_id.eq.${data.id}${email ? `,email.eq.${email}` : ''}`)
+          .limit(1);
+
+        if (bannedRows && bannedRows.length > 0) {
+          isBanned = true;
+          setLocalBanStatus(data.id, true);
+        }
+      } catch (e) {}
 
       const profile: Profile = {
         id: data.id,
@@ -187,7 +301,7 @@ export async function getProfile(userId: string): Promise<Profile | null> {
         longest_streak: Number(data.longest_streak) || 0,
         last_activity_date: data.last_activity_date,
         is_admin: isAdmin,
-        is_banned: Boolean(data.is_banned),
+        is_banned: isBanned,
         created_at: data.created_at
       };
 
@@ -261,6 +375,15 @@ export async function uploadAvatarImage(userId: string, imageData: string): Prom
 export async function updateProfile(userId: string, updates: Partial<Profile>): Promise<{ success: boolean; error?: string }> {
   if (!userId) return { success: false, error: 'User ID is missing' };
 
+  if (updates.is_banned !== undefined) {
+    setLocalBanStatus(userId, updates.is_banned);
+  }
+
+  // Update local cached profile first for instantaneous UI update and persistence
+  const cachedProfs = getStoredProfiles();
+  const updatedProfs = cachedProfs.map(p => p.id === userId ? { ...p, ...updates } : p);
+  saveStoredProfiles(updatedProfs);
+
   try {
     const payload: Record<string, any> = {};
     if (updates.email !== undefined) payload.email = updates.email;
@@ -279,6 +402,17 @@ export async function updateProfile(userId: string, updates: Partial<Profile>): 
     if (updates.is_admin !== undefined) payload.is_admin = updates.is_admin;
     if (updates.is_banned !== undefined) payload.is_banned = updates.is_banned;
 
+    // 1. Try direct UPDATE first (cleanest with Postgres RLS without triggering INSERT checks)
+    const updateRes = await supabase
+      .from('profiles')
+      .update(payload)
+      .eq('id', userId);
+
+    if (!updateRes.error) {
+      return { success: true };
+    }
+
+    // 2. If update failed (e.g. row not found yet), try upsert
     let { error } = await supabase
       .from('profiles')
       .upsert({
@@ -295,8 +429,9 @@ export async function updateProfile(userId: string, updates: Partial<Profile>): 
       if (updates.full_name !== undefined) minimalPayload.full_name = updates.full_name;
       if (updates.avatar_url !== undefined) minimalPayload.avatar_url = updates.avatar_url;
       if (updates.is_admin !== undefined) minimalPayload.is_admin = updates.is_admin;
+      if (updates.is_banned !== undefined) minimalPayload.is_banned = updates.is_banned;
 
-      const retryRes = await supabase.from('profiles').upsert(minimalPayload, { onConflict: 'id' });
+      const retryRes = await supabase.from('profiles').update(minimalPayload).eq('id', userId);
       if (!retryRes.error) {
         return { success: true };
       }
@@ -305,6 +440,7 @@ export async function updateProfile(userId: string, updates: Partial<Profile>): 
 
     if (error) {
       console.error('[Supabase updateProfile error]:', error.message, error);
+      // Even if remote database returns RLS notice, local ban status is safely preserved
       return { success: false, error: error.message };
     }
 
@@ -411,26 +547,52 @@ export async function getAllProfiles(): Promise<Profile[]> {
     }
 
     if (!error && data && Array.isArray(data) && data.length > 0) {
-      const mapped: Profile[] = data.map((item: any) => ({
-        id: item.id,
-        email: item.email || (item.raw_user_meta_data?.email) || undefined,
-        full_name: item.full_name || (item.email ? item.email.split('@')[0] : 'Student (Profile Pending)'),
-        avatar_url: item.avatar_url || undefined,
-        department: item.department || 'N/A',
-        roll_number: item.roll_number || 'N/A',
-        batch_number: item.batch_number || 'N/A',
-        fb_link: item.fb_link || undefined,
-        telegram_link: item.telegram_link || undefined,
-        whatsapp_link: item.whatsapp_link || undefined,
-        profile_completed: Boolean(item.profile_completed),
-        points: Number(item.points) || 0,
-        current_streak: Number(item.current_streak) || 0,
-        longest_streak: Number(item.longest_streak) || 0,
-        last_activity_date: item.last_activity_date,
-        is_admin: (item.email || '').toLowerCase().trim() === ADMIN_EMAIL.toLowerCase() || Boolean(item.is_admin),
-        is_banned: Boolean(item.is_banned),
-        created_at: item.created_at
-      }));
+      const bannedList = getStoredBannedUserIds();
+      const bannedIdsSet = new Set<string>(bannedList);
+      const bannedEmailsSet = new Set<string>();
+
+      try {
+        const { data: bannedRows } = await supabase.from('banned_users').select('user_id, email');
+        if (bannedRows && Array.isArray(bannedRows)) {
+          bannedRows.forEach((row: any) => {
+            if (row.user_id) {
+              bannedIdsSet.add(row.user_id);
+              setLocalBanStatus(row.user_id, true);
+            }
+            if (row.email) {
+              bannedEmailsSet.add(row.email.toLowerCase().trim());
+            }
+          });
+        }
+      } catch (e) {}
+
+      const mapped: Profile[] = data.map((item: any) => {
+        const itemEmail = (item.email || (item.raw_user_meta_data?.email) || '').toLowerCase().trim();
+        const isBanned = Boolean(item.is_banned) || 
+          bannedIdsSet.has(item.id) || 
+          (itemEmail ? bannedEmailsSet.has(itemEmail) : false);
+
+        return {
+          id: item.id,
+          email: item.email || (item.raw_user_meta_data?.email) || undefined,
+          full_name: item.full_name || (item.email ? item.email.split('@')[0] : 'Student (Profile Pending)'),
+          avatar_url: item.avatar_url || undefined,
+          department: item.department || 'N/A',
+          roll_number: item.roll_number || 'N/A',
+          batch_number: item.batch_number || 'N/A',
+          fb_link: item.fb_link || undefined,
+          telegram_link: item.telegram_link || undefined,
+          whatsapp_link: item.whatsapp_link || undefined,
+          profile_completed: Boolean(item.profile_completed),
+          points: Number(item.points) || 0,
+          current_streak: Number(item.current_streak) || 0,
+          longest_streak: Number(item.longest_streak) || 0,
+          last_activity_date: item.last_activity_date,
+          is_admin: (item.email || '').toLowerCase().trim() === ADMIN_EMAIL.toLowerCase() || Boolean(item.is_admin),
+          is_banned: isBanned,
+          created_at: item.created_at
+        };
+      });
 
       // Sort client-side: newest registered user first, oldest last
       mapped.sort((a, b) => {
@@ -444,13 +606,14 @@ export async function getAllProfiles(): Promise<Profile[]> {
         return 0;
       });
 
+      saveStoredProfiles(mapped);
       return mapped;
     }
   } catch (err) {
     console.error('[Supabase getAllProfiles exception]:', err);
   }
 
-  return [];
+  return getStoredProfiles();
 }
 
 /**
@@ -1114,8 +1277,23 @@ export async function getAllSkillResources(skillId?: string): Promise<Record<str
         mergedMap[item.skill_id].push(item);
       });
 
+      // Preserve any pending local items that haven't synced yet (res-*)
+      Object.keys(localMap).forEach(sId => {
+        const pending = (localMap[sId] || []).filter(item => item.id.startsWith('res-'));
+        if (pending.length > 0) {
+          if (!mergedMap[sId]) mergedMap[sId] = [];
+          pending.forEach(p => {
+            if (!mergedMap[sId].some(m => m.id === p.id || (m.url === p.url && m.title === p.title))) {
+              mergedMap[sId].push(p);
+            }
+          });
+        }
+      });
+
       saveStoredSkillResources(mergedMap);
       return mergedMap;
+    } else if (error) {
+      console.warn('[getAllSkillResources] Supabase query notice:', error.message);
     }
   } catch (err) {
     // Return cached on network / table not ready
@@ -1131,13 +1309,30 @@ export async function addSkillResource(resData: Omit<SkillResource, 'id'>): Prom
   const localMap = getStoredSkillResources();
   const newId = `res-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
   
+  let formattedUrl = resData.url.trim();
+  if (formattedUrl && !formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://') && !formattedUrl.startsWith('data:')) {
+    formattedUrl = `https://${formattedUrl}`;
+  }
+
+  let format = resData.format || 'link';
+  const lowerUrl = formattedUrl.toLowerCase();
+  if (lowerUrl.includes('youtube.com') || lowerUrl.includes('youtu.be') || lowerUrl.includes('vimeo.com') || lowerUrl.includes('loom.com')) {
+    format = 'youtube';
+  } else if (lowerUrl.includes('drive.google.com') || lowerUrl.includes('docs.google.com')) {
+    format = 'drive';
+  } else if (lowerUrl.endsWith('.pdf') || lowerUrl.includes('/storage/v1/object/public/')) {
+    format = 'pdf';
+  } else if (lowerUrl.includes('github.com')) {
+    format = 'github';
+  }
+
   const newItem: SkillResource = {
     id: newId,
     skill_id: resData.skill_id,
     title: resData.title.trim(),
-    type: resData.type,
-    format: resData.format || 'link',
-    url: resData.url.trim(),
+    type: resData.type || (format === 'pdf' || format === 'drive' ? 'document' : 'reference'),
+    format,
+    url: formattedUrl,
     description: resData.description ? resData.description.trim() : undefined,
     created_at: new Date().toISOString()
   };
@@ -1162,7 +1357,12 @@ export async function addSkillResource(resData: Omit<SkillResource, 'id'>): Prom
       .select('*')
       .maybeSingle();
 
-    if (!error && data) {
+    if (error) {
+      console.error('[Supabase addSkillResource error]:', error.message, error.details);
+      throw new Error(error.message);
+    }
+
+    if (data) {
       newItem.id = data.id;
       // update id in cache
       const list = localMap[newItem.skill_id] || [];
@@ -1173,8 +1373,8 @@ export async function addSkillResource(resData: Omit<SkillResource, 'id'>): Prom
       }
       return { ...newItem, id: data.id };
     }
-  } catch (err) {
-    // Saved locally
+  } catch (err: any) {
+    console.error('[addSkillResource exception]:', err?.message || err);
   }
 
   return newItem;

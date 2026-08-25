@@ -71,6 +71,7 @@ import {
   fetchAllSkillsDb,
   saveSkillToDb,
   deleteSkillFromDb,
+  toggleUserBanStatus,
   resetAllDataToDefaults
 } from './lib/supabaseService';
 import { 
@@ -1222,9 +1223,10 @@ export default function App() {
     }
 
     const newStatus = !userToToggle.is_banned;
-    await updateProfile(userId, { is_banned: newStatus });
     setProfiles(prev => prev.map(p => p.id === userId ? { ...p, is_banned: newStatus } : p));
-    showToast(`${userToToggle.full_name} is now ${newStatus ? 'Banned' : 'Active'}`);
+    showToast(`${userToToggle.full_name || 'User'} is now ${newStatus ? 'Banned' : 'Active'}`);
+
+    await toggleUserBanStatus(userId, userToToggle.email, newStatus);
   };
 
   // Admin Add/Edit Skill
