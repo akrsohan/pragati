@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Field, Skill, RoadmapStep, SkillResource } from '../types';
-import { X, Plus, Trash2, Edit2, Check, Save, FileText, Link, Youtube, Github, Globe, UploadCloud, Copy, Database, ExternalLink, BookOpen, FileCheck } from 'lucide-react';
+import { X, Plus, Trash2, Edit2, Check, Save, FileText, Link, Youtube, Github, Globe, UploadCloud, Copy, Database, ExternalLink, BookOpen, FileCheck, Video, GraduationCap, PlayCircle } from 'lucide-react';
 import { uploadResourcePdf } from '../lib/supabaseService';
 
 interface SkillModalProps {
@@ -527,12 +527,12 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
                 }}
                 className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                   type === 'reference' 
-                    ? 'bg-white text-[#6c5ce7] shadow-xs' 
+                    ? 'bg-white text-red-600 shadow-xs' 
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <Youtube className="w-3.5 h-3.5 text-rose-500" />
-                <span>Reference / Tutorial</span>
+                <Youtube className="w-3.5 h-3.5 text-red-500 fill-current" />
+                <span>Video Class &amp; References</span>
               </button>
             </div>
           </div>
@@ -559,7 +559,7 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
                       format === 'pdf' ? 'bg-[#6c5ce7] text-white border-[#6c5ce7]' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                     }`}
                   >
-                    <FileText className="w-3.5 h-3.5 text-red-400" /> Direct PDF
+                    <FileText className="w-3.5 h-3.5 text-red-400" /> Direct PDF Note
                   </button>
                   <button
                     type="button"
@@ -568,7 +568,7 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
                       format === 'drive' ? 'bg-[#6c5ce7] text-white border-[#6c5ce7]' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                     }`}
                   >
-                    <Link className="w-3.5 h-3.5 text-amber-500" /> Google Drive Link
+                    <Link className="w-3.5 h-3.5 text-amber-500" /> Google Drive Notes
                   </button>
                 </>
               ) : (
@@ -576,11 +576,12 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setFormat('youtube')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold border cursor-pointer transition-all flex items-center gap-1.5 ${
-                      format === 'youtube' ? 'bg-[#6c5ce7] text-white border-[#6c5ce7]' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold border cursor-pointer transition-all flex items-center gap-1.5 ${
+                      format === 'youtube' ? 'bg-red-600 text-white border-red-600 shadow-2xs' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                     }`}
                   >
-                    <Youtube className="w-3.5 h-3.5 text-red-500" /> YouTube Video/Playlist
+                    <Youtube className="w-3.5 h-3.5 fill-current" />
+                    <span>Video Class / Lecture</span>
                   </button>
                   <button
                     type="button"
@@ -685,7 +686,24 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
                 'https://...'
               }
               value={url}
-              onChange={(e) => setUrl(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                setUrl(val);
+                const lower = val.toLowerCase();
+                if (lower.includes('youtube.com') || lower.includes('youtu.be') || lower.includes('vimeo.com') || lower.includes('loom.com')) {
+                  setType('reference');
+                  setFormat('youtube');
+                } else if (lower.includes('drive.google.com') || lower.includes('docs.google.com')) {
+                  setType('document');
+                  setFormat('drive');
+                } else if (lower.endsWith('.pdf')) {
+                  setType('document');
+                  setFormat('pdf');
+                } else if (lower.includes('github.com')) {
+                  setType('reference');
+                  setFormat('github');
+                }
+              }}
               required
             />
           </div>

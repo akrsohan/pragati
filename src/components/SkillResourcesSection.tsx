@@ -13,8 +13,46 @@ import {
   Sparkles,
   Bookmark,
   Layers,
-  Search
+  Search,
+  PlayCircle,
+  Video,
+  GraduationCap
 } from 'lucide-react';
+
+function resolveResourceFormat(r: { format?: string; url?: string; title?: string; type?: string }): 'pdf' | 'drive' | 'youtube' | 'github' | 'article' | 'link' {
+  if (r.format === 'pdf' || r.format === 'drive' || r.format === 'youtube' || r.format === 'github' || r.format === 'article') {
+    return r.format;
+  }
+  const u = (r.url || '').toLowerCase();
+  const t = (r.title || '').toLowerCase();
+  
+  if (u.includes('.pdf') || u.includes('/storage/v1/object/public/')) {
+    return 'pdf';
+  }
+  if (u.includes('drive.google.com') || u.includes('docs.google.com')) {
+    return 'drive';
+  }
+  if (
+    u.includes('youtube.com') || 
+    u.includes('youtu.be') || 
+    u.includes('vimeo.com') || 
+    u.includes('loom.com') ||
+    t.includes('class') ||
+    t.includes('tutorial') ||
+    t.includes('lecture') ||
+    t.includes('video') ||
+    t.includes('playlist')
+  ) {
+    return 'youtube';
+  }
+  if (u.includes('github.com') || u.includes('gitlab.com')) {
+    return 'github';
+  }
+  if (u.includes('medium.com') || u.includes('dev.to') || u.includes('hashnode.dev') || u.includes('blog.')) {
+    return 'article';
+  }
+  return 'link';
+}
 
 interface SkillResourcesSectionProps {
   skill: Skill;
@@ -35,8 +73,14 @@ export const SkillResourcesSection: React.FC<SkillResourcesSectionProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'all' | 'documents' | 'references'>('all');
 
-  const documents = resources.filter(r => r.type === 'document' || r.format === 'pdf' || r.format === 'drive');
-  const references = resources.filter(r => r.type === 'reference' && r.format !== 'pdf' && r.format !== 'drive');
+  const documents = resources.filter(r => {
+    const fmt = resolveResourceFormat(r);
+    return fmt === 'pdf' || fmt === 'drive' || r.type === 'document';
+  });
+  const references = resources.filter(r => {
+    const fmt = resolveResourceFormat(r);
+    return fmt !== 'pdf' && fmt !== 'drive' && r.type !== 'document';
+  });
 
   const displayedResources = 
     activeTab === 'documents' ? documents :
@@ -44,45 +88,49 @@ export const SkillResourcesSection: React.FC<SkillResourcesSectionProps> = ({
     resources;
 
   const getFormatBadge = (r: SkillResource) => {
-    switch (r.format) {
+    const fmt = resolveResourceFormat(r);
+    switch (fmt) {
       case 'pdf':
         return (
-          <span className="resource-badge-3d inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 border border-rose-200/80 shadow-2xs">
+          <span className="resource-badge-3d inline-flex items-center gap-1.5 text-[11px] font-extrabold px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 border border-rose-200/80 shadow-2xs">
             <FileText className="w-3.5 h-3.5 text-rose-500 transition-transform group-hover:scale-110" />
             PDF Material
           </span>
         );
       case 'drive':
         return (
-          <span className="resource-badge-3d inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200/80 shadow-2xs">
+          <span className="resource-badge-3d inline-flex items-center gap-1.5 text-[11px] font-extrabold px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200/80 shadow-2xs">
             <FolderOpen className="w-3.5 h-3.5 text-amber-600 transition-transform group-hover:scale-110" />
-            Google Drive
+            Google Drive Notes
           </span>
         );
       case 'youtube':
         return (
-          <span className="resource-badge-3d inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-red-50 text-red-700 border border-red-200/80 shadow-2xs">
-            <Youtube className="w-3.5 h-3.5 fill-current transition-transform group-hover:scale-110" />
-            Video Tutorial
+          <span className="resource-badge-3d inline-flex items-center gap-1.5 text-[11px] font-extrabold px-2.5 py-1 rounded-lg bg-red-50 text-red-700 border border-red-200/80 shadow-2xs">
+            <Youtube className="w-3.5 h-3.5 fill-current text-red-600 transition-transform group-hover:scale-110" />
+            <span className="flex items-center gap-1">
+              <GraduationCap className="w-3.5 h-3.5 text-red-600" />
+              Video Class / Tutorial
+            </span>
           </span>
         );
       case 'github':
         return (
-          <span className="resource-badge-3d inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 border border-slate-300 shadow-2xs">
+          <span className="resource-badge-3d inline-flex items-center gap-1.5 text-[11px] font-extrabold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 border border-slate-300 shadow-2xs">
             <Github className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
             GitHub Repo
           </span>
         );
       case 'article':
         return (
-          <span className="resource-badge-3d inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200/80 shadow-2xs">
+          <span className="resource-badge-3d inline-flex items-center gap-1.5 text-[11px] font-extrabold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200/80 shadow-2xs">
             <BookOpen className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
             Reading Guide
           </span>
         );
       default:
         return (
-          <span className="resource-badge-3d inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200/80 shadow-2xs">
+          <span className="resource-badge-3d inline-flex items-center gap-1.5 text-[11px] font-extrabold px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200/80 shadow-2xs">
             <Globe className="w-3.5 h-3.5 text-indigo-600 transition-transform group-hover:scale-110" />
             Official Documentation
           </span>
@@ -91,7 +139,8 @@ export const SkillResourcesSection: React.FC<SkillResourcesSectionProps> = ({
   };
 
   const getActionButton = (r: SkillResource) => {
-    switch (r.format) {
+    const fmt = resolveResourceFormat(r);
+    switch (fmt) {
       case 'pdf':
         return (
           <a
@@ -124,10 +173,10 @@ export const SkillResourcesSection: React.FC<SkillResourcesSectionProps> = ({
             href={r.url}
             target="_blank"
             rel="noreferrer"
-            className="resource-action-btn inline-flex items-center gap-1.5 text-xs font-bold bg-red-50 hover:bg-red-100 text-red-700 border border-red-200/80 px-3.5 py-2 rounded-xl transition-all cursor-pointer"
+            className="resource-action-btn inline-flex items-center gap-1.5 text-xs font-bold bg-red-50 hover:bg-red-100 text-red-700 border border-red-200/80 px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-2xs"
           >
-            <Youtube className="w-3.5 h-3.5 fill-current" />
-            <span>Watch Tutorial</span>
+            <PlayCircle className="w-4 h-4 text-red-600" />
+            <span>Watch Video Class</span>
             <ExternalLink className="w-3 h-3 ml-0.5 opacity-70" />
           </a>
         );
@@ -141,6 +190,19 @@ export const SkillResourcesSection: React.FC<SkillResourcesSectionProps> = ({
           >
             <Github className="w-3.5 h-3.5" />
             <span>View Code</span>
+            <ExternalLink className="w-3 h-3 ml-0.5 opacity-70" />
+          </a>
+        );
+      case 'article':
+        return (
+          <a
+            href={r.url}
+            target="_blank"
+            rel="noreferrer"
+            className="resource-action-btn inline-flex items-center gap-1.5 text-xs font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 px-3.5 py-2 rounded-xl transition-all cursor-pointer"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Read Article</span>
             <ExternalLink className="w-3 h-3 ml-0.5 opacity-70" />
           </a>
         );

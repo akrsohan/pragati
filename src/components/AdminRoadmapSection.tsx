@@ -16,8 +16,46 @@ import {
   Sparkles,
   ChevronDown,
   Upload,
-  Link2
+  Link2,
+  PlayCircle,
+  Video,
+  GraduationCap
 } from 'lucide-react';
+
+export function resolveResourceFormat(r: { format?: string; url?: string; title?: string; type?: string }): 'pdf' | 'drive' | 'youtube' | 'github' | 'article' | 'link' {
+  if (r.format === 'pdf' || r.format === 'drive' || r.format === 'youtube' || r.format === 'github' || r.format === 'article') {
+    return r.format;
+  }
+  const u = (r.url || '').toLowerCase();
+  const t = (r.title || '').toLowerCase();
+  
+  if (u.includes('.pdf') || u.includes('/storage/v1/object/public/')) {
+    return 'pdf';
+  }
+  if (u.includes('drive.google.com') || u.includes('docs.google.com')) {
+    return 'drive';
+  }
+  if (
+    u.includes('youtube.com') || 
+    u.includes('youtu.be') || 
+    u.includes('vimeo.com') || 
+    u.includes('loom.com') ||
+    t.includes('class') ||
+    t.includes('tutorial') ||
+    t.includes('lecture') ||
+    t.includes('video') ||
+    t.includes('playlist')
+  ) {
+    return 'youtube';
+  }
+  if (u.includes('github.com') || u.includes('gitlab.com')) {
+    return 'github';
+  }
+  if (u.includes('medium.com') || u.includes('dev.to') || u.includes('hashnode.dev') || u.includes('blog.')) {
+    return 'article';
+  }
+  return 'link';
+}
 
 interface AdminRoadmapSectionProps {
   skills: Skill[];
@@ -58,8 +96,14 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
   const currentSteps = roadmapSteps[currentSkill?.id || ''] || [];
   const currentResources = skillResources[currentSkill?.id || ''] || [];
 
-  const docs = currentResources.filter(r => r.type === 'document' || r.format === 'pdf' || r.format === 'drive');
-  const refs = currentResources.filter(r => r.type === 'reference' && r.format !== 'pdf' && r.format !== 'drive');
+  const docs = currentResources.filter(r => {
+    const fmt = resolveResourceFormat(r);
+    return fmt === 'pdf' || fmt === 'drive' || r.type === 'document';
+  });
+  const refs = currentResources.filter(r => {
+    const fmt = resolveResourceFormat(r);
+    return fmt !== 'pdf' && fmt !== 'drive' && r.type !== 'document';
+  });
 
   const displayedResources = 
     resourceFilter === 'documents' ? docs :
@@ -67,62 +111,66 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
     currentResources;
 
   const getFormatBadge = (r: SkillResource) => {
-    switch (r.format) {
+    const fmt = resolveResourceFormat(r);
+    switch (fmt) {
       case 'pdf':
         return (
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-md bg-rose-50 text-rose-600 border border-rose-100">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold px-2.5 py-1 rounded-md bg-rose-50 text-rose-600 border border-rose-200">
             <FileText className="w-3.5 h-3.5 text-rose-500" />
             PDF Material
           </span>
         );
       case 'drive':
         return (
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-md bg-amber-50 text-amber-700 border border-amber-200">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold px-2.5 py-1 rounded-md bg-amber-50 text-amber-800 border border-amber-200">
             <FolderOpen className="w-3.5 h-3.5 text-amber-600" />
-            Google Drive
+            Google Drive Notes
           </span>
         );
       case 'youtube':
         return (
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-md bg-red-50 text-red-600 border border-red-100">
-            <Youtube className="w-3.5 h-3.5 fill-current" />
-            YouTube Video
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold px-2.5 py-1 rounded-md bg-red-50 text-red-600 border border-red-200 shadow-2xs animate-pulse">
+            <Youtube className="w-3.5 h-3.5 fill-current text-red-600 shrink-0" />
+            <span>Video Class / Lecture</span>
           </span>
         );
       case 'github':
         return (
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-md bg-slate-100 text-slate-800 border border-slate-200">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold px-2.5 py-1 rounded-md bg-slate-100 text-slate-800 border border-slate-300">
             <Github className="w-3.5 h-3.5" />
             GitHub Repo
           </span>
         );
       case 'article':
         return (
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">
             <BookOpen className="w-3.5 h-3.5" />
             Article / Blog
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-md bg-purple-50 text-[#6c5ce7] border border-purple-100">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold px-2.5 py-1 rounded-md bg-purple-50 text-[#6c5ce7] border border-purple-200">
             <Globe className="w-3.5 h-3.5" />
-            Official Docs
+            Official Documentation
           </span>
         );
     }
   };
 
   const getActionLabel = (r: SkillResource) => {
-    switch (r.format) {
+    const fmt = resolveResourceFormat(r);
+    switch (fmt) {
       case 'pdf':
         return 'Open PDF File';
       case 'drive':
         return 'Open Drive Folder';
       case 'youtube':
-        return 'Watch Video';
+        return 'Watch Video Class';
       case 'github':
         return 'View Repository';
+      case 'article':
+        return 'Read Article';
       default:
         return 'Open Reference';
     }
