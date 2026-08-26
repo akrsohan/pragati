@@ -35,6 +35,7 @@ import { AdminFeedbackSection } from './components/AdminFeedbackSection';
 import { SkillResourcesSection } from './components/SkillResourcesSection';
 import { AdminRoadmapSection } from './components/AdminRoadmapSection';
 import { HeroProgressCore3D } from './components/HeroProgressCore3D';
+import { ChangePasswordModal } from './components/ChangePasswordModal';
 import { 
   getProfile,
   updateProfile,
@@ -294,6 +295,7 @@ export default function App() {
   // Feedback Modals
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [isMyFeedbackModalOpen, setIsMyFeedbackModalOpen] = useState(false);
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
 
   // Profile Setup Form State
   const [setupFullName, setSetupFullName] = useState('');
@@ -1537,6 +1539,7 @@ export default function App() {
           }}
           onOpenSendFeedback={() => setIsFeedbackModalOpen(true)}
           onOpenMyFeedback={() => setIsMyFeedbackModalOpen(true)}
+          onOpenChangePassword={() => setIsChangePasswordModalOpen(true)}
           theme={theme}
           onToggleTheme={toggleTheme}
         />
@@ -4189,6 +4192,14 @@ export default function App() {
           onOpenSendFeedback={() => setIsFeedbackModalOpen(true)}
         />
       )}
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal 
+        isOpen={isChangePasswordModalOpen}
+        onClose={() => setIsChangePasswordModalOpen(false)}
+        userEmail={currentUser?.email}
+        onSuccessToast={(msg) => showToast(msg)}
+      />
 
       {/* Admin Delete Confirmation Modal */}
       <DeleteConfirmModal

@@ -17,7 +17,8 @@ import {
   Monitor, 
   MessageSquare,
   Sun,
-  Moon
+  Moon,
+  KeyRound
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -29,6 +30,7 @@ interface NavbarProps {
   onSelectUserForProfile?: (userId: string) => void;
   onOpenSendFeedback?: () => void;
   onOpenMyFeedback?: () => void;
+  onOpenChangePassword?: () => void;
   theme?: 'light' | 'dark';
   onToggleTheme?: () => void;
 }
@@ -42,6 +44,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSelectUserForProfile,
   onOpenSendFeedback,
   onOpenMyFeedback,
+  onOpenChangePassword,
   theme = 'light',
   onToggleTheme
 }) => {
@@ -391,6 +394,29 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </div>
                   <div className="font-extrabold text-slate-900 text-sm sm:text-base tracking-tight">
                     Edit Profile Setup
+                  </div>
+                </button>
+
+                {/* Change Password */}
+                <button 
+                  type="button"
+                  className="w-full flex items-center gap-3.5 p-2 rounded-2xl hover:bg-slate-50 text-slate-900 transition-all text-left group cursor-pointer"
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    if (onOpenChangePassword) onOpenChangePassword();
+                  }}
+                  id="dropdown-change-password"
+                >
+                  <div className="w-11 h-11 rounded-2xl bg-indigo-50 text-[#6c5ce7] flex items-center justify-center group-hover:bg-indigo-100 group-hover:text-[#5b4bc4] transition-colors shrink-0">
+                    <KeyRound className="w-5 h-5" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-extrabold text-slate-900 text-sm sm:text-base tracking-tight">
+                      Change Password
+                    </span>
+                    <span className="text-[11px] text-[#8a8ca3] font-medium">
+                      Update account security
+                    </span>
                   </div>
                 </button>
 
