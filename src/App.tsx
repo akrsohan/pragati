@@ -153,25 +153,8 @@ function formatSocialLink(type: 'facebook' | 'telegram' | 'whatsapp', input?: st
 }
 
 export default function App() {
-  // Navigation (Default to saved page or login)
-  const [currentPage, setCurrentPage] = useState<PageType>(() => {
-    try {
-      const saved = localStorage.getItem('pragatii_active_page');
-      if (saved && ['discover', 'dashboard', 'roadmap', 'leaderboard', 'profile', 'admin', 'feedback'].includes(saved)) {
-        return saved as PageType;
-      }
-    } catch (e) {}
-    return 'login';
-  });
-
-  // Keep track of active page in localStorage for seamless tab switching & refreshes
-  useEffect(() => {
-    try {
-      if (currentPage && currentPage !== 'login' && currentPage !== 'signup' && currentPage !== 'profile-setup') {
-        localStorage.setItem('pragatii_active_page', currentPage);
-      }
-    } catch (e) {}
-  }, [currentPage]);
+  // Navigation (Default always to 'discover' on refresh / load)
+  const [currentPage, setCurrentPage] = useState<PageType>('discover');
   const [discoverView, setDiscoverView] = useState<'main' | 'fields' | 'field-skills' | 'all-skills'>('main');
   const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
@@ -549,18 +532,7 @@ export default function App() {
             if (!profile.profile_completed) {
               setCurrentPage('profile-setup');
             } else {
-              setCurrentPage(prev => {
-                if (prev === 'login' || prev === 'signup') {
-                  try {
-                    const saved = localStorage.getItem('pragatii_active_page');
-                    if (saved && ['discover', 'dashboard', 'roadmap', 'leaderboard', 'profile', 'admin', 'feedback'].includes(saved)) {
-                      return saved as PageType;
-                    }
-                  } catch (e) {}
-                  return 'discover';
-                }
-                return prev;
-              });
+              setCurrentPage('discover');
             }
           }
         } else {
@@ -617,15 +589,7 @@ export default function App() {
             setCurrentPage('profile-setup');
           } else {
             setCurrentPage(prev => {
-              // ONLY redirect if user is coming from login or signup screen
-              // Never redirect active browsing sessions on tab switch or token refresh!
               if (prev === 'login' || prev === 'signup') {
-                try {
-                  const saved = localStorage.getItem('pragatii_active_page');
-                  if (saved && ['discover', 'dashboard', 'roadmap', 'leaderboard', 'profile', 'admin', 'feedback'].includes(saved)) {
-                    return saved as PageType;
-                  }
-                } catch (e) {}
                 return 'discover';
               }
               return prev;
