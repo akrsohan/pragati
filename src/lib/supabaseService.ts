@@ -1406,6 +1406,71 @@ export async function addSkillResource(resData: Omit<SkillResource, 'id'>): Prom
 }
 
 /**
+ * Update an existing Skill Resource (Document or Reference)
+ */
+export async function updateSkillResourceInDb(resData: SkillResource): Promise<SkillResource> {
+  const localMap = getStoredSkillResources();
+  let formattedUrl = resData.url.trim();
+  if (formattedUrl && !formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://') && !formattedUrl.startsWith('data:')) {
+    formattedUrl = `https://${formattedUrl}`;
+  }
+
+  let format = resData.format || 'link';
+  const lowerUrl = formattedUrl.toLowerCase();
+  if (lowerUrl.includes('youtube.com') || lowerUrl.includes('youtu.be') || lowerUrl.includes('vimeo.com') || lowerUrl.includes('loom.com')) {
+    format = 'youtube';
+  } else if (lowerUrl.includes('drive.google.com') || lowerUrl.includes('docs.google.com')) {
+    format = 'drive';
+  } else if (lowerUrl.endsWith('.pdf') || lowerUrl.includes('/storage/v1/object/public/')) {
+    format = 'pdf';
+  } else if (lowerUrl.includes('github.com')) {
+    format = 'github';
+  }
+
+  const updatedItem: SkillResource = {
+    ...resData,
+    title: resData.title.trim(),
+    type: resData.type || (format === 'pdf' || format === 'drive' ? 'document' : 'reference'),
+    format,
+    url: formattedUrl,
+    description: resData.description ? resData.description.trim() : undefined
+  };
+
+  // Update local cache
+  if (!localMap[updatedItem.skill_id]) {
+    localMap[updatedItem.skill_id] = [];
+  }
+  const idx = localMap[updatedItem.skill_id].findIndex(r => r.id === updatedItem.id);
+  if (idx !== -1) {
+    localMap[updatedItem.skill_id][idx] = updatedItem;
+  } else {
+    localMap[updatedItem.skill_id].push(updatedItem);
+  }
+  saveStoredSkillResources(localMap);
+
+  try {
+    const { error } = await supabase
+      .from('skill_resources')
+      .update({
+        title: updatedItem.title,
+        type: updatedItem.type,
+        format: updatedItem.format,
+        url: updatedItem.url,
+        description: updatedItem.description
+      })
+      .eq('id', updatedItem.id);
+
+    if (error) {
+      console.error('[Supabase updateSkillResource error]:', error.message);
+    }
+  } catch (err: any) {
+    console.error('[updateSkillResource exception]:', err?.message || err);
+  }
+
+  return updatedItem;
+}
+
+/**
  * Delete a Skill Resource
  */
 export async function deleteSkillResource(
@@ -1592,6 +1657,48 @@ export async function addRoadmapStepToDb(stepData: Omit<RoadmapStep, 'id'>): Pro
   } catch (err) {}
 
   return newStep;
+}
+
+export async function updateRoadmapStepInDb(stepData: RoadmapStep): Promise<RoadmapStep> {
+  const localMap = getStoredRoadmapSteps();
+  const updatedStep: RoadmapStep = {
+    ...stepData,
+    title: stepData.title.trim(),
+    description: stepData.description.trim(),
+    resource_link: stepData.resource_link ? stepData.resource_link.trim() : undefined
+  };
+
+  if (!localMap[updatedStep.skill_id]) {
+    localMap[updatedStep.skill_id] = [];
+  }
+  const idx = localMap[updatedStep.skill_id].findIndex(s => s.id === updatedStep.id);
+  if (idx !== -1) {
+    localMap[updatedStep.skill_id][idx] = updatedStep;
+  } else {
+    localMap[updatedStep.skill_id].push(updatedStep);
+  }
+  localMap[updatedStep.skill_id].sort((a, b) => a.step_order - b.step_order);
+  saveStoredRoadmapSteps(localMap);
+
+  try {
+    const { error } = await supabase
+      .from('roadmap_steps')
+      .update({
+        title: updatedStep.title,
+        description: updatedStep.description,
+        step_order: updatedStep.step_order,
+        resource_link: updatedStep.resource_link
+      })
+      .eq('id', updatedStep.id);
+
+    if (error) {
+      console.error('[Supabase updateRoadmapStep error]:', error.message);
+    }
+  } catch (err) {
+    console.error('[updateRoadmapStep exception]:', err);
+  }
+
+  return updatedStep;
 }
 
 export async function fetchAllFieldsDb(): Promise<Field[]> {

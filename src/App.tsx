@@ -63,9 +63,11 @@ import {
   saveStoredSkillResources,
   getAllSkillResources,
   addSkillResource,
+  updateSkillResourceInDb,
   deleteSkillResource,
   fetchAllRoadmapSteps,
   addRoadmapStepToDb,
+  updateRoadmapStepInDb,
   deleteRoadmapStepFromDb,
   fetchAllFieldsDb,
   saveFieldToDb,
@@ -285,6 +287,8 @@ export default function App() {
   const [isSqlModalOpen, setIsSqlModalOpen] = useState(false);
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
   const [editingField, setEditingField] = useState<Field | null>(null);
+  const [editingStep, setEditingStep] = useState<RoadmapStep | null>(null);
+  const [editingResource, setEditingResource] = useState<SkillResource | null>(null);
   const [deleteConfirmState, setDeleteConfirmState] = useState<{
     isOpen: boolean;
     title: string;
@@ -1365,27 +1369,50 @@ export default function App() {
     });
   };
 
-  // Admin Add Step
-  const handleAddStep = async (stepData: Partial<RoadmapStep>) => {
-    const newStep: RoadmapStep = {
-      id: `step-${Date.now()}`,
-      skill_id: currentSkill.id,
-      title: stepData.title || 'New Step',
-      description: stepData.description || '',
-      step_order: currentSkillSteps.length + 1,
-      resource_link: stepData.resource_link
-    };
+  // Admin Add/Edit Step
+  const handleSaveStep = async (stepData: Partial<RoadmapStep>) => {
+    if (editingStep) {
+      const updated: RoadmapStep = {
+        ...editingStep,
+        ...stepData,
+        title: stepData.title || editingStep.title,
+        description: stepData.description || editingStep.description,
+        resource_link: stepData.resource_link
+      };
+      const saved = await updateRoadmapStepInDb(updated);
+      const targetSkillId = updated.skill_id || currentSkill.id;
+      const list = (roadmapSteps[targetSkillId] || []).map(st => st.id === updated.id ? saved : st);
+      const updatedSteps = {
+        ...roadmapSteps,
+        [targetSkillId]: list
+      };
+      setRoadmapSteps(updatedSteps);
+      saveStoredRoadmapSteps(updatedSteps);
+      setIsStepModalOpen(false);
+      setEditingStep(null);
+      showToast(`Updated step "${saved.title}"`);
+    } else {
+      const targetSkillId = currentSkill.id;
+      const newStep: RoadmapStep = {
+        id: `step-${Date.now()}`,
+        skill_id: targetSkillId,
+        title: stepData.title || 'New Step',
+        description: stepData.description || '',
+        step_order: (roadmapSteps[targetSkillId] || []).length + 1,
+        resource_link: stepData.resource_link
+      };
 
-    const saved = await addRoadmapStepToDb(newStep);
-    const updatedSteps = {
-      ...roadmapSteps,
-      [currentSkill.id]: [...(roadmapSteps[currentSkill.id] || []), saved]
-    };
-    setRoadmapSteps(updatedSteps);
-    saveStoredRoadmapSteps(updatedSteps);
+      const saved = await addRoadmapStepToDb(newStep);
+      const updatedSteps = {
+        ...roadmapSteps,
+        [targetSkillId]: [...(roadmapSteps[targetSkillId] || []), saved]
+      };
+      setRoadmapSteps(updatedSteps);
+      saveStoredRoadmapSteps(updatedSteps);
 
-    setIsStepModalOpen(false);
-    showToast(`Added step "${saved.title}" to ${currentSkill.name}`);
+      setIsStepModalOpen(false);
+      showToast(`Added step "${saved.title}" to ${currentSkill.name}`);
+    }
   };
 
   const handleDeleteStep = (skillId: string, stepId: string) => {
@@ -1413,20 +1440,45 @@ export default function App() {
     });
   };
 
-  // Admin Add Document / Reference Resource
-  const handleAddResource = async (resData: Omit<SkillResource, 'id'>) => {
+  // Admin Add/Edit Document / Reference Resource
+  const handleSaveResource = async (resData: Partial<SkillResource>) => {
     try {
-      const created = await addSkillResource(resData);
-      const updated = {
-        ...skillResources,
-        [resData.skill_id]: [...(skillResources[resData.skill_id] || []), created]
-      };
-      setSkillResources(updated);
-      saveStoredSkillResources(updated);
-      setIsResourceModalOpen(false);
-      showToast(`Added "${created.title}" successfully!`);
+      if (editingResource) {
+        const updated: SkillResource = {
+          ...editingResource,
+          ...resData,
+          title: resData.title || editingResource.title,
+          url: resData.url || editingResource.url,
+          type: resData.type || editingResource.type,
+          format: resData.format || editingResource.format,
+          description: resData.description !== undefined ? resData.description : editingResource.description
+        };
+        const saved = await updateSkillResourceInDb(updated);
+        const targetSkillId = updated.skill_id || currentSkill.id;
+        const list = (skillResources[targetSkillId] || []).map(r => r.id === updated.id ? saved : r);
+        const updatedResources = {
+          ...skillResources,
+          [targetSkillId]: list
+        };
+        setSkillResources(updatedResources);
+        saveStoredSkillResources(updatedResources);
+        setIsResourceModalOpen(false);
+        setEditingResource(null);
+        showToast(`Updated "${saved.title}" successfully!`);
+      } else {
+        const created = await addSkillResource(resData as Omit<SkillResource, 'id'>);
+        const targetSkillId = created.skill_id;
+        const updated = {
+          ...skillResources,
+          [targetSkillId]: [...(skillResources[targetSkillId] || []), created]
+        };
+        setSkillResources(updated);
+        saveStoredSkillResources(updated);
+        setIsResourceModalOpen(false);
+        showToast(`Added "${created.title}" successfully!`);
+      }
     } catch (err: any) {
-      showToast(`Error adding resource: ${err?.message || 'Unknown'}`);
+      showToast(`Error saving resource: ${err?.message || 'Unknown'}`);
     }
   };
 
@@ -4139,8 +4191,22 @@ export default function App() {
                 onSelectSkillId={(id) => setSelectedSkillId(id)}
                 roadmapSteps={roadmapSteps}
                 skillResources={skillResources}
-                onOpenAddStep={() => setIsStepModalOpen(true)}
-                onOpenAddResource={() => setIsResourceModalOpen(true)}
+                onOpenAddStep={() => {
+                  setEditingStep(null);
+                  setIsStepModalOpen(true);
+                }}
+                onOpenAddResource={() => {
+                  setEditingResource(null);
+                  setIsResourceModalOpen(true);
+                }}
+                onOpenEditStep={(step) => {
+                  setEditingStep(step);
+                  setIsStepModalOpen(true);
+                }}
+                onOpenEditResource={(res) => {
+                  setEditingResource(res);
+                  setIsResourceModalOpen(true);
+                }}
                 onDeleteStep={handleDeleteStep}
                 onDeleteResource={handleDeleteResource}
               />
@@ -4237,23 +4303,31 @@ export default function App() {
         initialData={editingField}
       />
 
-      {/* Admin Step Add Modal */}
+      {/* Admin Step Add/Edit Modal */}
       <StepModal 
         isOpen={isStepModalOpen}
-        onClose={() => setIsStepModalOpen(false)}
-        onSave={handleAddStep}
-        skillId={currentSkill.id}
-        skillName={currentSkill.name}
-        nextOrder={currentSkillSteps.length + 1}
+        onClose={() => {
+          setIsStepModalOpen(false);
+          setEditingStep(null);
+        }}
+        onSave={handleSaveStep}
+        skillId={editingStep?.skill_id || currentSkill.id}
+        skillName={skills.find(s => s.id === (editingStep?.skill_id || currentSkill.id))?.name || currentSkill.name}
+        nextOrder={editingStep?.step_order || (roadmapSteps[currentSkill.id] || []).length + 1}
+        initialData={editingStep}
       />
 
-      {/* Admin Resource / Document / Reference Add Modal */}
+      {/* Admin Resource / Document / Reference Add/Edit Modal */}
       <ResourceModal
         isOpen={isResourceModalOpen}
-        onClose={() => setIsResourceModalOpen(false)}
-        onSave={handleAddResource}
-        skillId={currentSkill.id}
-        skillName={currentSkill.name}
+        onClose={() => {
+          setIsResourceModalOpen(false);
+          setEditingResource(null);
+        }}
+        onSave={handleSaveResource}
+        skillId={editingResource?.skill_id || currentSkill.id}
+        skillName={skills.find(s => s.id === (editingResource?.skill_id || currentSkill.id))?.name || currentSkill.name}
+        initialData={editingResource}
       />
 
       {/* Supabase SQL Code Schema Modal */}

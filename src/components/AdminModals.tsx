@@ -283,6 +283,7 @@ interface StepModalProps {
   skillId: string;
   skillName: string;
   nextOrder: number;
+  initialData?: RoadmapStep | null;
 }
 
 export const StepModal: React.FC<StepModalProps> = ({
@@ -291,19 +292,20 @@ export const StepModal: React.FC<StepModalProps> = ({
   onSave,
   skillId,
   skillName,
-  nextOrder
+  nextOrder,
+  initialData
 }) => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [resourceLink, setResourceLink] = useState('');
+  const [title, setTitle] = useState(initialData?.title || '');
+  const [description, setDescription] = useState(initialData?.description || '');
+  const [resourceLink, setResourceLink] = useState(initialData?.resource_link || '');
 
   useEffect(() => {
     if (isOpen) {
-      setTitle('');
-      setDescription('');
-      setResourceLink('');
+      setTitle(initialData?.title || '');
+      setDescription(initialData?.description || '');
+      setResourceLink(initialData?.resource_link || '');
     }
-  }, [isOpen]);
+  }, [isOpen, initialData]);
 
   if (!isOpen) return null;
 
@@ -311,11 +313,11 @@ export const StepModal: React.FC<StepModalProps> = ({
     e.preventDefault();
     if (!title.trim()) return;
     onSave({
-      id: `step-${skillId}-${Date.now()}`,
-      skill_id: skillId,
+      id: initialData?.id || `step-${skillId}-${Date.now()}`,
+      skill_id: initialData?.skill_id || skillId,
       title: title.trim(),
       description: description.trim(),
-      step_order: nextOrder,
+      step_order: initialData?.step_order || nextOrder,
       resource_link: resourceLink.trim()
     });
     onClose();
@@ -332,9 +334,11 @@ export const StepModal: React.FC<StepModalProps> = ({
         </button>
 
         <h3 className="text-lg sm:text-xl font-extrabold text-[#1a1c2e] mb-1 pr-8">
-          Add Roadmap Step
+          {initialData ? 'Edit Roadmap Step' : 'Add Roadmap Step'}
         </h3>
-        <p className="text-xs text-[#8a8ca3] mb-6">For {skillName} (Step #{nextOrder})</p>
+        <p className="text-xs text-[#8a8ca3] mb-6">
+          For {skillName} (Step #{initialData?.step_order || nextOrder})
+        </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -383,8 +387,8 @@ export const StepModal: React.FC<StepModalProps> = ({
               type="submit" 
               className="btn-primary flex1 flex items-center justify-center gap-2"
             >
-              <Plus className="w-4 h-4" />
-              Add Step
+              {initialData ? <Save className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+              {initialData ? 'Update Step' : 'Add Step'}
             </button>
           </div>
         </form>
@@ -396,9 +400,10 @@ export const StepModal: React.FC<StepModalProps> = ({
 interface ResourceModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (resourceData: Omit<SkillResource, 'id'>) => void;
+  onSave: (resourceData: Partial<SkillResource>) => void;
   skillId: string;
   skillName: string;
+  initialData?: SkillResource | null;
 }
 
 export const ResourceModal: React.FC<ResourceModalProps> = ({
@@ -406,28 +411,29 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
   onClose,
   onSave,
   skillId,
-  skillName
+  skillName,
+  initialData
 }) => {
-  const [type, setType] = useState<'document' | 'reference'>('document');
-  const [format, setFormat] = useState<'pdf' | 'drive' | 'link' | 'youtube' | 'github' | 'article'>('link');
-  const [title, setTitle] = useState('');
-  const [url, setUrl] = useState('');
-  const [description, setDescription] = useState('');
+  const [type, setType] = useState<'document' | 'reference'>(initialData?.type || 'document');
+  const [format, setFormat] = useState<'pdf' | 'drive' | 'link' | 'youtube' | 'github' | 'article'>(initialData?.format || 'link');
+  const [title, setTitle] = useState(initialData?.title || '');
+  const [url, setUrl] = useState(initialData?.url || '');
+  const [description, setDescription] = useState(initialData?.description || '');
   const [uploadingPdf, setUploadingPdf] = useState(false);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen) {
-      setType('document');
-      setFormat('link');
-      setTitle('');
-      setUrl('');
-      setDescription('');
+      setType(initialData?.type || 'document');
+      setFormat(initialData?.format || 'link');
+      setTitle(initialData?.title || '');
+      setUrl(initialData?.url || '');
+      setDescription(initialData?.description || '');
       setUploadedFileName(null);
       setUploadingPdf(false);
     }
-  }, [isOpen]);
+  }, [isOpen, initialData]);
 
   if (!isOpen) return null;
 
@@ -463,7 +469,8 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
     if (!title.trim() || !url.trim()) return;
 
     onSave({
-      skill_id: skillId,
+      ...(initialData?.id ? { id: initialData.id } : {}),
+      skill_id: initialData?.skill_id || skillId,
       title: title.trim(),
       type,
       format,
@@ -489,7 +496,7 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
           </div>
           <div>
             <h3 className="text-lg font-black text-[#1a1c2e]">
-              Add Resource &amp; Material
+              {initialData ? 'Edit Resource & Material' : 'Add Resource & Material'}
             </h3>
             <p className="text-xs text-[#8a8ca3]">For {skillName} roadmap</p>
           </div>
@@ -736,7 +743,7 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
               className="btn-primary flex1 flex items-center justify-center gap-2"
             >
               <Save className="w-4 h-4" />
-              Save Material
+              {initialData ? 'Update Material' : 'Save Material'}
             </button>
           </div>
         </form>

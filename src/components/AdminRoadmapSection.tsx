@@ -3,6 +3,7 @@ import { Skill, RoadmapStep, SkillResource, Field } from '../types';
 import { 
   Plus, 
   Trash2, 
+  Edit2,
   FileText, 
   Youtube, 
   FolderOpen, 
@@ -66,6 +67,8 @@ interface AdminRoadmapSectionProps {
   skillResources: Record<string, SkillResource[]>;
   onOpenAddStep: () => void;
   onOpenAddResource: () => void;
+  onOpenEditStep: (step: RoadmapStep) => void;
+  onOpenEditResource: (resource: SkillResource) => void;
   onDeleteStep: (skillId: string, stepId: string) => void;
   onDeleteResource: (resourceId: string, skillId: string) => void;
 }
@@ -79,6 +82,8 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
   skillResources,
   onOpenAddStep,
   onOpenAddResource,
+  onOpenEditStep,
+  onOpenEditResource,
   onDeleteStep,
   onDeleteResource
 }) => {
@@ -323,13 +328,22 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
                         </div>
                       </div>
 
-                      <button 
-                        onClick={() => onDeleteStep(currentSkill.id, st.id)}
-                        className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer shrink-0"
-                        title="Delete Step"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button 
+                          onClick={() => onOpenEditStep(st)}
+                          className="text-slate-400 hover:text-[#6c5ce7] p-1.5 rounded-lg hover:bg-purple-50 transition-colors cursor-pointer"
+                          title="Edit Step"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => onDeleteStep(currentSkill.id, st.id)}
+                          className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                          title="Delete Step"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -434,13 +448,22 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
                       {/* Top Row: Badge on left, Trash action on right */}
                       <div className="flex items-center justify-between gap-2 mb-2">
                         {getFormatBadge(res)}
-                        <button 
-                          onClick={() => onDeleteResource(res.id, currentSkill.id)}
-                          className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
-                          title="Delete Resource"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button 
+                            onClick={() => onOpenEditResource(res)}
+                            className="text-slate-400 hover:text-emerald-700 p-1.5 rounded-lg hover:bg-emerald-50 transition-colors cursor-pointer"
+                            title="Edit Resource"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button 
+                            onClick={() => onDeleteResource(res.id, currentSkill.id)}
+                            className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                            title="Delete Resource"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
 
                       {/* Title */}
