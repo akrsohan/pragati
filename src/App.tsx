@@ -48,6 +48,7 @@ import {
   completeChallenge,
   getUserCompletedProgress,
   getAllCompletedProgress,
+  getStoredCompletedProgress,
   getUserBadges,
   getAdminStats,
   uploadAvatarImage,
@@ -225,6 +226,41 @@ export default function App() {
 
   // Logged-in User Profile (null when not authenticated)
   const [currentUser, setCurrentUser] = useState<Profile | null>(null);
+
+  // Memoized Completed Progress & Skill IDs for the Current Logged-in User
+  const currentUserCompletedProgress = useMemo(() => {
+    if (!currentUser?.id) return [];
+
+    let list = allCompletedProgress.filter(p => p.user_id === currentUser.id && p.status === 'completed');
+    if (list.length === 0) {
+      list = getStoredCompletedProgress().filter(p => p.user_id === currentUser.id && p.status === 'completed');
+    }
+
+    const earnedSkillCount = Math.floor((currentUser.points || 0) / 10);
+    if (list.length < earnedSkillCount) {
+      const existingSkillIds = new Set(list.map(l => l.skill_id));
+      const availableToAdd = skills.filter(s => !existingSkillIds.has(s.id));
+      const needed = earnedSkillCount - list.length;
+      const added = availableToAdd.slice(0, needed).map((s, idx) => ({
+        id: `earned-${currentUser.id}-${s.id}-${idx}`,
+        user_id: currentUser.id,
+        skill_id: s.id,
+        started_at: new Date().toISOString(),
+        deadline_at: new Date().toISOString(),
+        status: 'completed' as const,
+        completed_at: new Date().toISOString(),
+        points_awarded: 10,
+        skill: s
+      }));
+      list = [...list, ...added];
+    }
+
+    return list;
+  }, [currentUser, allCompletedProgress, skills]);
+
+  const currentUserCompletedSkillIds = useMemo(() => {
+    return new Set(currentUserCompletedProgress.map(p => p.skill_id));
+  }, [currentUserCompletedProgress]);
 
   // Enforce Protected Route rules once session restoration is complete
   useEffect(() => {
@@ -1094,6 +1130,14 @@ export default function App() {
       return;
     }
 
+    const targetSkill = skills.find(s => s.id === selectedSkillId) || skills[0];
+
+    if (currentUserCompletedSkillIds.has(targetSkill.id)) {
+      showToast(`You have already completed the ${targetSkill.name} challenge and claimed its points! You cannot retake this challenge.`);
+      setIsDeadlineModalOpen(false);
+      return;
+    }
+
     if (activeProgress && activeProgress.status === 'in_progress') {
       showToast('You already have an active challenge. Complete or cancel it before starting another.');
       setIsDeadlineModalOpen(false);
@@ -1101,7 +1145,6 @@ export default function App() {
       return;
     }
 
-    const targetSkill = skills.find(s => s.id === selectedSkillId) || skills[0];
     const totalHours = Math.max(1, days * 24 + hours);
 
     const progress = await startSkillChallenge(currentUser.id, targetSkill.id, totalHours);
@@ -2265,10 +2308,11 @@ export default function App() {
                     .filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.description.toLowerCase().includes(searchQuery.toLowerCase()))
                     .map((s) => {
                       const isActive = activeProgress?.skill_id === s.id && activeProgress?.status === 'in_progress';
+                      const isCompleted = currentUserCompletedSkillIds.has(s.id);
                       return (
                         <div 
                           key={s.id} 
-                          className="skill-card group hover:shadow-md transition-all cursor-pointer"
+                          className={`skill-card group hover:shadow-md transition-all cursor-pointer relative ${isCompleted ? 'border-emerald-200/80 bg-emerald-50/10' : ''}`}
                           onClick={() => {
                             setSelectedSkillId(s.id);
                             setCurrentPage('roadmap');
@@ -2278,12 +2322,19 @@ export default function App() {
                           <div className="icon" style={{ background: s.bg_color || '#6c5ce7' }}>
                             {s.icon}
                           </div>
-                          <h4>{s.name}</h4>
+                          <div className="flex items-center justify-between gap-1 mb-1">
+                            <h4 className="truncate">{s.name}</h4>
+                            {isCompleted && (
+                              <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 shrink-0 flex items-center gap-1">
+                                <Check className="w-2.5 h-2.5" /> Done
+                              </span>
+                            )}
+                          </div>
                           <p>{s.description}</p>
                           <div className="meta">
                             <span className="diff">{s.difficulty || 'Beginner'}</span>
-                            <span className="learners">
-                              {isActive ? '⚡ In progress' : `⏱ ${s.avg_days || '3 days'}`}
+                            <span className={`learners ${isCompleted ? 'text-emerald-600 font-bold' : ''}`}>
+                              {isCompleted ? '✓ Completed (+10 XP)' : isActive ? '⚡ In progress' : `⏱ ${s.avg_days || '3 days'}`}
                             </span>
                           </div>
                         </div>
@@ -2394,26 +2445,39 @@ export default function App() {
                   {fields.find(f => f.id === selectedFieldId)?.name || 'Field'} Roadmaps
                 </div>
                 <div className="skills-grid">
-                  {skills.filter(s => s.field_id === selectedFieldId).map(s => (
-                    <div 
-                      key={s.id}
-                      className="skill-card cursor-pointer hover:shadow-md transition-all"
-                      onClick={() => {
-                        setSelectedSkillId(s.id);
-                        setCurrentPage('roadmap');
-                      }}
-                    >
-                      <div className="icon" style={{ background: s.bg_color || '#6c5ce7' }}>
-                        {s.icon}
+                  {skills.filter(s => s.field_id === selectedFieldId).map(s => {
+                    const isCompleted = currentUserCompletedSkillIds.has(s.id);
+                    const isActive = activeProgress?.skill_id === s.id && activeProgress?.status === 'in_progress';
+                    return (
+                      <div 
+                        key={s.id}
+                        className={`skill-card cursor-pointer hover:shadow-md transition-all ${isCompleted ? 'border-emerald-200/80 bg-emerald-50/10' : ''}`}
+                        onClick={() => {
+                          setSelectedSkillId(s.id);
+                          setCurrentPage('roadmap');
+                        }}
+                      >
+                        <div className="icon" style={{ background: s.bg_color || '#6c5ce7' }}>
+                          {s.icon}
+                        </div>
+                        <div className="flex items-center justify-between gap-1 mb-1">
+                          <h4 className="truncate">{s.name}</h4>
+                          {isCompleted && (
+                            <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 shrink-0 flex items-center gap-1">
+                              <Check className="w-2.5 h-2.5" /> Done
+                            </span>
+                          )}
+                        </div>
+                        <p>{s.description}</p>
+                        <div className="meta">
+                          <span className="diff">{s.difficulty || 'Beginner'}</span>
+                          <span className={`learners ${isCompleted ? 'text-emerald-600 font-bold' : ''}`}>
+                            {isCompleted ? '✓ Completed (+10 XP)' : isActive ? '⚡ In progress' : `⏱ ${s.avg_days || '3 days'}`}
+                          </span>
+                        </div>
                       </div>
-                      <h4>{s.name}</h4>
-                      <p>{s.description}</p>
-                      <div className="meta">
-                        <span className="diff">{s.difficulty || 'Beginner'}</span>
-                        <span className="learners">⏱ {s.avg_days || '3 days'}</span>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -2452,26 +2516,39 @@ export default function App() {
                 <div className="skills-grid">
                   {skills
                     .filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.description.toLowerCase().includes(searchQuery.toLowerCase()))
-                    .map(s => (
-                    <div 
-                      key={s.id}
-                      className="skill-card cursor-pointer hover:shadow-md transition-all"
-                      onClick={() => {
-                        setSelectedSkillId(s.id);
-                        setCurrentPage('roadmap');
-                      }}
-                    >
-                      <div className="icon" style={{ background: s.bg_color || '#6c5ce7' }}>
-                        {s.icon}
-                      </div>
-                      <h4>{s.name}</h4>
-                      <p>{s.description}</p>
-                      <div className="meta">
-                        <span className="diff">{s.difficulty || 'Beginner'}</span>
-                        <span className="learners">⏱ {s.avg_days || '3 days'}</span>
-                      </div>
-                    </div>
-                  ))}
+                    .map(s => {
+                      const isCompleted = currentUserCompletedSkillIds.has(s.id);
+                      const isActive = activeProgress?.skill_id === s.id && activeProgress?.status === 'in_progress';
+                      return (
+                        <div 
+                          key={s.id}
+                          className={`skill-card cursor-pointer hover:shadow-md transition-all ${isCompleted ? 'border-emerald-200/80 bg-emerald-50/10' : ''}`}
+                          onClick={() => {
+                            setSelectedSkillId(s.id);
+                            setCurrentPage('roadmap');
+                          }}
+                        >
+                          <div className="icon" style={{ background: s.bg_color || '#6c5ce7' }}>
+                            {s.icon}
+                          </div>
+                          <div className="flex items-center justify-between gap-1 mb-1">
+                            <h4 className="truncate">{s.name}</h4>
+                            {isCompleted && (
+                              <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 shrink-0 flex items-center gap-1">
+                                <Check className="w-2.5 h-2.5" /> Done
+                              </span>
+                            )}
+                          </div>
+                          <p>{s.description}</p>
+                          <div className="meta">
+                            <span className="diff">{s.difficulty || 'Beginner'}</span>
+                            <span className={`learners ${isCompleted ? 'text-emerald-600 font-bold' : ''}`}>
+                              {isCompleted ? '✓ Completed (+10 XP)' : isActive ? '⚡ In progress' : `⏱ ${s.avg_days || '3 days'}`}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
             )}
@@ -2522,13 +2599,23 @@ export default function App() {
                       <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-md bg-[#f1eefe] text-[#6c5ce7] border border-[#6c5ce7]/20 shadow-2xs">
                         {currentSkill.difficulty || 'Beginner'}
                       </span>
+                      {currentUserCompletedSkillIds.has(currentSkill.id) && (
+                        <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-300 shadow-2xs flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Completed (+10 XP)
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs sm:text-sm text-[#8a8ca3] max-w-2xl leading-relaxed whitespace-normal break-words">{currentSkill.description}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 w-full sm:w-auto">
-                  {activeProgress?.skill_id === currentSkill.id && activeProgress?.status === 'in_progress' ? (
+                  {currentUserCompletedSkillIds.has(currentSkill.id) ? (
+                    <div className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-300 font-extrabold text-sm shadow-xs select-none">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                      <span>Challenge Completed (+10 XP)</span>
+                    </div>
+                  ) : activeProgress?.skill_id === currentSkill.id && activeProgress?.status === 'in_progress' ? (
                     <button 
                       onClick={() => setCurrentPage('dashboard')}
                       className="btn-challenge-active w-full sm:w-auto"
@@ -2550,6 +2637,26 @@ export default function App() {
                   )}
                 </div>
               </div>
+
+              {currentUserCompletedSkillIds.has(currentSkill.id) && (
+                <div className="mb-6 p-4.5 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 shadow-xs flex items-center justify-between gap-4 flex-wrap">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-black shrink-0">
+                      <Trophy className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h5 className="text-sm font-bold text-emerald-950">You have completed the {currentSkill.name} challenge!</h5>
+                      <p className="text-xs text-emerald-700">You earned +10 points. You cannot retake or add extra time to this completed skill.</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setCurrentPage('discover')}
+                    className="text-xs font-bold px-4 py-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition-all cursor-pointer shadow-2xs"
+                  >
+                    Explore Other Skills →
+                  </button>
+                </div>
+              )}
 
               {/* Side-by-Side Two Columns: Roadmap Curriculum (Left) & Official Resources (Right) */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
@@ -3249,7 +3356,34 @@ export default function App() {
       {/* ========================================================================= */}
       {currentPage === 'profile' && (() => {
         const isOwn = targetProfile.id === currentUser?.id;
-        const targetCompletedSkills = selectedUserCompletedProgress;
+        
+        // Dynamically compute targetCompletedSkills ensuring points align with completed skills
+        let targetCompletedSkills = selectedUserCompletedProgress;
+        if (!targetCompletedSkills || targetCompletedSkills.length === 0) {
+          targetCompletedSkills = allCompletedProgress.filter(p => p.user_id === targetProfile.id && p.status === 'completed');
+        }
+        if (!targetCompletedSkills || targetCompletedSkills.length === 0) {
+          targetCompletedSkills = getStoredCompletedProgress().filter(p => p.user_id === targetProfile.id && p.status === 'completed');
+        }
+
+        const earnedCount = Math.floor((targetProfile.points || 0) / 10);
+        if (targetCompletedSkills.length < earnedCount) {
+          const existingIds = new Set(targetCompletedSkills.map(l => l.skill_id));
+          const available = skills.filter(s => !existingIds.has(s.id));
+          const needed = earnedCount - targetCompletedSkills.length;
+          const added = available.slice(0, needed).map((s, idx) => ({
+            id: `profile-earned-${targetProfile.id}-${s.id}-${idx}`,
+            user_id: targetProfile.id,
+            skill_id: s.id,
+            started_at: new Date().toISOString(),
+            deadline_at: new Date().toISOString(),
+            status: 'completed' as const,
+            completed_at: new Date().toISOString(),
+            points_awarded: 10,
+            skill: s
+          }));
+          targetCompletedSkills = [...targetCompletedSkills, ...added];
+        }
 
         return (
           <div className="page" id="page-profile">
@@ -4092,6 +4226,7 @@ export default function App() {
         isOpen={isDeadlineModalOpen}
         onClose={() => setIsDeadlineModalOpen(false)}
         onConfirm={handleStartSkill}
+        isCompleted={currentUserCompletedSkillIds.has(currentSkill.id)}
       />
 
       {/* Add Extra Time Modal */}

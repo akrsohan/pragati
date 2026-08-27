@@ -7,13 +7,15 @@ interface DeadlineModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (days: number, hours: number) => void;
+  isCompleted?: boolean;
 }
 
 export const DeadlineModal: React.FC<DeadlineModalProps> = ({
   skill,
   isOpen,
   onClose,
-  onConfirm
+  onConfirm,
+  isCompleted = false
 }) => {
   const [deadlineDays, setDeadlineDays] = useState<number>(0);
   const [deadlineHours, setDeadlineHours] = useState<number>(0);
@@ -99,21 +101,41 @@ export const DeadlineModal: React.FC<DeadlineModalProps> = ({
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-1">
-              <span className="text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 inline-flex items-center gap-1 shadow-xs">
-                <Sparkles className="w-3 h-3 text-indigo-600" /> Challenge Target
-              </span>
-              <span className="text-[11px] font-bold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-md border border-amber-200 inline-flex items-center gap-1 shadow-xs">
-                <Trophy className="w-3 h-3 text-amber-500" /> +10 Points Reward
-              </span>
+              {isCompleted ? (
+                <span className="text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-300 inline-flex items-center gap-1 shadow-xs">
+                  <Check className="w-3 h-3 text-emerald-600" /> Skill Mastered
+                </span>
+              ) : (
+                <>
+                  <span className="text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 inline-flex items-center gap-1 shadow-xs">
+                    <Sparkles className="w-3 h-3 text-indigo-600" /> Challenge Target
+                  </span>
+                  <span className="text-[11px] font-bold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-md border border-amber-200 inline-flex items-center gap-1 shadow-xs">
+                    <Trophy className="w-3 h-3 text-amber-500" /> +10 Points Reward
+                  </span>
+                </>
+              )}
             </div>
             <h2 className="text-xl sm:text-2xl font-black text-[#1a1c2e] leading-tight tracking-tight">
-              Set Your Deadline
+              {isCompleted ? 'Skill Already Completed' : 'Set Your Deadline'}
             </h2>
             <p className="text-xs sm:text-sm text-gray-500 font-medium mt-0.5">
               Target for <b className="text-indigo-600 font-bold">{skill.name}</b>
             </p>
           </div>
         </div>
+
+        {isCompleted && (
+          <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm flex items-start gap-3">
+            <Trophy className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold">You have already completed the {skill.name} challenge!</p>
+              <p className="text-emerald-700 text-xs mt-0.5">
+                You earned +10 points for completing this curriculum. You cannot take this challenge again or add extra time to it. Please pick another roadmap!
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Stepper Inputs for Days and Hours with High Contrast & Big Typography */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -287,17 +309,28 @@ export const DeadlineModal: React.FC<DeadlineModalProps> = ({
           </button>
           <button
             type="button"
-            disabled={!isValidDuration}
+            disabled={!isValidDuration || isCompleted}
             onClick={handleConfirm}
-            className={`w-full sm:flex-[1.6] py-3 px-6 rounded-md font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm ${
-              isValidDuration 
-                ? 'bg-[#6c5ce7] hover:bg-[#5b4bc4] text-white shadow-xs hover:opacity-95' 
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+            className={`w-full sm:flex-[1.6] py-3 px-6 rounded-md font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-sm ${
+              isCompleted
+                ? 'bg-emerald-600/80 text-white cursor-not-allowed'
+                : isValidDuration 
+                  ? 'bg-[#6c5ce7] hover:bg-[#5b4bc4] text-white shadow-xs hover:opacity-95 cursor-pointer' 
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
             }`}
             id="btn-confirm-deadline"
           >
-            <Check className="w-4 h-4 text-white" />
-            Confirm &amp; Start Challenge
+            {isCompleted ? (
+              <>
+                <Check className="w-4 h-4 text-white" />
+                <span>Skill Already Completed (+10 XP)</span>
+              </>
+            ) : (
+              <>
+                <Check className="w-4 h-4 text-white" />
+                <span>Confirm &amp; Start Challenge</span>
+              </>
+            )}
           </button>
         </div>
       </div>

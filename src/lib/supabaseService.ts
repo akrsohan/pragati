@@ -851,6 +851,8 @@ const skillNameToIdMap: Record<string, string> = {
  * Fetch all completed user_progress records for a specific user
  */
 export async function getUserCompletedProgress(userId: string): Promise<UserProgress[]> {
+  const currentSkills = getStoredSkills();
+
   try {
     const { data, error } = await supabase
       .from('user_progress')
@@ -861,7 +863,7 @@ export async function getUserCompletedProgress(userId: string): Promise<UserProg
 
     if (!error && data && data.length > 0) {
       return data.map((row: any) => {
-        const skill = initialSkills.find(s => s.id === row.skill_id);
+        const skill = currentSkills.find(s => s.id === row.skill_id) || initialSkills.find(s => s.id === row.skill_id);
         return {
           id: row.id,
           user_id: row.user_id,
@@ -885,8 +887,27 @@ export async function getUserCompletedProgress(userId: string): Promise<UserProg
   if (stored.length > 0) {
     return stored.map(row => ({
       ...row,
-      skill: initialSkills.find(s => s.id === row.skill_id)
+      skill: currentSkills.find(s => s.id === row.skill_id) || initialSkills.find(s => s.id === row.skill_id)
     }));
+  }
+
+  // Check if profile exists and has points (e.g. 30 points = 3 completed skills)
+  const profile = await getProfile(userId);
+  if (profile && profile.points > 0) {
+    const count = Math.floor(profile.points / 10);
+    if (count > 0) {
+      return currentSkills.slice(0, count).map((s, idx) => ({
+        id: `earned-${userId}-${s.id}-${idx}`,
+        user_id: userId,
+        skill_id: s.id,
+        started_at: new Date().toISOString(),
+        deadline_at: new Date().toISOString(),
+        status: 'completed' as const,
+        completed_at: new Date().toISOString(),
+        points_awarded: 10,
+        skill: s
+      }));
+    }
   }
 
   // Fallback to initial completed skills for demo mock profiles only (exclude active user)
@@ -894,7 +915,7 @@ export async function getUserCompletedProgress(userId: string): Promise<UserProg
   if (fallback && Array.isArray(fallback) && userId !== 'user-sohan') {
     return fallback.map((fb, idx) => {
       const realSkillId = skillNameToIdMap[fb.skillName] || 'skill-html';
-      const actualSkill = initialSkills.find(s => s.id === realSkillId);
+      const actualSkill = currentSkills.find(s => s.id === realSkillId) || initialSkills.find(s => s.id === realSkillId);
       return {
         id: `completed-${userId}-${idx}`,
         user_id: userId,
@@ -928,6 +949,8 @@ export async function getUserCompletedProgress(userId: string): Promise<UserProg
  * Fetch all completed user_progress records across the whole system
  */
 export async function getAllCompletedProgress(): Promise<UserProgress[]> {
+  const currentSkills = getStoredSkills();
+
   try {
     const { data, error } = await supabase
       .from('user_progress')
@@ -943,7 +966,8 @@ export async function getAllCompletedProgress(): Promise<UserProgress[]> {
         deadline_at: row.deadline_at,
         status: row.status,
         completed_at: row.completed_at,
-        points_awarded: Number(row.points_awarded) || 10
+        points_awarded: Number(row.points_awarded) || 10,
+        skill: currentSkills.find(s => s.id === row.skill_id)
       }));
     }
   } catch (err) {
@@ -966,7 +990,8 @@ export async function getAllCompletedProgress(): Promise<UserProgress[]> {
         deadline_at: new Date().toISOString(),
         status: 'completed',
         completed_at: new Date().toISOString(),
-        points_awarded: 10
+        points_awarded: 10,
+        skill: currentSkills.find(s => s.id === realSkillId)
       });
     });
   });
