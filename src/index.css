@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 * {
   margin: 0;
@@ -4839,75 +4840,3 @@ body.dark-mode .btn-setup-discard-3d:hover {
     animation: none !important;
   }
 }
-
-/* ========================================================================= */
-/* Pragati — Light Mode Specific Styling (Roadmap / Skill Detail Page ONLY)   */
-/* Scoped strictly to #page-roadmap when NOT in dark mode                    */
-/* ========================================================================= */
-html:not(.dark) #page-roadmap,
-body:not(.dark-mode) #page-roadmap {
-  background-color: #FAF8F5 !important;
-}
-
-html:not(.dark) #page-roadmap .roadmap-header-card,
-body:not(.dark-mode) #page-roadmap .roadmap-header-card {
-  background-color: #FFFFFF !important;
-  border-color: #E8E4DC !important;
-}
-
-html:not(.dark) #page-roadmap .roadmap-track-badge,
-body:not(.dark-mode) #page-roadmap .roadmap-track-badge {
-  background-color: #FFFFFF !important;
-  border-color: #E8E4DC !important;
-  color: #8B8A86 !important;
-}
-
-html:not(.dark) #page-roadmap .step-card,
-body:not(.dark-mode) #page-roadmap .step-card {
-  background-color: #FFFFFF !important;
-  border-color: #E8E4DC !important;
-}
-
-html:not(.dark) #page-roadmap .step-card:hover,
-body:not(.dark-mode) #page-roadmap .step-card:hover {
-  background-color: #FAF8F5 !important;
-  border-color: #6C5CE7 !important;
-}
-
-html:not(.dark) #page-roadmap .step-num,
-body:not(.dark-mode) #page-roadmap .step-num {
-  background: #F3F1EC !important;
-  border-color: #E8E4DC !important;
-  color: #6C5CE7 !important;
-}
-
-html:not(.dark) #page-roadmap .step-body h5,
-body:not(.dark-mode) #page-roadmap .step-body h5 {
-  color: #22252E !important;
-}
-
-html:not(.dark) #page-roadmap .step-body p,
-body:not(.dark-mode) #page-roadmap .step-body p {
-  color: #8B8A86 !important;
-}
-
-html:not(.dark) #page-roadmap .step-subtopic-tag,
-body:not(.dark-mode) #page-roadmap .step-subtopic-tag {
-  background-color: #F3F1EC !important;
-  border-color: #E8E4DC !important;
-  color: #22252E !important;
-}
-
-html:not(.dark) #page-roadmap .step-subtopic-tag:hover,
-body:not(.dark-mode) #page-roadmap .step-subtopic-tag:hover {
-  border-color: #6C5CE7 !important;
-}
-
-html:not(.dark) #page-roadmap #official-documentation-resources,
-body:not(.dark-mode) #page-roadmap #official-documentation-resources {
-  background-color: #FFFFFF !important;
-  border-color: #E8E4DC !important;
-}
-
-
-

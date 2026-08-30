@@ -177,10 +177,15 @@ export default function App() {
       document.body.classList.remove('dark-mode');
     }
     localStorage.setItem('skilltrack_theme', theme);
+    console.log(`[SkillTrack Theme]: Applied "${theme}" | html.classList="${document.documentElement.classList.toString()}" | body.classList="${document.body.classList.toString()}"`);
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+    setTheme(prev => {
+      const nextTheme = prev === 'dark' ? 'light' : 'dark';
+      console.log(`[SkillTrack Theme Toggle]: Toggled from "${prev}" to "${nextTheme}"`);
+      return nextTheme;
+    });
   };
   
   // Auth Form State (Clean by default)
