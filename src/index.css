@@ -4798,11 +4798,61 @@ body.dark-mode .btn-setup-discard-3d:hover {
   color: #ffffff !important;
 }
 
+/* Enhanced Soft Animations for Roadmap & Detail Pages */
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(108, 92, 231, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(108, 92, 231, 0);
+  }
+}
+
+@keyframes floatSoft {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes shimmerEffect {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2.5s infinite ease-in-out;
+}
+
+.animate-float-soft {
+  animation: floatSoft 3.5s ease-in-out infinite;
+}
+
+.step-card {
+  transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.step-card:hover {
+  transform: translateY(-3px) scale(1.008);
+}
+
+.step-card:hover .step-num {
+  transform: translateY(-2px) scale(1.12) rotate(-4deg);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .btn-challenge-cta,
   .btn-challenge-active,
   .step-card,
   .step-num,
+  .animate-pulse-glow,
+  .animate-float-soft,
   .resource-card-3d,
   .resource-action-btn,
   .skill-3d-badge,

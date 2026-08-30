@@ -267,18 +267,18 @@ export const SkillResourcesSection: React.FC<SkillResourcesSectionProps> = ({
             return (
               <div 
                 key={res.id} 
-                className="group relative bg-white dark:bg-[#141726] hover:bg-[#FAF8F5] dark:hover:bg-[#181c30] border border-[#E8E4DC] dark:border-[#23273e] hover:border-[#6C5CE7]/60 dark:hover:border-[#6c5ce7] rounded-2xl p-5 transition-all duration-200 shadow-2xs hover:shadow-md flex flex-col justify-between"
+                className="group relative bg-white dark:bg-[#141726] hover:bg-[#FAF8F5] dark:hover:bg-[#181c30] border border-[#E8E4DC] dark:border-[#23273e] hover:border-[#6C5CE7] dark:hover:border-[#6c5ce7] rounded-2xl p-5 transition-all duration-300 shadow-2xs hover:shadow-lg hover:-translate-y-1 flex flex-col justify-between"
               >
                 <div>
                   {/* Top Meta Line: Badge + Domain Tag + Delete */}
                   <div className="flex items-center justify-between gap-3 mb-3">
-                    <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg border ${fmt.badgeClass}`}>
+                    <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg border transition-transform duration-200 group-hover:scale-105 ${fmt.badgeClass}`}>
                       {fmt.icon}
                       <span>{fmt.badgeLabel}</span>
                     </span>
 
                     <div className="flex items-center gap-2 ml-auto">
-                      <span className="text-[11px] font-semibold text-[#8B8A86] dark:text-slate-300 bg-[#F3F1EC] dark:bg-[#181c30] border border-[#E8E4DC] dark:border-[#2a2f4c] px-2.5 py-0.5 rounded-md shadow-2xs">
+                      <span className="text-[11px] font-semibold text-[#8B8A86] dark:text-slate-300 bg-[#F3F1EC] dark:bg-[#181c30] border border-[#E8E4DC] dark:border-[#2a2f4c] px-2.5 py-0.5 rounded-md shadow-2xs group-hover:border-[#6C5CE7]/30 transition-colors">
                         {domainName}
                       </span>
 
@@ -295,7 +295,7 @@ export const SkillResourcesSection: React.FC<SkillResourcesSectionProps> = ({
                   </div>
 
                   {/* Clean Title */}
-                  <h5 className="font-extrabold text-sm sm:text-base text-[#22252E] dark:text-white group-hover:text-[#6C5CE7] dark:group-hover:text-purple-400 transition-colors leading-snug">
+                  <h5 className="font-extrabold text-sm sm:text-base text-[#22252E] dark:text-white group-hover:text-[#6C5CE7] dark:group-hover:text-purple-300 transition-colors leading-snug">
                     {res.title}
                   </h5>
 
@@ -310,7 +310,7 @@ export const SkillResourcesSection: React.FC<SkillResourcesSectionProps> = ({
                 {/* Bottom Action Footer */}
                 <div className="pt-3.5 mt-3.5 border-t border-[#E8E4DC] dark:border-[#23273e] flex items-center justify-between gap-3">
                   <div className="flex items-center gap-1.5 text-[#8B8A86] dark:text-slate-500 text-xs">
-                    <Bookmark className="w-3.5 h-3.5" />
+                    <Bookmark className="w-3.5 h-3.5 text-[#6C5CE7] dark:text-purple-400" />
                     <span>Reference Material</span>
                   </div>
 
@@ -318,10 +318,10 @@ export const SkillResourcesSection: React.FC<SkillResourcesSectionProps> = ({
                     href={res.url}
                     target="_blank"
                     rel="noreferrer"
-                    className={`inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl transition-all cursor-pointer ${fmt.btnClass}`}
+                    className={`inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl transition-all duration-200 cursor-pointer shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95 ${fmt.btnClass}`}
                   >
                     <span>{fmt.btnText}</span>
-                    <ArrowUpRight className="w-3.5 h-3.5 opacity-90" />
+                    <ArrowUpRight className="w-3.5 h-3.5 opacity-90 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </a>
                 </div>
               </div>

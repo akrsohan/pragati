@@ -71,7 +71,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#161828]/95 backdrop-blur-xl border-t border-slate-200 dark:border-white/10 shadow-2xl transition-all"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#141726]/95 backdrop-blur-xl border-t border-[#E8E4DC] dark:border-[#23273e] shadow-2xl transition-all"
       id="app-bottom-navbar"
       aria-label="Bottom Navigation"
     >
@@ -90,14 +90,14 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               }}
               className={`relative flex flex-col items-center justify-center py-1.5 px-3 rounded-2xl transition-all select-none cursor-pointer flex-1 group ${
                 isActive 
-                  ? 'text-[#6c5ce7] dark:text-white bg-[#6c5ce7]/10 dark:bg-[#6c5ce7]/20 shadow-xs' 
-                  : 'text-slate-500 dark:text-[#9ca3af] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+                  ? 'text-[#6C5CE7] dark:text-purple-300 bg-[#6C5CE7]/10 dark:bg-purple-950/40 shadow-xs font-black' 
+                  : 'text-[#8B8A86] dark:text-slate-400 hover:text-[#22252E] dark:hover:text-white hover:bg-[#F3F1EC] dark:hover:bg-[#1e2238]'
               }`}
               id={`bottom-nav-${item.id}`}
             >
               {/* Active Highlight Top Pip */}
               {isActive && (
-                <span className="absolute -top-2 w-8 h-1 bg-gradient-to-r from-[#6c5ce7] to-[#37f0ff] rounded-full shadow-sm shadow-[#6c5ce7]" />
+                <span className="absolute -top-2 w-8 h-1 bg-gradient-to-r from-[#6C5CE7] to-[#a29bfe] rounded-full shadow-sm shadow-[#6C5CE7]/50" />
               )}
 
               {/* Icon / Avatar Wrapper */}
@@ -107,13 +107,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                     src={currentUser.avatar_url} 
                     alt={currentUser.full_name} 
                     className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover ring-2 ${
-                      isActive ? 'ring-[#6c5ce7]' : 'ring-slate-300 dark:ring-white/30'
+                      isActive ? 'ring-[#6C5CE7]' : 'ring-[#E8E4DC] dark:ring-[#23273e]'
                     }`}
                   />
                 ) : (
                   <Icon 
                     className={`w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:scale-110 ${
-                      isActive ? 'text-[#6c5ce7] dark:text-[#37f0ff]' : 'text-current'
+                      isActive ? 'text-[#6C5CE7] dark:text-purple-300' : 'text-current'
                     }`} 
                   />
                 )}
@@ -122,14 +122,14 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 {item.isPulse && (
                   <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 ring-2 ring-white dark:ring-[#161828]" />
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 ring-2 ring-white dark:ring-[#141726]" />
                   </span>
                 )}
               </div>
 
               {/* Label */}
-              <span className={`text-[11px] font-bold tracking-tight leading-tight ${
-                isActive ? 'text-[#6c5ce7] dark:text-white font-extrabold' : 'text-slate-500 dark:text-[#9ca3af]'
+              <span className={`text-[11px] tracking-tight leading-tight ${
+                isActive ? 'text-[#6C5CE7] dark:text-purple-300 font-extrabold' : 'text-[#8B8A86] dark:text-slate-400 font-semibold'
               }`}>
                 {item.label}
               </span>

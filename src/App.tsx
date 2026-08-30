@@ -2606,10 +2606,14 @@ export default function App() {
             <div className="w-full max-w-7xl mx-auto flex flex-col gap-6 sm:gap-8">
               
               {/* 1. Top Header Info Card */}
-              <div className="roadmap-header-card p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 bg-white dark:bg-[#141726] border border-[#E8E4DC] dark:border-[#23273e]">
-                <div className="flex items-center gap-4">
+              <div className="roadmap-header-card relative overflow-hidden p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 bg-white dark:bg-[#141726] border border-[#E8E4DC] dark:border-[#23273e] rounded-3xl shadow-sm hover:shadow-md transition-all duration-300">
+                {/* Background decorative glow blobs */}
+                <div className="absolute -top-24 -right-24 w-60 h-60 bg-[#6C5CE7]/10 dark:bg-[#6C5CE7]/15 rounded-full blur-3xl pointer-events-none animate-pulse-glow" />
+                <div className="absolute -bottom-24 -left-24 w-60 h-60 bg-[#1B9C63]/10 dark:bg-[#1B9C63]/15 rounded-full blur-3xl pointer-events-none" />
+
+                <div className="flex items-center gap-4 relative z-10">
                   <div 
-                    className="skill-3d-badge w-14 h-14 min-w-14 rounded-2xl text-white font-extrabold flex items-center justify-center text-2xl shadow-md"
+                    className="skill-3d-badge w-14 h-14 min-w-14 rounded-2xl text-white font-extrabold flex items-center justify-center text-2xl shadow-md transition-transform duration-300 hover:scale-110 hover:-rotate-3 cursor-pointer"
                     style={{ background: currentSkill.bg_color || '#6c5ce7' }}
                   >
                     {currentSkill.icon}
@@ -2621,7 +2625,7 @@ export default function App() {
                         {currentSkill.difficulty || 'Beginner'}
                       </span>
                       {currentUserCompletedSkillIds.has(currentSkill.id) && (
-                        <span className="text-xs font-extrabold px-2.5 py-0.5 rounded-md bg-[#E3F7EC] dark:bg-emerald-950/60 text-[#1B9C63] dark:text-emerald-300 border border-[#1B9C63]/30 dark:border-emerald-800/50 shadow-2xs flex items-center gap-1.5">
+                        <span className="text-xs font-extrabold px-2.5 py-1 rounded-md bg-[#E3F7EC] dark:bg-emerald-950/60 text-[#1B9C63] dark:text-emerald-300 border border-[#1B9C63]/30 dark:border-emerald-800/50 shadow-2xs flex items-center gap-1.5 animate-pulse">
                           <CheckCircle2 className="w-3.5 h-3.5 text-[#1B9C63] dark:text-emerald-400" /> Completed (+10 XP)
                         </span>
                       )}
@@ -2630,46 +2634,49 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 w-full sm:w-auto">
+                <div className="flex items-center gap-2 w-full sm:w-auto relative z-10">
                   {currentUserCompletedSkillIds.has(currentSkill.id) ? (
-                    <div className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#E3F7EC] dark:bg-emerald-950/60 text-[#1B9C63] dark:text-emerald-300 border border-[#1B9C63]/30 dark:border-emerald-800/50 font-extrabold text-sm shadow-xs select-none">
-                      <CheckCircle2 className="w-5 h-5 text-[#1B9C63] dark:text-emerald-400 shrink-0" />
+                    <div className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#E3F7EC] dark:bg-emerald-950/60 text-[#1B9C63] dark:text-emerald-300 border border-[#1B9C63]/30 dark:border-emerald-800/50 font-extrabold text-sm shadow-xs select-none hover:shadow-md transition-all">
+                      <CheckCircle2 className="w-5 h-5 text-[#1B9C63] dark:text-emerald-400 shrink-0 animate-bounce" />
                       <span>Challenge Completed (+10 XP)</span>
                     </div>
                   ) : activeProgress?.skill_id === currentSkill.id && activeProgress?.status === 'in_progress' ? (
                     <button 
                       onClick={() => setCurrentPage('dashboard')}
-                      className="btn-challenge-active w-full sm:w-auto"
+                      className="btn-challenge-active w-full sm:w-auto animate-pulse-glow"
                       id="btn-active-challenge-dashboard"
                     >
-                      <Zap className="w-5 h-5 fill-white" />
+                      <Zap className="w-5 h-5 fill-white animate-spin" />
                       <span>⚡ Active Challenge (Go to Dashboard)</span>
                     </button>
                   ) : (
                     <button 
                       onClick={() => setIsDeadlineModalOpen(true)}
-                      className="btn-challenge-cta w-full sm:w-auto"
+                      className="btn-challenge-cta w-full sm:w-auto group hover:shadow-lg transition-all"
                       id="btn-start-challenge-roadmap"
                     >
-                      <Zap className="w-5 h-5 fill-white" />
+                      <Zap className="w-5 h-5 fill-white group-hover:scale-110 transition-transform" />
                       <span>Start Timed Challenge</span>
-                      <ArrowRight className="w-5 h-5 ml-1" />
+                      <ArrowRight className="w-5 h-5 ml-1 group-hover:translate-x-1 transition-transform" />
                     </button>
                   )}
                 </div>
               </div>
 
-              {/* 2. Completed Challenge Status Banner */}
+              {/* 2. Completed Challenge Status Banner with animated badge & glow */}
               {currentUserCompletedSkillIds.has(currentSkill.id) && (
-                <div className="p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-[#E3F7EC] dark:bg-emerald-950/40 border border-[#1B9C63]/30 dark:border-emerald-800/60 shadow-xs flex items-center justify-between gap-5 flex-wrap">
+                <div className="relative overflow-hidden p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#E3F7EC] via-[#EAFBF2] to-[#E3F7EC] dark:from-emerald-950/50 dark:via-emerald-950/30 dark:to-emerald-950/50 border border-[#1B9C63]/35 dark:border-emerald-800/60 shadow-xs flex items-center justify-between gap-5 flex-wrap hover:shadow-md transition-all duration-300">
                   <div className="flex items-center gap-4 min-w-0">
-                    <div className="w-12 h-12 rounded-2xl bg-white dark:bg-emerald-900/60 text-[#1B9C63] dark:text-emerald-300 border border-[#1B9C63]/30 dark:border-emerald-700/60 flex items-center justify-center font-black shrink-0 shadow-2xs">
+                    <div className="w-12 h-12 rounded-2xl bg-white dark:bg-emerald-900/70 text-[#1B9C63] dark:text-emerald-300 border border-[#1B9C63]/30 dark:border-emerald-700/60 flex items-center justify-center font-black shrink-0 shadow-xs animate-float-soft">
                       <Trophy className="w-6 h-6 text-[#1B9C63] dark:text-emerald-400" />
                     </div>
                     <div>
-                      <h5 className="text-base sm:text-lg font-black text-[#22252E] dark:text-emerald-100 tracking-tight">
-                        You have completed the {currentSkill.name} challenge!
-                      </h5>
+                      <div className="flex items-center gap-2">
+                        <h5 className="text-base sm:text-lg font-black text-[#22252E] dark:text-emerald-100 tracking-tight">
+                          You have completed the {currentSkill.name} challenge!
+                        </h5>
+                        <Sparkles className="w-4 h-4 text-amber-500 animate-spin" />
+                      </div>
                       <p className="text-xs sm:text-sm text-[#1B9C63] dark:text-emerald-300 font-medium mt-0.5">
                         You earned +10 points. You cannot retake or add extra time to this completed skill.
                       </p>
@@ -2677,9 +2684,10 @@ export default function App() {
                   </div>
                   <button
                     onClick={() => setCurrentPage('discover')}
-                    className="text-xs sm:text-sm font-extrabold px-5 py-2.5 rounded-xl bg-[#1B9C63] hover:bg-[#15804f] text-white transition-all cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-0.5 shrink-0"
+                    className="text-xs sm:text-sm font-extrabold px-5 py-2.5 rounded-xl bg-[#1B9C63] hover:bg-[#15804f] text-white transition-all cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 shrink-0 flex items-center gap-2 group"
                   >
-                    Explore Other Skills →
+                    <span>Explore Other Skills</span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </button>
                 </div>
               )}
@@ -2688,11 +2696,11 @@ export default function App() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 items-start">
                 
                 {/* Column 1: Roadmap Curriculum & Milestones */}
-                <div className="bg-white dark:bg-[#141726] rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-[#E8E4DC] dark:border-[#23273e] shadow-xs flex flex-col gap-5 sm:gap-6 transition-colors">
+                <div className="bg-white dark:bg-[#141726] rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-[#E8E4DC] dark:border-[#23273e] shadow-xs hover:shadow-md flex flex-col gap-5 sm:gap-6 transition-all duration-300">
                   {/* Header Bar with clean separation */}
                   <div className="flex items-center justify-between pb-5 border-b border-[#E8E4DC] dark:border-[#23273e]">
                     <div className="flex items-center gap-3.5">
-                      <div className="w-11 h-11 rounded-2xl bg-[#F3F1EC] dark:bg-purple-950/50 text-[#6C5CE7] dark:text-purple-400 border border-[#E8E4DC] dark:border-purple-800/50 flex items-center justify-center font-bold shrink-0 shadow-2xs">
+                      <div className="w-11 h-11 rounded-2xl bg-[#F3F1EC] dark:bg-purple-950/50 text-[#6C5CE7] dark:text-purple-400 border border-[#E8E4DC] dark:border-purple-800/50 flex items-center justify-center font-bold shrink-0 shadow-2xs transition-transform duration-300 hover:rotate-6 hover:scale-105">
                         <Layers className="w-5 h-5" />
                       </div>
                       <div>
@@ -2714,7 +2722,10 @@ export default function App() {
                       No roadmap steps listed yet for this skill track.
                     </div>
                   ) : (
-                    <div className="roadmap-journey-track flex flex-col gap-3.5 max-h-[620px] overflow-y-auto pr-1">
+                    <div className="roadmap-journey-track relative flex flex-col gap-3.5 max-h-[620px] overflow-y-auto pr-1">
+                      {/* Interactive Milestone Indicator Line on Left */}
+                      <div className="absolute left-[17px] top-6 bottom-6 w-[3px] bg-gradient-to-b from-[#6C5CE7] via-[#a29bfe] to-[#6C5CE7]/20 dark:from-[#6C5CE7] dark:via-purple-500/50 dark:to-transparent rounded-full z-0 opacity-40 pointer-events-none" />
+
                       {currentSkillSteps.map((st, idx) => {
                         const hasDelimiters = st.description && st.description.includes('||');
                         const subtopics = hasDelimiters
@@ -2724,15 +2735,15 @@ export default function App() {
                         return (
                           <div 
                             key={st.id} 
-                            className="step-card bg-white dark:bg-[#181c30] hover:bg-[#FAF8F5] dark:hover:bg-[#1e223d] border border-[#E8E4DC] dark:border-[#262b47] hover:border-[#6C5CE7]/60 dark:hover:border-[#6c5ce7] rounded-2xl p-4 sm:p-5 transition-all shadow-2xs hover:shadow-md flex gap-4 items-start" 
+                            className="group relative z-10 bg-white dark:bg-[#181c30] hover:bg-[#FAF8F5] dark:hover:bg-[#1e223d] border border-[#E8E4DC] dark:border-[#262b47] hover:border-[#6C5CE7] dark:hover:border-[#6c5ce7] rounded-2xl p-4 sm:p-5 transition-all duration-250 shadow-2xs hover:shadow-lg hover:-translate-y-1 flex gap-4 items-start cursor-default" 
                             id={`step-card-${st.id}`}
                           >
-                            <div className="step-num w-9 h-9 min-w-9 rounded-xl bg-[#F3F1EC] dark:bg-[#121424] text-[#6C5CE7] dark:text-[#a29bfe] font-extrabold text-sm flex items-center justify-center border border-[#E8E4DC] dark:border-purple-800/50 shadow-2xs shrink-0 mt-0.5">
+                            <div className="step-num w-9 h-9 min-w-9 rounded-xl bg-[#F3F1EC] dark:bg-[#121424] text-[#6C5CE7] dark:text-[#a29bfe] font-extrabold text-sm flex items-center justify-center border border-[#E8E4DC] dark:border-purple-800/50 shadow-2xs shrink-0 mt-0.5 group-hover:bg-[#6C5CE7] group-hover:text-white group-hover:border-[#6C5CE7] group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300">
                               {idx + 1}
                             </div>
                             <div className="step-body flex-1 min-w-0">
                               <div className="flex items-start justify-between gap-2">
-                                <h5 className="font-extrabold text-sm sm:text-base text-[#22252E] dark:text-white leading-snug">
+                                <h5 className="font-extrabold text-sm sm:text-base text-[#22252E] dark:text-white group-hover:text-[#6C5CE7] dark:group-hover:text-purple-300 leading-snug transition-colors">
                                   {st.title}
                                 </h5>
                                 {st.resource_link && (
@@ -2740,7 +2751,7 @@ export default function App() {
                                     href={st.resource_link}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="text-[11px] font-bold text-[#6C5CE7] dark:text-purple-300 hover:text-[#5848c2] inline-flex items-center gap-1 bg-[#F3F1EC] dark:bg-purple-950/60 hover:bg-[#E8E4DC] dark:hover:bg-purple-900/80 px-2.5 py-1 rounded-lg border border-[#E8E4DC] dark:border-purple-800/40 transition-colors shrink-0 shadow-2xs"
+                                    className="text-[11px] font-bold text-[#6C5CE7] dark:text-purple-300 hover:text-white hover:bg-[#6C5CE7] dark:hover:bg-[#6C5CE7] inline-flex items-center gap-1 bg-[#F3F1EC] dark:bg-purple-950/60 px-2.5 py-1 rounded-lg border border-[#E8E4DC] dark:border-purple-800/40 transition-all duration-200 shrink-0 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95"
                                   >
                                     <span>Doc</span>
                                     <ExternalLink className="w-3 h-3" />
@@ -2753,7 +2764,7 @@ export default function App() {
                                   {subtopics.map((sub, sIdx) => (
                                     <span 
                                       key={sIdx}
-                                      className="step-subtopic-tag inline-flex items-center text-xs font-semibold bg-[#F3F1EC] dark:bg-[#121424] text-[#22252E] dark:text-slate-200 px-2.5 py-1 rounded-lg border border-[#E8E4DC] dark:border-[#262b47] hover:border-[#6C5CE7]/50 dark:hover:border-purple-500/50 transition-colors shadow-2xs"
+                                      className="step-subtopic-tag inline-flex items-center text-xs font-semibold bg-[#F3F1EC] dark:bg-[#121424] text-[#22252E] dark:text-slate-200 px-2.5 py-1 rounded-lg border border-[#E8E4DC] dark:border-[#262b47] hover:border-[#6C5CE7] hover:text-[#6C5CE7] dark:hover:text-purple-300 dark:hover:border-purple-500/50 hover:bg-white dark:hover:bg-[#1e2238] transition-all duration-200 shadow-2xs hover:scale-105"
                                     >
                                       {sub}
                                     </span>
