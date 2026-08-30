@@ -4,7 +4,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 html, body {
@@ -28,7 +28,7 @@ html, body {
 /* Global Page Container */
 .page {
   width: 100%;
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
   background: #f4f5f7;
   position: relative;
@@ -1345,63 +1345,65 @@ html, body {
 
 .roadmap-journey-track {
   position: relative;
+  padding-top: 4px;
 }
 
 .roadmap-journey-track::before {
   content: '';
   position: absolute;
-  left: 37px;
+  left: 36px;
   top: 24px;
   bottom: 24px;
   width: 2px;
-  background: linear-gradient(180deg, #6c5ce7 0%, #a29bfe 60%, rgba(162, 155, 254, 0.2) 100%);
+  background: linear-gradient(180deg, #6c5ce7 0%, #c4b5fd 60%, rgba(196, 181, 253, 0.2) 100%);
   z-index: 0;
   border-radius: 2px;
-  opacity: 0.35;
+  opacity: 0.45;
 }
 
 .step-card {
   background: #ffffff;
-  border: 1px solid #e4e5ee;
-  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
   padding: 18px 20px;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
   display: flex;
   gap: 16px;
   align-items: flex-start;
-  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
   position: relative;
   z-index: 1;
 }
 
 .step-card:hover {
-  transform: translateY(-3px);
-  border-color: #6c5ce7;
-  box-shadow: 0 10px 22px -4px rgba(108, 92, 231, 0.12), 0 3px 8px rgba(0, 0, 0, 0.03);
+  transform: translateY(-2px);
+  border-color: #c4b5fd;
+  box-shadow: 0 10px 24px -4px rgba(108, 92, 231, 0.12), 0 4px 10px rgba(0, 0, 0, 0.04);
 }
 
 .step-num {
   width: 36px;
   min-width: 36px;
   height: 36px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #f8f6ff 0%, #ede9fe 100%);
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
   color: #6c5ce7;
   font-weight: 800;
   font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(108, 92, 231, 0.2);
-  box-shadow: 0 3px 8px rgba(108, 92, 231, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  border: 1.5px solid rgba(108, 92, 231, 0.2);
+  box-shadow: 0 2px 6px rgba(108, 92, 231, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   user-select: none;
+  margin-top: 1px;
 }
 
 .step-card:hover .step-num {
-  transform: translateY(-2px) rotate(-4deg) scale(1.08);
-  box-shadow: 0 5px 12px rgba(108, 92, 231, 0.22), inset 0 1px 0 #ffffff;
+  transform: translateY(-1px) scale(1.06);
+  box-shadow: 0 4px 10px rgba(108, 92, 231, 0.2), inset 0 1px 0 #ffffff;
   border-color: #6c5ce7;
 }
 
@@ -1413,16 +1415,16 @@ html, body {
 
 .step-body h5 {
   font-size: 15px;
-  font-weight: 700;
-  color: #1a1c2e;
-  margin-bottom: 5px;
-  line-height: 1.3;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 6px;
+  line-height: 1.35;
 }
 
 .step-body p {
   font-size: 13px;
-  color: #5a5c73;
-  line-height: 1.55;
+  color: #475569;
+  line-height: 1.6;
   word-break: break-word;
   white-space: normal;
 }
@@ -3397,20 +3399,51 @@ body.dark-mode .empty-profile-skills-card h4 {
 /* ========================================================================= */
 /* Comprehensive Dark Theme Mode */
 /* ========================================================================= */
-html.dark, body.dark-mode {
+html.dark,
+body.dark-mode,
+html.dark body,
+html.dark #root,
+body.dark-mode #root {
   background: #0b0d17 !important;
   color: #f1f5f9 !important;
   color-scheme: dark;
+  min-height: 100vh;
+  width: 100%;
 }
 
-html.dark .page, body.dark-mode .page {
+html.dark .page, 
+body.dark-mode .page {
   background: #0b0d17 !important;
+  width: 100%;
+  max-width: 100%;
 }
 
 /* Dark mode typography */
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark h4,
+html.dark h5,
+html.dark h6,
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6,
 html.dark .section-title,
 body.dark-mode .section-title {
   color: #f8fafc !important;
+}
+
+html.dark p,
+body.dark-mode p {
+  color: #cbd5e1;
+}
+
+html.dark label,
+body.dark-mode label {
+  color: #e2e8f0 !important;
 }
 
 /* Dark mode cards and containers */
@@ -3454,6 +3487,80 @@ body.dark-mode .skill-card .meta .learners {
   color: #94a3b8 !important;
 }
 
+/* Step cards in Dark Mode */
+html.dark .step-card,
+body.dark-mode .step-card {
+  background: #181c30 !important;
+  border-color: #262b47 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+}
+
+html.dark .step-card:hover,
+body.dark-mode .step-card:hover {
+  background: #1e223d !important;
+  border-color: #6c5ce7 !important;
+  box-shadow: 0 8px 20px rgba(108, 92, 231, 0.2) !important;
+}
+
+html.dark .step-num,
+body.dark-mode .step-num {
+  background: #121424 !important;
+  color: #a29bfe !important;
+  border-color: rgba(108, 92, 231, 0.4) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+html.dark .step-card:hover .step-num,
+body.dark-mode .step-card:hover .step-num {
+  background: #202444 !important;
+  color: #c4b5fd !important;
+  border-color: #818cf8 !important;
+}
+
+html.dark .step-body h5,
+body.dark-mode .step-body h5 {
+  color: #f8fafc !important;
+  font-weight: 800;
+}
+
+html.dark .step-body p,
+body.dark-mode .step-body p {
+  color: #94a3b8 !important;
+}
+
+html.dark .step-subtopic-tag,
+body.dark-mode .step-subtopic-tag {
+  background-color: #121424 !important;
+  color: #cbd5e1 !important;
+  border-color: #262b47 !important;
+}
+
+html.dark .step-subtopic-tag:hover,
+body.dark-mode .step-subtopic-tag:hover {
+  background-color: #1e223d !important;
+  color: #ffffff !important;
+  border-color: #6c5ce7 !important;
+}
+
+html.dark .roadmap-journey-track::before,
+body.dark-mode .roadmap-journey-track::before {
+  opacity: 0.35;
+  background: linear-gradient(180deg, #6c5ce7 0%, #312e81 100%) !important;
+}
+
+html.dark .roadmap-header-card,
+body.dark-mode .roadmap-header-card {
+  background: #141726 !important;
+  border-color: #23273e !important;
+}
+
+html.dark .roadmap-track-badge,
+body.dark-mode .roadmap-track-badge {
+  background: #141726 !important;
+  border-color: #23273e !important;
+  color: #94a3b8 !important;
+}
+
 /* Inputs & search in dark mode */
 html.dark .search-input-field,
 body.dark-mode .search-input-field,
@@ -3489,52 +3596,6 @@ body.dark-mode .filter-pill-btn.inactive:hover {
   border-color: #383e60 !important;
 }
 
-/* White background elements in dark mode */
-html.dark .bg-white,
-body.dark-mode .bg-white {
-  background-color: #141726 !important;
-  border-color: #23273e !important;
-  color: #f1f5f9 !important;
-}
-
-html.dark .bg-slate-50,
-body.dark-mode .bg-slate-50,
-html.dark .bg-\[\#f8fafc\],
-body.dark-mode .bg-\[\#f8fafc\] {
-  background-color: #101320 !important;
-}
-
-html.dark .text-slate-900,
-html.dark .text-\[\#1a1c2e\],
-html.dark .text-\[\#1e293b\],
-body.dark-mode .text-slate-900,
-body.dark-mode .text-\[\#1a1c2e\],
-body.dark-mode .text-\[\#1e293b\] {
-  color: #f8fafc !important;
-}
-
-html.dark .text-slate-500,
-html.dark .text-slate-600,
-html.dark .text-\[\#8a8ca3\],
-html.dark .text-\[\#64748b\],
-body.dark-mode .text-slate-500,
-body.dark-mode .text-slate-600,
-body.dark-mode .text-\[\#8a8ca3\],
-body.dark-mode .text-\[\#64748b\] {
-  color: #94a3b8 !important;
-}
-
-html.dark .border-slate-100,
-html.dark .border-slate-200,
-html.dark .border-\[\#e4e5ee\],
-html.dark .border-\[\#e2e8f0\],
-body.dark-mode .border-slate-100,
-body.dark-mode .border-slate-200,
-body.dark-mode .border-\[\#e4e5ee\],
-body.dark-mode .border-\[\#e2e8f0\] {
-  border-color: #23273e !important;
-}
-
 /* Modals and Dropdowns in dark mode */
 html.dark #navbar-user-dropdown,
 body.dark-mode #navbar-user-dropdown {
@@ -3549,29 +3610,9 @@ body.dark-mode #navbar-user-dropdown button:hover {
   background-color: #1e2238 !important;
 }
 
-html.dark #navbar-user-dropdown .bg-slate-100,
-html.dark #navbar-user-dropdown .bg-slate-100\/90,
-body.dark-mode #navbar-user-dropdown .bg-slate-100,
-body.dark-mode #navbar-user-dropdown .bg-slate-100\/90 {
-  background-color: #23273e !important;
-  color: #cbd5e1 !important;
-}
-
 html.dark #navbar-user-dropdown .text-slate-900,
 body.dark-mode #navbar-user-dropdown .text-slate-900 {
   color: #f8fafc !important;
-}
-
-html.dark #official-documentation-resources,
-body.dark-mode #official-documentation-resources {
-  background: #141726 !important;
-  border-color: #23273e !important;
-}
-
-html.dark #official-documentation-resources .bg-slate-100\/90,
-body.dark-mode #official-documentation-resources .bg-slate-100\/90 {
-  background: #101320 !important;
-  border-color: #23273e !important;
 }
 
 /* Dark mode 2.5D domain card overrides */
@@ -3660,34 +3701,6 @@ html.dark .roadmap-track-badge,
 body.dark-mode .roadmap-track-badge {
   background: rgba(20, 23, 38, 0.8) !important;
   border-color: #23273e !important;
-}
-
-html.dark .step-card,
-body.dark-mode .step-card {
-  background: #141726 !important;
-  border-color: #23273e !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
-}
-
-html.dark .step-card:hover,
-body.dark-mode .step-card:hover {
-  border-color: #6c5ce7 !important;
-  box-shadow: 0 10px 22px -4px rgba(108, 92, 231, 0.25) !important;
-}
-
-html.dark .step-num,
-body.dark-mode .step-num {
-  background: linear-gradient(135deg, #1f2237 0%, #171a2c 100%) !important;
-  color: #a29bfe !important;
-  border-color: rgba(108, 92, 231, 0.3) !important;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
-}
-
-html.dark .step-card:hover .step-num,
-body.dark-mode .step-card:hover .step-num {
-  border-color: #6c5ce7 !important;
-  color: #c4b5fd !important;
-  box-shadow: 0 5px 12px rgba(108, 92, 231, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
 }
 
 html.dark .resource-card-3d,
@@ -4826,5 +4839,75 @@ body.dark-mode .btn-setup-discard-3d:hover {
     animation: none !important;
   }
 }
+
+/* ========================================================================= */
+/* Pragati — Light Mode Specific Styling (Roadmap / Skill Detail Page ONLY)   */
+/* Scoped strictly to #page-roadmap when NOT in dark mode                    */
+/* ========================================================================= */
+html:not(.dark) #page-roadmap,
+body:not(.dark-mode) #page-roadmap {
+  background-color: #FAF8F5 !important;
+}
+
+html:not(.dark) #page-roadmap .roadmap-header-card,
+body:not(.dark-mode) #page-roadmap .roadmap-header-card {
+  background-color: #FFFFFF !important;
+  border-color: #E8E4DC !important;
+}
+
+html:not(.dark) #page-roadmap .roadmap-track-badge,
+body:not(.dark-mode) #page-roadmap .roadmap-track-badge {
+  background-color: #FFFFFF !important;
+  border-color: #E8E4DC !important;
+  color: #8B8A86 !important;
+}
+
+html:not(.dark) #page-roadmap .step-card,
+body:not(.dark-mode) #page-roadmap .step-card {
+  background-color: #FFFFFF !important;
+  border-color: #E8E4DC !important;
+}
+
+html:not(.dark) #page-roadmap .step-card:hover,
+body:not(.dark-mode) #page-roadmap .step-card:hover {
+  background-color: #FAF8F5 !important;
+  border-color: #6C5CE7 !important;
+}
+
+html:not(.dark) #page-roadmap .step-num,
+body:not(.dark-mode) #page-roadmap .step-num {
+  background: #F3F1EC !important;
+  border-color: #E8E4DC !important;
+  color: #6C5CE7 !important;
+}
+
+html:not(.dark) #page-roadmap .step-body h5,
+body:not(.dark-mode) #page-roadmap .step-body h5 {
+  color: #22252E !important;
+}
+
+html:not(.dark) #page-roadmap .step-body p,
+body:not(.dark-mode) #page-roadmap .step-body p {
+  color: #8B8A86 !important;
+}
+
+html:not(.dark) #page-roadmap .step-subtopic-tag,
+body:not(.dark-mode) #page-roadmap .step-subtopic-tag {
+  background-color: #F3F1EC !important;
+  border-color: #E8E4DC !important;
+  color: #22252E !important;
+}
+
+html:not(.dark) #page-roadmap .step-subtopic-tag:hover,
+body:not(.dark-mode) #page-roadmap .step-subtopic-tag:hover {
+  border-color: #6C5CE7 !important;
+}
+
+html:not(.dark) #page-roadmap #official-documentation-resources,
+body:not(.dark-mode) #page-roadmap #official-documentation-resources {
+  background-color: #FFFFFF !important;
+  border-color: #E8E4DC !important;
+}
+
 
 

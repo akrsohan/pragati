@@ -5,18 +5,16 @@ import {
   Youtube, 
   Github, 
   Globe, 
-  ExternalLink, 
   BookOpen, 
   Trash2, 
   Plus, 
   FolderOpen,
-  Sparkles,
-  Bookmark,
-  Layers,
-  Search,
   PlayCircle,
-  Video,
-  GraduationCap
+  ArrowUpRight,
+  Sparkles,
+  Layers,
+  FileCode2,
+  Bookmark
 } from 'lucide-react';
 
 function resolveResourceFormat(r: { format?: string; url?: string; title?: string; type?: string }): 'pdf' | 'drive' | 'youtube' | 'github' | 'article' | 'link' {
@@ -87,175 +85,103 @@ export const SkillResourcesSection: React.FC<SkillResourcesSectionProps> = ({
     activeTab === 'references' ? references :
     resources;
 
-  const getFormatBadge = (r: SkillResource) => {
+  const getFormatDetails = (r: SkillResource) => {
     const fmt = resolveResourceFormat(r);
     switch (fmt) {
       case 'pdf':
-        return (
-          <span className="resource-badge-3d inline-flex items-center gap-1.5 text-[11px] font-extrabold px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 border border-rose-200/80 shadow-2xs">
-            <FileText className="w-3.5 h-3.5 text-rose-500 transition-transform group-hover:scale-110" />
-            PDF Material
-          </span>
-        );
+        return {
+          badgeLabel: 'PDF Notes & Doc',
+          badgeClass: 'bg-[#F3F1EC] dark:bg-rose-950/60 text-[#22252E] dark:text-rose-300 border-[#E8E4DC] dark:border-rose-800/50',
+          iconBg: 'bg-[#F3F1EC] dark:bg-rose-950/60 text-[#6C5CE7] dark:text-rose-400 border-[#E8E4DC] dark:border-rose-800/40',
+          icon: <FileText className="w-4 h-4 text-[#6C5CE7] dark:text-rose-400" />,
+          btnText: 'View PDF Document',
+          btnClass: 'bg-[#6C5CE7] hover:bg-[#5848c2] text-white shadow-xs hover:shadow-sm'
+        };
       case 'drive':
-        return (
-          <span className="resource-badge-3d inline-flex items-center gap-1.5 text-[11px] font-extrabold px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200/80 shadow-2xs">
-            <FolderOpen className="w-3.5 h-3.5 text-amber-600 transition-transform group-hover:scale-110" />
-            Google Drive Notes
-          </span>
-        );
+        return {
+          badgeLabel: 'Google Drive Asset',
+          badgeClass: 'bg-[#F3F1EC] dark:bg-amber-950/60 text-[#22252E] dark:text-amber-300 border-[#E8E4DC] dark:border-amber-800/50',
+          iconBg: 'bg-[#F3F1EC] dark:bg-amber-950/60 text-[#6C5CE7] dark:text-amber-400 border-[#E8E4DC] dark:border-amber-800/40',
+          icon: <FolderOpen className="w-4 h-4 text-[#6C5CE7] dark:text-amber-400" />,
+          btnText: 'Open Drive Files',
+          btnClass: 'bg-[#6C5CE7] hover:bg-[#5848c2] text-white shadow-xs hover:shadow-sm'
+        };
       case 'youtube':
-        return (
-          <span className="resource-badge-3d inline-flex items-center gap-1.5 text-[11px] font-extrabold px-2.5 py-1 rounded-lg bg-red-50 text-red-700 border border-red-200/80 shadow-2xs">
-            <Youtube className="w-3.5 h-3.5 fill-current text-red-600 transition-transform group-hover:scale-110" />
-            <span className="flex items-center gap-1">
-              <GraduationCap className="w-3.5 h-3.5 text-red-600" />
-              Video Class / Tutorial
-            </span>
-          </span>
-        );
+        return {
+          badgeLabel: 'Video Lecture Class',
+          badgeClass: 'bg-[#F3F1EC] dark:bg-red-950/60 text-[#22252E] dark:text-red-300 border-[#E8E4DC] dark:border-red-800/50',
+          iconBg: 'bg-[#F3F1EC] dark:bg-red-950/60 text-[#6C5CE7] dark:text-red-400 border-[#E8E4DC] dark:border-red-800/40',
+          icon: <PlayCircle className="w-4 h-4 text-[#6C5CE7] dark:text-red-400" />,
+          btnText: 'Watch Video Class',
+          btnClass: 'bg-[#6C5CE7] hover:bg-[#5848c2] text-white shadow-xs hover:shadow-sm'
+        };
       case 'github':
-        return (
-          <span className="resource-badge-3d inline-flex items-center gap-1.5 text-[11px] font-extrabold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 border border-slate-300 shadow-2xs">
-            <Github className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
-            GitHub Repo
-          </span>
-        );
+        return {
+          badgeLabel: 'Code Repository',
+          badgeClass: 'bg-[#F3F1EC] dark:bg-slate-800 text-[#22252E] dark:text-slate-200 border-[#E8E4DC] dark:border-slate-700',
+          iconBg: 'bg-[#F3F1EC] dark:bg-slate-800 text-[#6C5CE7] dark:text-slate-300 border-[#E8E4DC] dark:border-slate-700',
+          icon: <Github className="w-4 h-4 text-[#6C5CE7] dark:text-slate-300" />,
+          btnText: 'Explore Codebase',
+          btnClass: 'bg-[#6C5CE7] hover:bg-[#5848c2] text-white shadow-xs hover:shadow-sm'
+        };
       case 'article':
-        return (
-          <span className="resource-badge-3d inline-flex items-center gap-1.5 text-[11px] font-extrabold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200/80 shadow-2xs">
-            <BookOpen className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
-            Reading Guide
-          </span>
-        );
+        return {
+          badgeLabel: 'Technical Article',
+          badgeClass: 'bg-[#F3F1EC] dark:bg-emerald-950/60 text-[#22252E] dark:text-emerald-300 border-[#E8E4DC] dark:border-emerald-800/50',
+          iconBg: 'bg-[#F3F1EC] dark:bg-emerald-950/60 text-[#6C5CE7] dark:text-emerald-400 border-[#E8E4DC] dark:border-emerald-800/40',
+          icon: <BookOpen className="w-4 h-4 text-[#6C5CE7] dark:text-emerald-400" />,
+          btnText: 'Read Article Guide',
+          btnClass: 'bg-[#6C5CE7] hover:bg-[#5848c2] text-white shadow-xs hover:shadow-sm'
+        };
       default:
-        return (
-          <span className="resource-badge-3d inline-flex items-center gap-1.5 text-[11px] font-extrabold px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200/80 shadow-2xs">
-            <Globe className="w-3.5 h-3.5 text-indigo-600 transition-transform group-hover:scale-110" />
-            Official Documentation
-          </span>
-        );
-    }
-  };
-
-  const getActionButton = (r: SkillResource) => {
-    const fmt = resolveResourceFormat(r);
-    switch (fmt) {
-      case 'pdf':
-        return (
-          <a
-            href={r.url}
-            target="_blank"
-            rel="noreferrer"
-            className="resource-action-btn inline-flex items-center gap-1.5 text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/80 px-3.5 py-2 rounded-xl transition-all cursor-pointer"
-          >
-            <FileText className="w-3.5 h-3.5 text-rose-600" />
-            <span>Open PDF Note</span>
-            <ExternalLink className="w-3 h-3 ml-0.5 opacity-70" />
-          </a>
-        );
-      case 'drive':
-        return (
-          <a
-            href={r.url}
-            target="_blank"
-            rel="noreferrer"
-            className="resource-action-btn inline-flex items-center gap-1.5 text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 px-3.5 py-2 rounded-xl transition-all cursor-pointer"
-          >
-            <FolderOpen className="w-3.5 h-3.5 text-amber-600" />
-            <span>Open Drive Folder</span>
-            <ExternalLink className="w-3 h-3 ml-0.5 opacity-70" />
-          </a>
-        );
-      case 'youtube':
-        return (
-          <a
-            href={r.url}
-            target="_blank"
-            rel="noreferrer"
-            className="resource-action-btn inline-flex items-center gap-1.5 text-xs font-bold bg-red-50 hover:bg-red-100 text-red-700 border border-red-200/80 px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-2xs"
-          >
-            <PlayCircle className="w-4 h-4 text-red-600" />
-            <span>Watch Video Class</span>
-            <ExternalLink className="w-3 h-3 ml-0.5 opacity-70" />
-          </a>
-        );
-      case 'github':
-        return (
-          <a
-            href={r.url}
-            target="_blank"
-            rel="noreferrer"
-            className="resource-action-btn inline-flex items-center gap-1.5 text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 px-3.5 py-2 rounded-xl transition-all cursor-pointer"
-          >
-            <Github className="w-3.5 h-3.5" />
-            <span>View Code</span>
-            <ExternalLink className="w-3 h-3 ml-0.5 opacity-70" />
-          </a>
-        );
-      case 'article':
-        return (
-          <a
-            href={r.url}
-            target="_blank"
-            rel="noreferrer"
-            className="resource-action-btn inline-flex items-center gap-1.5 text-xs font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 px-3.5 py-2 rounded-xl transition-all cursor-pointer"
-          >
-            <BookOpen className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Read Article</span>
-            <ExternalLink className="w-3 h-3 ml-0.5 opacity-70" />
-          </a>
-        );
-      default:
-        return (
-          <a
-            href={r.url}
-            target="_blank"
-            rel="noreferrer"
-            className="resource-action-btn inline-flex items-center gap-1.5 text-xs font-bold bg-purple-50 hover:bg-purple-100 text-[#6c5ce7] border border-purple-200/80 px-3.5 py-2 rounded-xl transition-all cursor-pointer"
-          >
-            <Globe className="w-3.5 h-3.5 text-[#6c5ce7]" />
-            <span>Open Docs</span>
-            <ExternalLink className="w-3 h-3 ml-0.5 opacity-70" />
-          </a>
-        );
+        return {
+          badgeLabel: 'Official Documentation',
+          badgeClass: 'bg-[#F3F1EC] dark:bg-purple-950/60 text-[#22252E] dark:text-purple-300 border-[#E8E4DC] dark:border-purple-800/50',
+          iconBg: 'bg-[#F3F1EC] dark:bg-purple-950/60 text-[#6C5CE7] dark:text-purple-400 border-[#E8E4DC] dark:border-purple-800/40',
+          icon: <Globe className="w-4 h-4 text-[#6C5CE7] dark:text-purple-400" />,
+          btnText: 'Open Official Docs',
+          btnClass: 'bg-[#6C5CE7] hover:bg-[#5848c2] text-white shadow-xs hover:shadow-sm'
+        };
     }
   };
 
   const getCleanDomain = (url: string) => {
     try {
       const parsed = new URL(url);
-      return parsed.hostname.replace(/^www\./, '');
+      const host = parsed.hostname.replace(/^www\./, '');
+      if (host.includes('supabase.co')) return 'Pragatii Cloud Storage';
+      if (host.includes('youtube.com') || host.includes('youtu.be')) return 'YouTube';
+      if (host.includes('drive.google.com')) return 'Google Drive';
+      if (host.includes('github.com')) return 'GitHub';
+      return host;
     } catch {
-      return url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0] || 'link';
+      return url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0] || 'Web Link';
     }
   };
 
   return (
     <div 
-      className={`resource-section-3d bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-7 border border-slate-200 shadow-xs transition-all ${className}`} 
+      className={`bg-white dark:bg-[#141726] rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-[#E8E4DC] dark:border-[#23273e] shadow-xs flex flex-col gap-6 transition-all ${className}`} 
       id="official-documentation-resources"
     >
       {/* 1. Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
-        
-        {/* Title and Icon */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E8E4DC] dark:border-[#23273e]">
         <div className="flex items-start sm:items-center gap-3.5 min-w-0">
-          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[#6c5ce7]/10 text-[#6c5ce7] border border-[#6c5ce7]/20 flex items-center justify-center font-bold shrink-0 shadow-2xs">
+          <div className="w-11 h-11 rounded-2xl bg-[#F3F1EC] dark:bg-emerald-950/50 text-[#6C5CE7] dark:text-emerald-400 border border-[#E8E4DC] dark:border-emerald-800/50 flex items-center justify-center font-bold shrink-0 shadow-2xs">
             <BookOpen className="w-5 h-5" />
           </div>
           
           <div className="min-w-0">
             <div className="flex items-center gap-2.5 flex-wrap">
-              <h4 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+              <h4 className="text-base sm:text-lg font-black text-[#22252E] dark:text-white tracking-tight">
                 Official Documentation &amp; References
               </h4>
-              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-purple-50 text-[#6c5ce7] border border-purple-100 shadow-2xs">
-                {resources.length} {resources.length === 1 ? 'material' : 'materials'}
+              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#F3F1EC] dark:bg-emerald-950/60 text-[#6C5CE7] dark:text-emerald-300 border border-[#E8E4DC] dark:border-emerald-800/50 shadow-2xs">
+                {resources.length} {resources.length === 1 ? 'item' : 'items'}
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-slate-500 mt-0.5 line-clamp-1">
-              Curated official documentation, direct PDF notes, Drive links, and recommended video references for {skill.name}.
+            <p className="text-xs sm:text-sm text-[#8B8A86] dark:text-slate-400 mt-1">
+              Curated official docs, PDF notes, Drive files &amp; video tutorials for {skill.name}
             </p>
           </div>
         </div>
@@ -264,7 +190,7 @@ export const SkillResourcesSection: React.FC<SkillResourcesSectionProps> = ({
         {isAdmin && onAddResource && (
           <button
             onClick={onAddResource}
-            className="admin-add-btn-3d self-start sm:self-auto px-4 py-2.5 bg-[#6c5ce7] hover:bg-[#5848c2] text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shadow-2xs hover:shadow-xs cursor-pointer shrink-0"
+            className="self-start sm:self-auto px-4 py-2.5 bg-[#6C5CE7] hover:bg-[#5848c2] text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shadow-2xs hover:shadow-xs cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span>Add Resource / PDF</span>
@@ -272,114 +198,135 @@ export const SkillResourcesSection: React.FC<SkillResourcesSectionProps> = ({
         )}
       </div>
 
-      {/* 2. Filter Navigation Segmented Tabs */}
+      {/* 2. Filter Navigation Pills */}
       {resources.length > 0 && (
-        <div className="pt-4 pb-2">
-          <div className="inline-flex items-center gap-1.5 p-1 bg-slate-100/90 rounded-xl border border-slate-200/80 overflow-x-auto max-w-full">
-            <button
-              onClick={() => setActiveTab('all')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-                activeTab === 'all' 
-                  ? 'bg-white text-slate-900 shadow-2xs' 
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <span>All Resources</span>
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${activeTab === 'all' ? 'bg-[#6c5ce7] text-white' : 'bg-slate-200 text-slate-600'}`}>
-                {resources.length}
-              </span>
-            </button>
+        <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          <button
+            onClick={() => setActiveTab('all')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 border ${
+              activeTab === 'all' 
+                ? 'bg-[#6C5CE7] text-white border-[#6C5CE7] shadow-xs' 
+                : 'bg-white dark:bg-[#101320] text-[#22252E] dark:text-slate-300 border-[#E8E4DC] dark:border-[#23273e] hover:bg-[#F3F1EC] dark:hover:bg-[#181c30] hover:text-[#6C5CE7] dark:hover:text-white hover:border-[#6C5CE7]/40 dark:hover:border-purple-800'
+            }`}
+          >
+            <span>All Materials</span>
+            <span className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-md ${activeTab === 'all' ? 'bg-white/25 text-white' : 'bg-[#F3F1EC] dark:bg-[#1e2238] text-[#8B8A86] dark:text-slate-400'}`}>
+              {resources.length}
+            </span>
+          </button>
 
-            <button
-              onClick={() => setActiveTab('documents')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-                activeTab === 'documents' 
-                  ? 'bg-white text-slate-900 shadow-2xs' 
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <FileText className="w-3.5 h-3.5 text-rose-500" />
-              <span>Docs &amp; PDFs</span>
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${activeTab === 'documents' ? 'bg-[#6c5ce7] text-white' : 'bg-slate-200 text-slate-600'}`}>
-                {documents.length}
-              </span>
-            </button>
+          <button
+            onClick={() => setActiveTab('documents')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 border ${
+              activeTab === 'documents' 
+                ? 'bg-[#6C5CE7] text-white border-[#6C5CE7] shadow-xs' 
+                : 'bg-white dark:bg-[#101320] text-[#22252E] dark:text-slate-300 border-[#E8E4DC] dark:border-[#23273e] hover:bg-[#F3F1EC] dark:hover:bg-rose-950/30 hover:text-[#6C5CE7] dark:hover:text-rose-300 hover:border-[#6C5CE7]/40 dark:hover:border-rose-800/40'
+            }`}
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>Docs &amp; PDFs</span>
+            <span className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-md ${activeTab === 'documents' ? 'bg-white/25 text-white' : 'bg-[#F3F1EC] dark:bg-[#1e2238] text-[#8B8A86] dark:text-slate-400'}`}>
+              {documents.length}
+            </span>
+          </button>
 
-            <button
-              onClick={() => setActiveTab('references')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-                activeTab === 'references' 
-                  ? 'bg-white text-slate-900 shadow-2xs' 
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Youtube className="w-3.5 h-3.5 text-red-500" />
-              <span>References &amp; Tutorials</span>
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${activeTab === 'references' ? 'bg-[#6c5ce7] text-white' : 'bg-slate-200 text-slate-600'}`}>
-                {references.length}
-              </span>
-            </button>
-          </div>
+          <button
+            onClick={() => setActiveTab('references')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 border ${
+              activeTab === 'references' 
+                ? 'bg-[#6C5CE7] text-white border-[#6C5CE7] shadow-xs' 
+                : 'bg-white dark:bg-[#101320] text-[#22252E] dark:text-slate-300 border-[#E8E4DC] dark:border-[#23273e] hover:bg-[#F3F1EC] dark:hover:bg-red-950/30 hover:text-[#6C5CE7] dark:hover:text-red-300 hover:border-[#6C5CE7]/40 dark:hover:border-red-800/40'
+            }`}
+          >
+            <PlayCircle className="w-3.5 h-3.5" />
+            <span>Video Classes</span>
+            <span className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-md ${activeTab === 'references' ? 'bg-white/25 text-white' : 'bg-[#F3F1EC] dark:bg-[#1e2238] text-[#8B8A86] dark:text-slate-400'}`}>
+              {references.length}
+            </span>
+          </button>
         </div>
       )}
 
-      {/* 3. Resource Cards Grid */}
+      {/* 3. Smooth Minimalist Resource Cards */}
       {displayedResources.length === 0 ? (
-        <div className="py-12 px-4 text-center border-2 border-dashed border-slate-200 rounded-2xl my-4 bg-slate-50/50">
-          <BookOpen className="w-9 h-9 text-slate-300 mx-auto mb-2" />
-          <div className="text-sm font-bold text-slate-700">No learning materials found in this category</div>
-          <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto leading-relaxed">
+        <div className="py-12 px-4 text-center border-2 border-dashed border-[#E8E4DC] dark:border-[#23273e] rounded-2xl bg-[#F3F1EC]/70 dark:bg-[#101320]/60">
+          <BookOpen className="w-10 h-10 text-[#8B8A86] dark:text-slate-600 mx-auto mb-3" />
+          <div className="text-sm font-bold text-[#22252E] dark:text-slate-200">No learning materials found</div>
+          <p className="text-xs text-[#8B8A86] dark:text-slate-400 mt-1 max-w-sm mx-auto leading-relaxed">
             {isAdmin 
-              ? 'Click "+ Add Resource / PDF" above to upload lecture slides, share Google Drive folders, or add tutorial links.'
-              : 'Our mentors are regularly updating official docs, lecture slides, and video links for this track.'}
+              ? 'Click "+ Add Resource / PDF" above to upload lecture slides or share documentation links.'
+              : 'Our mentors will add materials for this section soon.'}
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-3.5 my-3 max-h-[640px] overflow-y-auto pr-1">
-          {displayedResources.map((res) => (
-            <div 
-              key={res.id} 
-              className="resource-card-3d bg-white hover:bg-slate-50/50 border border-slate-200 rounded-2xl p-4.5 sm:p-5 transition-all flex flex-col justify-between group shadow-2xs hover:shadow-xs"
-            >
-              <div>
-                {/* Format Tag on Left & Admin Delete on Right */}
-                <div className="flex items-center justify-between gap-2 mb-2.5">
-                  {getFormatBadge(res)}
-                  
-                  {isAdmin && onDeleteResource && (
-                    <button
-                      onClick={() => onDeleteResource(res.id)}
-                      className="delete-resource-btn-3d text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-all cursor-pointer"
-                      title="Delete Resource"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+        <div className="flex flex-col gap-3.5 max-h-[620px] overflow-y-auto pr-1">
+          {displayedResources.map((res) => {
+            const fmt = getFormatDetails(res);
+            const domainName = getCleanDomain(res.url);
+
+            return (
+              <div 
+                key={res.id} 
+                className="group relative bg-white dark:bg-[#141726] hover:bg-[#FAF8F5] dark:hover:bg-[#181c30] border border-[#E8E4DC] dark:border-[#23273e] hover:border-[#6C5CE7]/60 dark:hover:border-[#6c5ce7] rounded-2xl p-5 transition-all duration-200 shadow-2xs hover:shadow-md flex flex-col justify-between"
+              >
+                <div>
+                  {/* Top Meta Line: Badge + Domain Tag + Delete */}
+                  <div className="flex items-center justify-between gap-3 mb-3">
+                    <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg border ${fmt.badgeClass}`}>
+                      {fmt.icon}
+                      <span>{fmt.badgeLabel}</span>
+                    </span>
+
+                    <div className="flex items-center gap-2 ml-auto">
+                      <span className="text-[11px] font-semibold text-[#8B8A86] dark:text-slate-300 bg-[#F3F1EC] dark:bg-[#181c30] border border-[#E8E4DC] dark:border-[#2a2f4c] px-2.5 py-0.5 rounded-md shadow-2xs">
+                        {domainName}
+                      </span>
+
+                      {isAdmin && onDeleteResource && (
+                        <button
+                          onClick={() => onDeleteResource(res.id)}
+                          className="text-[#8B8A86] hover:text-[#D64545] dark:hover:text-rose-400 p-1 rounded-md hover:bg-[#FDEAEA] dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                          title="Delete Resource"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Clean Title */}
+                  <h5 className="font-extrabold text-sm sm:text-base text-[#22252E] dark:text-white group-hover:text-[#6C5CE7] dark:group-hover:text-purple-400 transition-colors leading-snug">
+                    {res.title}
+                  </h5>
+
+                  {/* Optional Description */}
+                  {res.description && (
+                    <p className="text-xs sm:text-sm text-[#8B8A86] dark:text-slate-400 mt-2 leading-relaxed line-clamp-2">
+                      {res.description}
+                    </p>
                   )}
                 </div>
 
-                {/* Material Title */}
-                <h5 className="font-bold text-sm sm:text-base text-slate-900 group-hover:text-[#6c5ce7] transition-colors leading-snug">
-                  {res.title}
-                </h5>
+                {/* Bottom Action Footer */}
+                <div className="pt-3.5 mt-3.5 border-t border-[#E8E4DC] dark:border-[#23273e] flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-1.5 text-[#8B8A86] dark:text-slate-500 text-xs">
+                    <Bookmark className="w-3.5 h-3.5" />
+                    <span>Reference Material</span>
+                  </div>
 
-                {/* Material Description */}
-                {res.description && (
-                  <p className="text-xs sm:text-sm text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-                    {res.description}
-                  </p>
-                )}
+                  <a
+                    href={res.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl transition-all cursor-pointer ${fmt.btnClass}`}
+                  >
+                    <span>{fmt.btnText}</span>
+                    <ArrowUpRight className="w-3.5 h-3.5 opacity-90" />
+                  </a>
+                </div>
               </div>
-
-              {/* Card Footer: Domain source & Direct Action CTA Button */}
-              <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between gap-3">
-                <span className="text-[11px] font-mono text-slate-400 truncate max-w-[130px] sm:max-w-[170px]" title={res.url}>
-                  {getCleanDomain(res.url)}
-                </span>
-                
-                {getActionButton(res)}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

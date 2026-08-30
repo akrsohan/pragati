@@ -62,21 +62,21 @@ export const AddTimeModal: React.FC<AddTimeModalProps> = ({
 
   return (
     <div 
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 overflow-y-auto p-4 sm:p-6 flex items-center justify-center animate-in fade-in duration-150 cursor-default"
+      className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-xs z-50 overflow-y-auto p-4 sm:p-6 flex items-center justify-center animate-in fade-in duration-150 cursor-default"
       id="add-time-modal-backdrop"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div 
-        className="bg-white border-2 border-emerald-100 rounded-md p-6 sm:p-8 max-w-2xl w-full my-auto shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col gap-5"
+        className="bg-white dark:bg-[#141726] border-2 border-emerald-100 dark:border-[#23273e] text-slate-900 dark:text-white rounded-2xl p-6 sm:p-8 max-w-2xl w-full my-auto shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col gap-5"
         id="add-time-modal-container"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 sm:top-5 sm:right-5 text-gray-400 hover:text-gray-900 p-1.5 rounded-md hover:bg-gray-100 transition-colors cursor-pointer z-10"
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#181c30] transition-colors cursor-pointer z-10"
           title="Close dialog"
         >
           <X className="w-5 h-5" />
@@ -84,20 +84,20 @@ export const AddTimeModal: React.FC<AddTimeModalProps> = ({
 
         {/* Header with Emerald Badge */}
         <div className="flex items-center gap-4 pt-1 pr-8">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-md bg-emerald-600 text-white flex items-center justify-center text-2xl font-black shadow-xs shrink-0">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-2xl font-black shadow-xs shrink-0">
             <Plus className="w-7 h-7" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-1">
-              <span className="text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1 shadow-xs">
-                <Sparkles className="w-3 h-3 text-emerald-600" /> Deadline Extension
+              <span className="text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 inline-flex items-center gap-1 shadow-xs">
+                <Sparkles className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> Deadline Extension
               </span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-black text-[#1a1c2e] leading-tight tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight tracking-tight">
               Add More Time
             </h2>
-            <p className="text-xs sm:text-sm text-gray-500 font-medium mt-0.5">
-              Extend duration for <b className="text-emerald-700 font-bold">{skillName}</b>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+              Extend duration for <b className="text-emerald-700 dark:text-emerald-400 font-bold">{skillName}</b>
             </p>
           </div>
         </div>
@@ -106,19 +106,19 @@ export const AddTimeModal: React.FC<AddTimeModalProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           
           {/* Add Days Input Card (Teal/Emerald Theme) */}
-          <div className="bg-emerald-50/60 p-4 sm:p-5 border border-emerald-200 rounded-md flex flex-col justify-between shadow-xs">
+          <div className="bg-emerald-50/60 dark:bg-emerald-950/30 p-4 sm:p-5 border border-emerald-200/80 dark:border-emerald-800/40 rounded-xl flex flex-col justify-between shadow-xs">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-black uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-sm">
+              <span className="text-xs font-black uppercase tracking-wider text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/60 px-2.5 py-1 rounded-md">
                 ADD DAYS
               </span>
-              <span className="text-xs font-bold text-emerald-600">+24 hrs / day</span>
+              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">+24 hrs / day</span>
             </div>
 
             <div className="flex items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={() => setExtraDays(Math.max(0, validDays - 1))}
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-md bg-white border border-emerald-200 text-emerald-700 font-black flex items-center justify-center hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 text-base"
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-white dark:bg-[#181c30] border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 font-black flex items-center justify-center hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 dark:hover:text-white hover:border-emerald-600 transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 text-base"
                 title="Decrease 1 day"
               >
                 <Minus className="w-4 h-4" />
@@ -135,17 +135,17 @@ export const AddTimeModal: React.FC<AddTimeModalProps> = ({
                     const val = parseInt(e.target.value, 10);
                     setExtraDays(isNaN(val) ? 0 : Math.max(0, val));
                   }}
-                  className="w-16 sm:w-20 text-center text-3xl sm:text-4xl font-black text-emerald-950 focus:outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-16 sm:w-20 text-center text-3xl sm:text-4xl font-black text-emerald-950 dark:text-white focus:outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   placeholder="0"
                   autoFocus
                 />
-                <span className="text-sm font-bold text-emerald-700 shrink-0">days</span>
+                <span className="text-sm font-bold text-emerald-700 dark:text-emerald-300 shrink-0">days</span>
               </div>
 
               <button
                 type="button"
                 onClick={() => setExtraDays(validDays + 1)}
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-md bg-emerald-600 text-white font-black flex items-center justify-center hover:bg-emerald-700 transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 text-base"
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-black flex items-center justify-center transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 text-base"
                 title="Increase 1 day"
               >
                 <Plus className="w-4 h-4" />
@@ -154,19 +154,19 @@ export const AddTimeModal: React.FC<AddTimeModalProps> = ({
           </div>
 
           {/* Add Hours Input Card (Cyan/Sky Theme) */}
-          <div className="bg-cyan-50/60 p-4 sm:p-5 border border-cyan-200 rounded-md flex flex-col justify-between shadow-xs">
+          <div className="bg-cyan-50/60 dark:bg-cyan-950/30 p-4 sm:p-5 border border-cyan-200/80 dark:border-cyan-800/40 rounded-xl flex flex-col justify-between shadow-xs">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-black uppercase tracking-wider text-cyan-800 bg-cyan-100 px-2.5 py-1 rounded-sm">
+              <span className="text-xs font-black uppercase tracking-wider text-cyan-800 dark:text-cyan-300 bg-cyan-100 dark:bg-cyan-900/60 px-2.5 py-1 rounded-md">
                 ADD HOURS
               </span>
-              <span className="text-xs font-bold text-cyan-600">+1 hr each</span>
+              <span className="text-xs font-bold text-cyan-600 dark:text-cyan-400">+1 hr each</span>
             </div>
 
             <div className="flex items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={() => setExtraHours(Math.max(0, validHours - 1))}
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-md bg-white border border-cyan-200 text-cyan-700 font-black flex items-center justify-center hover:bg-cyan-600 hover:text-white hover:border-cyan-600 transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 text-base"
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-white dark:bg-[#181c30] border border-cyan-200 dark:border-cyan-800/60 text-cyan-700 dark:text-cyan-300 font-black flex items-center justify-center hover:bg-cyan-600 hover:text-white dark:hover:bg-cyan-600 dark:hover:text-white hover:border-cyan-600 transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 text-base"
                 title="Decrease 1 hour"
               >
                 <Minus className="w-4 h-4" />
@@ -183,16 +183,16 @@ export const AddTimeModal: React.FC<AddTimeModalProps> = ({
                     const val = parseInt(e.target.value, 10);
                     setExtraHours(isNaN(val) ? 0 : Math.max(0, Math.min(48, val)));
                   }}
-                  className="w-16 sm:w-20 text-center text-3xl sm:text-4xl font-black text-cyan-950 focus:outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-16 sm:w-20 text-center text-3xl sm:text-4xl font-black text-cyan-950 dark:text-white focus:outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   placeholder="0"
                 />
-                <span className="text-sm font-bold text-cyan-700 shrink-0">hours</span>
+                <span className="text-sm font-bold text-cyan-700 dark:text-cyan-300 shrink-0">hours</span>
               </div>
 
               <button
                 type="button"
                 onClick={() => setExtraHours(Math.min(48, validHours + 1))}
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-md bg-cyan-600 text-white font-black flex items-center justify-center hover:bg-cyan-700 transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 text-base"
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white font-black flex items-center justify-center transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 text-base"
                 title="Increase 1 hour"
               >
                 <Plus className="w-4 h-4" />
@@ -204,11 +204,11 @@ export const AddTimeModal: React.FC<AddTimeModalProps> = ({
 
         {/* Colorful Quick Presets */}
         <div className="flex flex-col gap-2">
-          <div className="text-xs sm:text-sm font-bold text-gray-500 flex items-center justify-between">
-            <span className="flex items-center gap-1.5 text-gray-800 font-extrabold">
-              <Flame className="w-4 h-4 text-emerald-600" /> Quick Presets:
+          <div className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 flex items-center justify-between">
+            <span className="flex items-center gap-1.5 text-slate-800 dark:text-slate-200 font-extrabold">
+              <Flame className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Quick Presets:
             </span>
-            <span className="text-emerald-700 font-bold">Tap to auto-fill</span>
+            <span className="text-emerald-700 dark:text-emerald-400 font-bold">Tap to auto-fill</span>
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
             {presets.map((btn) => {
@@ -221,10 +221,10 @@ export const AddTimeModal: React.FC<AddTimeModalProps> = ({
                     setExtraDays(btn.d);
                     setExtraHours(btn.h);
                   }}
-                  className={`py-2 px-2 text-xs font-bold rounded-md border transition-all cursor-pointer text-center leading-tight ${
+                  className={`py-2 px-2 text-xs font-bold rounded-lg border transition-all cursor-pointer text-center leading-tight ${
                     isSelected
                       ? `bg-gradient-to-r ${btn.color} text-white border-transparent shadow-sm scale-102`
-                      : `${btn.bg} shadow-xs`
+                      : `bg-slate-50 dark:bg-[#181c30] border-slate-200 dark:border-[#262b47] text-slate-700 dark:text-slate-300 hover:border-emerald-300 dark:hover:border-emerald-500/50 shadow-xs`
                   }`}
                 >
                   {btn.label}
@@ -235,10 +235,10 @@ export const AddTimeModal: React.FC<AddTimeModalProps> = ({
         </div>
 
         {/* Preview of Extended Deadline */}
-        <div className={`rounded-md p-4 sm:p-5 transition-all shadow-xs ${
+        <div className={`rounded-xl p-4 sm:p-5 transition-all shadow-xs ${
           isValid 
-            ? 'bg-[#161828] text-white border border-emerald-400/50' 
-            : 'bg-emerald-50 border border-emerald-300 text-emerald-950'
+            ? 'bg-slate-900 dark:bg-[#101320] text-white border border-emerald-400/40' 
+            : 'bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-800/40 text-emerald-950 dark:text-emerald-200'
         }`}>
           {isValid ? (
             <div className="space-y-2">
@@ -258,8 +258,8 @@ export const AddTimeModal: React.FC<AddTimeModalProps> = ({
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-emerald-900">
-              <Clock className="w-4 h-4 text-emerald-600 shrink-0" />
+            <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-emerald-900 dark:text-emerald-200">
+              <Clock className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>Enter or tap days/hours to add to this challenge.</span>
             </div>
           )}
@@ -270,7 +270,7 @@ export const AddTimeModal: React.FC<AddTimeModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-full sm:flex-1 py-3 px-5 bg-white border border-gray-300 rounded-md font-bold text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+            className="w-full sm:flex-1 py-3 px-5 bg-white dark:bg-[#181c30] border border-slate-200 dark:border-[#262b47] rounded-xl font-bold text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#1e223d] transition-colors cursor-pointer"
           >
             Cancel
           </button>
@@ -278,10 +278,10 @@ export const AddTimeModal: React.FC<AddTimeModalProps> = ({
             type="button"
             disabled={!isValid}
             onClick={handleConfirm}
-            className={`w-full sm:flex-[1.6] py-3 px-6 rounded-md font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm ${
+            className={`w-full sm:flex-[1.6] py-3 px-6 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm ${
               isValid 
                 ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs hover:opacity-95' 
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+                : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed shadow-none'
             }`}
             id="btn-confirm-add-time"
           >

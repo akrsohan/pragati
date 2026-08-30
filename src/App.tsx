@@ -1531,7 +1531,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f4f5f8] text-[#1a1c2e] font-sans antialiased">
+    <div className="min-h-screen bg-[#f4f5f8] dark:bg-[#0b0d17] text-[#1a1c2e] dark:text-[#f1f5f9] transition-colors duration-200 font-sans antialiased w-full">
       
       {currentUser && currentUser.is_banned && !currentUser.is_admin && (
         <div className="fixed inset-0 z-[100] bg-[#111322] flex items-center justify-center p-6 text-white font-sans antialiased">
@@ -2407,14 +2407,14 @@ export default function App() {
               <div>
                 <button 
                   onClick={() => setDiscoverView('main')}
-                  className="inline-flex items-center gap-2.5 px-4 py-2.5 mb-5 rounded-xl bg-white text-slate-800 hover:text-[#6c5ce7] font-bold text-xs sm:text-sm border-2 border-indigo-100/90 hover:border-[#6c5ce7] shadow-xs hover:shadow-md hover:-translate-x-1 transition-all duration-200 group cursor-pointer"
+                  className="inline-flex items-center gap-2.5 px-4 py-2.5 mb-5 rounded-xl bg-white dark:bg-[#141726] text-slate-800 dark:text-slate-100 hover:text-[#6c5ce7] dark:hover:text-[#a29bfe] font-bold text-xs sm:text-sm border-2 border-indigo-100/90 dark:border-[#23273e] hover:border-[#6c5ce7] dark:hover:border-[#6c5ce7] shadow-xs hover:shadow-md hover:-translate-x-1 transition-all duration-200 group cursor-pointer"
                   id="btn-back-to-discover-fields"
                 >
-                  <div className="w-6 h-6 rounded-lg bg-indigo-50 text-[#6c5ce7] group-hover:bg-[#6c5ce7] group-hover:text-white flex items-center justify-center transition-colors shadow-2xs">
+                  <div className="w-6 h-6 rounded-lg bg-indigo-50 dark:bg-[#1e2238] text-[#6c5ce7] dark:text-[#a29bfe] group-hover:bg-[#6c5ce7] group-hover:text-white flex items-center justify-center transition-colors shadow-2xs">
                     <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
                   </div>
                   <span className="tracking-tight">Back to Discover</span>
-                  <span className="text-[10px] uppercase font-extrabold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 group-hover:bg-indigo-50 group-hover:text-[#6c5ce7] transition-colors ml-0.5">
+                  <span className="text-[10px] uppercase font-extrabold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#1e2238] text-slate-600 dark:text-slate-300 group-hover:bg-indigo-50 group-hover:text-[#6c5ce7] transition-colors ml-0.5">
                     Overview
                   </span>
                 </button>
@@ -2427,12 +2427,12 @@ export default function App() {
                         setSelectedFieldId(f.id);
                         setDiscoverView('field-skills');
                       }}
-                      className="p-5 rounded-2xl bg-white border border-[#e4e5ee] hover:border-[#6c5ce7] transition-all cursor-pointer shadow-xs hover:shadow-md"
+                      className="p-5 rounded-2xl bg-white dark:bg-[#141726] border border-[#e4e5ee] dark:border-[#23273e] hover:border-[#6c5ce7] dark:hover:border-[#6c5ce7] transition-all cursor-pointer shadow-xs hover:shadow-md"
                     >
                       <span className="text-3xl block mb-2">{f.icon}</span>
-                      <div className="font-bold text-base text-[#1a1c2e] mb-1">{f.name}</div>
-                      <div className="text-xs text-[#8a8ca3] mb-3">{f.description}</div>
-                      <div className="text-xs font-bold text-[#6c5ce7] flex items-center gap-1">
+                      <div className="font-bold text-base text-[#1a1c2e] dark:text-white mb-1">{f.name}</div>
+                      <div className="text-xs text-[#8a8ca3] dark:text-slate-400 mb-3">{f.description}</div>
+                      <div className="text-xs font-bold text-[#6c5ce7] dark:text-[#a29bfe] flex items-center gap-1">
                         View {skills.filter(s => s.field_id === f.id).length} Tracks <ArrowRight className="w-3 h-3" />
                       </div>
                     </div>
@@ -2446,14 +2446,14 @@ export default function App() {
               <div>
                 <button 
                   onClick={() => setDiscoverView('fields')}
-                  className="inline-flex items-center gap-2.5 px-4 py-2.5 mb-5 rounded-xl bg-white text-slate-800 hover:text-[#6c5ce7] font-bold text-xs sm:text-sm border-2 border-indigo-100/90 hover:border-[#6c5ce7] shadow-xs hover:shadow-md hover:-translate-x-1 transition-all duration-200 group cursor-pointer"
+                  className="inline-flex items-center gap-2.5 px-4 py-2.5 mb-5 rounded-xl bg-white dark:bg-[#141726] text-slate-800 dark:text-slate-100 hover:text-[#6c5ce7] dark:hover:text-[#a29bfe] font-bold text-xs sm:text-sm border-2 border-indigo-100/90 dark:border-[#23273e] hover:border-[#6c5ce7] dark:hover:border-[#6c5ce7] shadow-xs hover:shadow-md hover:-translate-x-1 transition-all duration-200 group cursor-pointer"
                   id="btn-back-to-disciplines"
                 >
-                  <div className="w-6 h-6 rounded-lg bg-indigo-50 text-[#6c5ce7] group-hover:bg-[#6c5ce7] group-hover:text-white flex items-center justify-center transition-colors shadow-2xs">
+                  <div className="w-6 h-6 rounded-lg bg-indigo-50 dark:bg-[#1e2238] text-[#6c5ce7] dark:text-[#a29bfe] group-hover:bg-[#6c5ce7] group-hover:text-white flex items-center justify-center transition-colors shadow-2xs">
                     <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
                   </div>
                   <span className="tracking-tight">Back to Disciplines</span>
-                  <span className="text-[10px] uppercase font-extrabold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 group-hover:bg-indigo-50 group-hover:text-[#6c5ce7] transition-colors ml-0.5">
+                  <span className="text-[10px] uppercase font-extrabold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#1e2238] text-slate-600 dark:text-slate-300 group-hover:bg-indigo-50 group-hover:text-[#6c5ce7] transition-colors ml-0.5">
                     Fields
                   </span>
                 </button>
@@ -2479,7 +2479,7 @@ export default function App() {
                         <div className="flex items-center justify-between gap-1 mb-1">
                           <h4 className="truncate">{s.name}</h4>
                           {isCompleted && (
-                            <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 shrink-0 flex items-center gap-1">
+                            <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50 shrink-0 flex items-center gap-1">
                               <Check className="w-2.5 h-2.5" /> Done
                             </span>
                           )}
@@ -2487,7 +2487,7 @@ export default function App() {
                         <p>{s.description}</p>
                         <div className="meta">
                           <span className="diff">{s.difficulty || 'Beginner'}</span>
-                          <span className={`learners ${isCompleted ? 'text-emerald-600 font-bold' : ''}`}>
+                          <span className={`learners ${isCompleted ? 'text-emerald-600 dark:text-emerald-400 font-bold' : ''}`}>
                             {isCompleted ? '✓ Completed (+10 XP)' : isActive ? '⚡ In progress' : `⏱ ${s.avg_days || '3 days'}`}
                           </span>
                         </div>
@@ -2503,14 +2503,14 @@ export default function App() {
               <div>
                 <button 
                   onClick={() => setDiscoverView('main')}
-                  className="inline-flex items-center gap-2.5 px-4 py-2.5 mb-5 rounded-xl bg-white text-slate-800 hover:text-[#6c5ce7] font-bold text-xs sm:text-sm border-2 border-indigo-100/90 hover:border-[#6c5ce7] shadow-xs hover:shadow-md hover:-translate-x-1 transition-all duration-200 group cursor-pointer"
+                  className="inline-flex items-center gap-2.5 px-4 py-2.5 mb-5 rounded-xl bg-white dark:bg-[#141726] text-slate-800 dark:text-slate-100 hover:text-[#6c5ce7] dark:hover:text-[#a29bfe] font-bold text-xs sm:text-sm border-2 border-indigo-100/90 dark:border-[#23273e] hover:border-[#6c5ce7] dark:hover:border-[#6c5ce7] shadow-xs hover:shadow-md hover:-translate-x-1 transition-all duration-200 group cursor-pointer"
                   id="btn-back-to-discover-all"
                 >
-                  <div className="w-6 h-6 rounded-lg bg-indigo-50 text-[#6c5ce7] group-hover:bg-[#6c5ce7] group-hover:text-white flex items-center justify-center transition-colors shadow-2xs">
+                  <div className="w-6 h-6 rounded-lg bg-indigo-50 dark:bg-[#1e2238] text-[#6c5ce7] dark:text-[#a29bfe] group-hover:bg-[#6c5ce7] group-hover:text-white flex items-center justify-center transition-colors shadow-2xs">
                     <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
                   </div>
                   <span className="tracking-tight">Back to Discover</span>
-                  <span className="text-[10px] uppercase font-extrabold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 group-hover:bg-indigo-50 group-hover:text-[#6c5ce7] transition-colors ml-0.5">
+                  <span className="text-[10px] uppercase font-extrabold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#1e2238] text-slate-600 dark:text-slate-300 group-hover:bg-indigo-50 group-hover:text-[#6c5ce7] transition-colors ml-0.5">
                     Overview
                   </span>
                 </button>
@@ -2577,7 +2577,7 @@ export default function App() {
       {/* PAGE 4 & 5 — ROADMAP STEPS & OVERVIEW */}
       {/* ========================================================================= */}
       {currentPage === 'roadmap' && (
-        <div className="page" id="page-roadmap">
+        <div className="page bg-[#FAF8F5] dark:bg-[#0b0d17]" id="page-roadmap">
           <div className="page-tag">PAGE 4 &amp; 5 — ROADMAP STEPS &amp; OVERVIEW</div>
 
           <div className="content">
@@ -2585,50 +2585,50 @@ export default function App() {
             <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
               <button 
                 onClick={() => setCurrentPage('discover')}
-                className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-white text-slate-800 hover:text-[#6c5ce7] font-bold text-xs sm:text-sm border-2 border-indigo-100/90 hover:border-[#6c5ce7] shadow-xs hover:shadow-md hover:-translate-x-1 transition-all duration-200 group cursor-pointer"
+                className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-white dark:bg-[#141726] text-[#22252E] dark:text-slate-100 hover:text-[#6C5CE7] dark:hover:text-[#a29bfe] font-bold text-xs sm:text-sm border border-[#E8E4DC] dark:border-[#23273e] hover:border-[#6C5CE7] dark:hover:border-[#6c5ce7] shadow-xs hover:shadow-md hover:-translate-x-1 transition-all duration-200 group cursor-pointer"
                 id="btn-back-to-discover"
               >
-                <div className="w-6 h-6 rounded-lg bg-indigo-50 text-[#6c5ce7] group-hover:bg-[#6c5ce7] group-hover:text-white flex items-center justify-center transition-colors shadow-2xs">
+                <div className="w-6 h-6 rounded-lg bg-[#F3F1EC] dark:bg-[#1e2238] text-[#6C5CE7] dark:text-[#a29bfe] group-hover:bg-[#6C5CE7] group-hover:text-white flex items-center justify-center transition-colors shadow-2xs">
                   <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
                 </div>
                 <span className="tracking-tight">Back to Discover &amp; Roadmaps</span>
               </button>
-              <div className="roadmap-track-badge text-xs text-[#8a8ca3] font-medium hidden sm:block">
-                Skill Track: <span className="font-bold text-[#1a1c2e]">{currentSkill.name}</span> ({currentSkillSteps.length} milestones)
+              <div className="roadmap-track-badge text-xs text-[#8B8A86] dark:text-slate-400 font-medium hidden sm:block bg-white dark:bg-[#141726] border border-[#E8E4DC] dark:border-[#23273e]">
+                Skill Track: <span className="font-bold text-[#22252E] dark:text-white">{currentSkill.name}</span> ({currentSkillSteps.length} milestones)
               </div>
             </div>
 
-            <div className="w-full max-w-7xl mx-auto">
+            <div className="w-full max-w-7xl mx-auto flex flex-col gap-6 sm:gap-8">
               
-              {/* Header info */}
-              <div className="roadmap-header-card p-6 sm:p-7 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+              {/* 1. Top Header Info Card */}
+              <div className="roadmap-header-card p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 bg-white dark:bg-[#141726] border border-[#E8E4DC] dark:border-[#23273e]">
                 <div className="flex items-center gap-4">
                   <div 
-                    className="skill-3d-badge w-14 h-14 min-w-14 rounded-2xl text-white font-extrabold flex items-center justify-center text-2xl"
+                    className="skill-3d-badge w-14 h-14 min-w-14 rounded-2xl text-white font-extrabold flex items-center justify-center text-2xl shadow-md"
                     style={{ background: currentSkill.bg_color || '#6c5ce7' }}
                   >
                     {currentSkill.icon}
                   </div>
                   <div>
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <h3 className="font-bold text-2xl text-[#1a1c2e] leading-tight">{currentSkill.name}</h3>
-                      <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-md bg-[#f1eefe] text-[#6c5ce7] border border-[#6c5ce7]/20 shadow-2xs">
+                    <div className="flex items-center gap-2.5 mb-1.5 flex-wrap">
+                      <h3 className="font-extrabold text-2xl text-[#22252E] dark:text-white leading-tight tracking-tight">{currentSkill.name}</h3>
+                      <span className="text-xs font-bold px-2.5 py-0.5 rounded-md bg-[#F3F1EC] dark:bg-purple-950/60 text-[#6C5CE7] dark:text-purple-300 border border-[#E8E4DC] dark:border-purple-800/50 shadow-2xs">
                         {currentSkill.difficulty || 'Beginner'}
                       </span>
                       {currentUserCompletedSkillIds.has(currentSkill.id) && (
-                        <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-300 shadow-2xs flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Completed (+10 XP)
+                        <span className="text-xs font-extrabold px-2.5 py-0.5 rounded-md bg-[#E3F7EC] dark:bg-emerald-950/60 text-[#1B9C63] dark:text-emerald-300 border border-[#1B9C63]/30 dark:border-emerald-800/50 shadow-2xs flex items-center gap-1.5">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[#1B9C63] dark:text-emerald-400" /> Completed (+10 XP)
                         </span>
                       )}
                     </div>
-                    <p className="text-xs sm:text-sm text-[#8a8ca3] max-w-2xl leading-relaxed whitespace-normal break-words">{currentSkill.description}</p>
+                    <p className="text-xs sm:text-sm text-[#8B8A86] dark:text-slate-400 max-w-2xl leading-relaxed whitespace-normal break-words">{currentSkill.description}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                   {currentUserCompletedSkillIds.has(currentSkill.id) ? (
-                    <div className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-300 font-extrabold text-sm shadow-xs select-none">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                    <div className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#E3F7EC] dark:bg-emerald-950/60 text-[#1B9C63] dark:text-emerald-300 border border-[#1B9C63]/30 dark:border-emerald-800/50 font-extrabold text-sm shadow-xs select-none">
+                      <CheckCircle2 className="w-5 h-5 text-[#1B9C63] dark:text-emerald-400 shrink-0" />
                       <span>Challenge Completed (+10 XP)</span>
                     </div>
                   ) : activeProgress?.skill_id === currentSkill.id && activeProgress?.status === 'in_progress' ? (
@@ -2654,65 +2654,115 @@ export default function App() {
                 </div>
               </div>
 
+              {/* 2. Completed Challenge Status Banner */}
               {currentUserCompletedSkillIds.has(currentSkill.id) && (
-                <div className="mb-6 p-4.5 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 shadow-xs flex items-center justify-between gap-4 flex-wrap">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-black shrink-0">
-                      <Trophy className="w-5 h-5" />
+                <div className="p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-[#E3F7EC] dark:bg-emerald-950/40 border border-[#1B9C63]/30 dark:border-emerald-800/60 shadow-xs flex items-center justify-between gap-5 flex-wrap">
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="w-12 h-12 rounded-2xl bg-white dark:bg-emerald-900/60 text-[#1B9C63] dark:text-emerald-300 border border-[#1B9C63]/30 dark:border-emerald-700/60 flex items-center justify-center font-black shrink-0 shadow-2xs">
+                      <Trophy className="w-6 h-6 text-[#1B9C63] dark:text-emerald-400" />
                     </div>
                     <div>
-                      <h5 className="text-sm font-bold text-emerald-950">You have completed the {currentSkill.name} challenge!</h5>
-                      <p className="text-xs text-emerald-700">You earned +10 points. You cannot retake or add extra time to this completed skill.</p>
+                      <h5 className="text-base sm:text-lg font-black text-[#22252E] dark:text-emerald-100 tracking-tight">
+                        You have completed the {currentSkill.name} challenge!
+                      </h5>
+                      <p className="text-xs sm:text-sm text-[#1B9C63] dark:text-emerald-300 font-medium mt-0.5">
+                        You earned +10 points. You cannot retake or add extra time to this completed skill.
+                      </p>
                     </div>
                   </div>
                   <button
                     onClick={() => setCurrentPage('discover')}
-                    className="text-xs font-bold px-4 py-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition-all cursor-pointer shadow-2xs"
+                    className="text-xs sm:text-sm font-extrabold px-5 py-2.5 rounded-xl bg-[#1B9C63] hover:bg-[#15804f] text-white transition-all cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-0.5 shrink-0"
                   >
                     Explore Other Skills →
                   </button>
                 </div>
               )}
 
-              {/* Side-by-Side Two Columns: Roadmap Curriculum (Left) & Official Resources (Right) */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+              {/* 3. Side-by-Side Two Columns: Roadmap Curriculum (Left) & Official Resources (Right) */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 items-start">
                 
                 {/* Column 1: Roadmap Curriculum & Milestones */}
-                <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-7 border border-slate-200 shadow-xs flex flex-col">
-                  <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl bg-[#6c5ce7]/10 text-[#6c5ce7] border border-[#6c5ce7]/20 flex items-center justify-center font-bold shrink-0 shadow-2xs">
+                <div className="bg-white dark:bg-[#141726] rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-[#E8E4DC] dark:border-[#23273e] shadow-xs flex flex-col gap-5 sm:gap-6 transition-colors">
+                  {/* Header Bar with clean separation */}
+                  <div className="flex items-center justify-between pb-5 border-b border-[#E8E4DC] dark:border-[#23273e]">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-11 h-11 rounded-2xl bg-[#F3F1EC] dark:bg-purple-950/50 text-[#6C5CE7] dark:text-purple-400 border border-[#E8E4DC] dark:border-purple-800/50 flex items-center justify-center font-bold shrink-0 shadow-2xs">
                         <Layers className="w-5 h-5" />
                       </div>
                       <div>
-                        <h4 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                        <h4 className="text-base sm:text-lg font-black text-[#22252E] dark:text-white tracking-tight">
                           Roadmap Curriculum &amp; Milestones
                         </h4>
-                        <p className="text-xs text-slate-500 mt-0.5">
+                        <p className="text-xs sm:text-sm text-[#8B8A86] dark:text-slate-400 mt-1 font-medium">
                           Step-by-step milestones to master {currentSkill.name}
                         </p>
                       </div>
                     </div>
-                    <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-purple-50 text-[#6c5ce7] border border-purple-100 shadow-2xs whitespace-nowrap">
+                    <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#F3F1EC] dark:bg-purple-950/60 text-[#22252E] dark:text-purple-300 border border-[#E8E4DC] dark:border-purple-800/50 shadow-2xs whitespace-nowrap">
                       {currentSkillSteps.length} Steps
                     </span>
                   </div>
 
                   {currentSkillSteps.length === 0 ? (
-                    <div className="bg-slate-50/60 rounded-2xl p-8 text-center text-slate-400 text-xs border border-dashed border-slate-200">
+                    <div className="bg-[#F3F1EC]/60 dark:bg-[#101320] rounded-2xl p-10 text-center text-[#8B8A86] dark:text-slate-500 text-xs sm:text-sm border border-dashed border-[#E8E4DC] dark:border-[#23273e]">
                       No roadmap steps listed yet for this skill track.
                     </div>
                   ) : (
-                    <div className="roadmap-journey-track space-y-3 max-h-[640px] overflow-y-auto pr-1">
-                      {currentSkillSteps.map((st, idx) => (
-                        <div key={st.id} className="step-card" id={`step-card-${st.id}`}>
-                          <div className="step-num">{idx + 1}</div>
-                          <div className="step-body">
-                            <h5>{st.title}</h5>
-                            <p>{st.description}</p>
+                    <div className="roadmap-journey-track flex flex-col gap-3.5 max-h-[620px] overflow-y-auto pr-1">
+                      {currentSkillSteps.map((st, idx) => {
+                        const hasDelimiters = st.description && st.description.includes('||');
+                        const subtopics = hasDelimiters
+                          ? st.description.split('||').map(s => s.trim()).filter(Boolean)
+                          : [];
+
+                        return (
+                          <div 
+                            key={st.id} 
+                            className="step-card bg-white dark:bg-[#181c30] hover:bg-[#FAF8F5] dark:hover:bg-[#1e223d] border border-[#E8E4DC] dark:border-[#262b47] hover:border-[#6C5CE7]/60 dark:hover:border-[#6c5ce7] rounded-2xl p-4 sm:p-5 transition-all shadow-2xs hover:shadow-md flex gap-4 items-start" 
+                            id={`step-card-${st.id}`}
+                          >
+                            <div className="step-num w-9 h-9 min-w-9 rounded-xl bg-[#F3F1EC] dark:bg-[#121424] text-[#6C5CE7] dark:text-[#a29bfe] font-extrabold text-sm flex items-center justify-center border border-[#E8E4DC] dark:border-purple-800/50 shadow-2xs shrink-0 mt-0.5">
+                              {idx + 1}
+                            </div>
+                            <div className="step-body flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2">
+                                <h5 className="font-extrabold text-sm sm:text-base text-[#22252E] dark:text-white leading-snug">
+                                  {st.title}
+                                </h5>
+                                {st.resource_link && (
+                                  <a
+                                    href={st.resource_link}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-[11px] font-bold text-[#6C5CE7] dark:text-purple-300 hover:text-[#5848c2] inline-flex items-center gap-1 bg-[#F3F1EC] dark:bg-purple-950/60 hover:bg-[#E8E4DC] dark:hover:bg-purple-900/80 px-2.5 py-1 rounded-lg border border-[#E8E4DC] dark:border-purple-800/40 transition-colors shrink-0 shadow-2xs"
+                                  >
+                                    <span>Doc</span>
+                                    <ExternalLink className="w-3 h-3" />
+                                  </a>
+                                )}
+                              </div>
+
+                              {hasDelimiters ? (
+                                <div className="flex flex-wrap gap-1.5 mt-2.5">
+                                  {subtopics.map((sub, sIdx) => (
+                                    <span 
+                                      key={sIdx}
+                                      className="step-subtopic-tag inline-flex items-center text-xs font-semibold bg-[#F3F1EC] dark:bg-[#121424] text-[#22252E] dark:text-slate-200 px-2.5 py-1 rounded-lg border border-[#E8E4DC] dark:border-[#262b47] hover:border-[#6C5CE7]/50 dark:hover:border-purple-500/50 transition-colors shadow-2xs"
+                                    >
+                                      {sub}
+                                    </span>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-xs sm:text-sm text-[#8B8A86] dark:text-slate-300 mt-1.5 leading-relaxed">
+                                  {st.description}
+                                </p>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>

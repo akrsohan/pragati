@@ -68,7 +68,7 @@ export const DeadlineModal: React.FC<DeadlineModalProps> = ({
 
   return (
     <div 
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 overflow-y-auto p-4 sm:p-6 flex items-center justify-center animate-in fade-in duration-150 cursor-default" 
+      className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-xs z-50 overflow-y-auto p-4 sm:p-6 flex items-center justify-center animate-in fade-in duration-150 cursor-default" 
       id="deadline-modal-backdrop"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
@@ -77,14 +77,14 @@ export const DeadlineModal: React.FC<DeadlineModalProps> = ({
       }}
     >
       <div 
-        className="bg-white border-2 border-indigo-100 rounded-md p-6 sm:p-8 max-w-2xl w-full my-auto shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col gap-5"
+        className="bg-white dark:bg-[#141726] border-2 border-indigo-100 dark:border-[#23273e] text-slate-900 dark:text-white rounded-2xl p-6 sm:p-8 max-w-2xl w-full my-auto shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col gap-5"
         id="deadline-modal-container"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 sm:top-5 sm:right-5 text-gray-400 hover:text-gray-900 p-1.5 rounded-md hover:bg-gray-100 transition-colors cursor-pointer z-10"
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#181c30] transition-colors cursor-pointer z-10"
           id="deadline-modal-close-btn"
           title="Close dialog"
         >
@@ -94,7 +94,7 @@ export const DeadlineModal: React.FC<DeadlineModalProps> = ({
         {/* Header Section with Large Colorful Skill Badge */}
         <div className="flex items-center gap-4 pt-1 pr-8">
           <div 
-            className="w-14 h-14 sm:w-16 sm:h-16 rounded-md flex items-center justify-center text-white font-black text-2xl sm:text-3xl shadow-sm shrink-0"
+            className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center text-white font-black text-2xl sm:text-3xl shadow-sm shrink-0"
             style={{ background: skillColor }}
           >
             {skill.icon || skill.name.slice(0, 2)}
@@ -102,35 +102,35 @@ export const DeadlineModal: React.FC<DeadlineModalProps> = ({
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-1">
               {isCompleted ? (
-                <span className="text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-300 inline-flex items-center gap-1 shadow-xs">
-                  <Check className="w-3 h-3 text-emerald-600" /> Skill Mastered
+                <span className="text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/20 inline-flex items-center gap-1 shadow-xs">
+                  <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> Skill Mastered
                 </span>
               ) : (
                 <>
-                  <span className="text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 inline-flex items-center gap-1 shadow-xs">
-                    <Sparkles className="w-3 h-3 text-indigo-600" /> Challenge Target
+                  <span className="text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/20 inline-flex items-center gap-1 shadow-xs">
+                    <Sparkles className="w-3 h-3 text-indigo-600 dark:text-indigo-400" /> Challenge Target
                   </span>
-                  <span className="text-[11px] font-bold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-md border border-amber-200 inline-flex items-center gap-1 shadow-xs">
+                  <span className="text-[11px] font-bold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/10 px-2.5 py-0.5 rounded-md border border-amber-200 dark:border-amber-500/20 inline-flex items-center gap-1 shadow-xs">
                     <Trophy className="w-3 h-3 text-amber-500" /> +10 Points Reward
                   </span>
                 </>
               )}
             </div>
-            <h2 className="text-xl sm:text-2xl font-black text-[#1a1c2e] leading-tight tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight tracking-tight">
               {isCompleted ? 'Skill Already Completed' : 'Set Your Deadline'}
             </h2>
-            <p className="text-xs sm:text-sm text-gray-500 font-medium mt-0.5">
-              Target for <b className="text-indigo-600 font-bold">{skill.name}</b>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+              Target for <b className="text-indigo-600 dark:text-indigo-400 font-bold">{skill.name}</b>
             </p>
           </div>
         </div>
 
         {isCompleted && (
-          <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm flex items-start gap-3">
-            <Trophy className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+          <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 text-emerald-900 dark:text-emerald-200 text-xs sm:text-sm flex items-start gap-3">
+            <Trophy className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
             <div>
               <p className="font-bold">You have already completed the {skill.name} challenge!</p>
-              <p className="text-emerald-700 text-xs mt-0.5">
+              <p className="text-emerald-700 dark:text-emerald-400 text-xs mt-0.5">
                 You earned +10 points for completing this curriculum. You cannot take this challenge again or add extra time to it. Please pick another roadmap!
               </p>
             </div>
@@ -141,19 +141,19 @@ export const DeadlineModal: React.FC<DeadlineModalProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           
           {/* Days Input Card (Indigo Theme) */}
-          <div className="bg-indigo-50/60 p-4 sm:p-5 border border-indigo-200 rounded-md flex flex-col justify-between shadow-xs">
+          <div className="bg-indigo-50/60 dark:bg-indigo-950/30 p-4 sm:p-5 border border-indigo-200/80 dark:border-indigo-800/40 rounded-xl flex flex-col justify-between shadow-xs">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-black uppercase tracking-wider text-indigo-800 bg-indigo-100 px-2.5 py-1 rounded-sm">
+              <span className="text-xs font-black uppercase tracking-wider text-indigo-800 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/60 px-2.5 py-1 rounded-md">
                 DAYS
               </span>
-              <span className="text-xs font-bold text-indigo-600">24 hrs / day</span>
+              <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">24 hrs / day</span>
             </div>
 
             <div className="flex items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={() => setDeadlineDays(Math.max(0, validDays - 1))}
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-md bg-white border border-indigo-200 text-indigo-700 font-black flex items-center justify-center hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 text-base"
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-white dark:bg-[#181c30] border border-indigo-200 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 font-black flex items-center justify-center hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 dark:hover:text-white hover:border-indigo-600 transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 text-base"
                 title="Decrease 1 day"
               >
                 <Minus className="w-4 h-4" />
@@ -170,17 +170,17 @@ export const DeadlineModal: React.FC<DeadlineModalProps> = ({
                     const val = parseInt(e.target.value, 10);
                     setDeadlineDays(isNaN(val) ? 0 : Math.max(0, val));
                   }}
-                  className="w-16 sm:w-20 text-center text-3xl sm:text-4xl font-black text-indigo-950 focus:outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-16 sm:w-20 text-center text-3xl sm:text-4xl font-black text-indigo-950 dark:text-white focus:outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   placeholder="0"
                   autoFocus
                 />
-                <span className="text-sm font-bold text-indigo-700 shrink-0">days</span>
+                <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300 shrink-0">days</span>
               </div>
 
               <button
                 type="button"
                 onClick={() => setDeadlineDays(validDays + 1)}
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-md bg-indigo-600 text-white font-black flex items-center justify-center hover:bg-indigo-700 transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 text-base"
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-black flex items-center justify-center transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 text-base"
                 title="Increase 1 day"
               >
                 <Plus className="w-4 h-4" />
@@ -189,19 +189,19 @@ export const DeadlineModal: React.FC<DeadlineModalProps> = ({
           </div>
 
           {/* Hours Input Card (Rose/Amber Theme) */}
-          <div className="bg-rose-50/60 p-4 sm:p-5 border border-rose-200 rounded-md flex flex-col justify-between shadow-xs">
+          <div className="bg-rose-50/60 dark:bg-rose-950/30 p-4 sm:p-5 border border-rose-200/80 dark:border-rose-800/40 rounded-xl flex flex-col justify-between shadow-xs">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-black uppercase tracking-wider text-rose-800 bg-rose-100 px-2.5 py-1 rounded-sm">
+              <span className="text-xs font-black uppercase tracking-wider text-rose-800 dark:text-rose-300 bg-rose-100 dark:bg-rose-900/60 px-2.5 py-1 rounded-md">
                 HOURS
               </span>
-              <span className="text-xs font-bold text-rose-600">0 - 23 hrs</span>
+              <span className="text-xs font-bold text-rose-600 dark:text-rose-400">0 - 23 hrs</span>
             </div>
 
             <div className="flex items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={() => setDeadlineHours(Math.max(0, validHours - 1))}
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-md bg-white border border-rose-200 text-rose-700 font-black flex items-center justify-center hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 text-base"
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-white dark:bg-[#181c30] border border-rose-200 dark:border-rose-800/60 text-rose-700 dark:text-rose-300 font-black flex items-center justify-center hover:bg-rose-600 hover:text-white dark:hover:bg-rose-600 dark:hover:text-white hover:border-rose-600 transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 text-base"
                 title="Decrease 1 hour"
               >
                 <Minus className="w-4 h-4" />
@@ -218,16 +218,16 @@ export const DeadlineModal: React.FC<DeadlineModalProps> = ({
                     const val = parseInt(e.target.value, 10);
                     setDeadlineHours(isNaN(val) ? 0 : Math.max(0, Math.min(23, val)));
                   }}
-                  className="w-16 sm:w-20 text-center text-3xl sm:text-4xl font-black text-rose-950 focus:outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-16 sm:w-20 text-center text-3xl sm:text-4xl font-black text-rose-950 dark:text-white focus:outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   placeholder="0"
                 />
-                <span className="text-sm font-bold text-rose-700 shrink-0">hours</span>
+                <span className="text-sm font-bold text-rose-700 dark:text-rose-300 shrink-0">hours</span>
               </div>
 
               <button
                 type="button"
                 onClick={() => setDeadlineHours(Math.min(23, validHours + 1))}
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-md bg-rose-600 text-white font-black flex items-center justify-center hover:bg-rose-700 transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 text-base"
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-black flex items-center justify-center transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 text-base"
                 title="Increase 1 hour"
               >
                 <Plus className="w-4 h-4" />
@@ -239,11 +239,11 @@ export const DeadlineModal: React.FC<DeadlineModalProps> = ({
 
         {/* Colorful Quick Presets */}
         <div className="flex flex-col gap-2">
-          <div className="text-xs sm:text-sm font-bold text-gray-500 flex items-center justify-between">
-            <span className="flex items-center gap-1.5 text-gray-800 font-extrabold">
+          <div className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 flex items-center justify-between">
+            <span className="flex items-center gap-1.5 text-slate-800 dark:text-slate-200 font-extrabold">
               <Flame className="w-4 h-4 text-amber-500" /> Quick Presets:
             </span>
-            <span className="text-indigo-600 font-bold">Tap to auto-fill</span>
+            <span className="text-indigo-600 dark:text-indigo-400 font-bold">Tap to auto-fill</span>
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
             {presets.map((p) => {
@@ -253,10 +253,10 @@ export const DeadlineModal: React.FC<DeadlineModalProps> = ({
                   key={p.label}
                   type="button"
                   onClick={() => handleQuickPreset(p.d, p.h)}
-                  className={`py-2 px-2 text-xs font-bold rounded-md border transition-all cursor-pointer text-center leading-tight ${
+                  className={`py-2 px-2 text-xs font-bold rounded-lg border transition-all cursor-pointer text-center leading-tight ${
                     isSelected
                       ? `bg-gradient-to-r ${p.color} text-white border-transparent shadow-sm scale-102`
-                      : `${p.bg} shadow-xs`
+                      : `bg-slate-50 dark:bg-[#181c30] border-slate-200 dark:border-[#262b47] text-slate-700 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-500/50 shadow-xs`
                   }`}
                 >
                   {p.label}
@@ -267,10 +267,10 @@ export const DeadlineModal: React.FC<DeadlineModalProps> = ({
         </div>
 
         {/* Target Deadline Banner */}
-        <div className={`rounded-md p-4 sm:p-5 transition-all shadow-xs ${
+        <div className={`rounded-xl p-4 sm:p-5 transition-all shadow-xs ${
           isValidDuration 
-            ? 'bg-[#161828] text-white border border-[#37f0ff]/50' 
-            : 'bg-amber-50 border border-amber-300 text-amber-950'
+            ? 'bg-slate-900 dark:bg-[#101320] text-white border border-slate-800 dark:border-[#37f0ff]/40' 
+            : 'bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/40 text-amber-950 dark:text-amber-200'
         }`}>
           {isValidDuration ? (
             <div className="space-y-2">
@@ -290,8 +290,8 @@ export const DeadlineModal: React.FC<DeadlineModalProps> = ({
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-amber-900">
-              <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+            <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-amber-900 dark:text-amber-200">
+              <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
               <span>Please select preset or enter at least 1 hour or 1 day for your challenge.</span>
             </div>
           )}
@@ -302,7 +302,7 @@ export const DeadlineModal: React.FC<DeadlineModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-full sm:flex-1 py-3 px-5 bg-white border border-gray-300 rounded-md font-bold text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+            className="w-full sm:flex-1 py-3 px-5 bg-white dark:bg-[#181c30] border border-slate-200 dark:border-[#262b47] rounded-xl font-bold text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#1e223d] transition-colors cursor-pointer"
             id="btn-cancel-deadline"
           >
             Cancel
@@ -311,12 +311,12 @@ export const DeadlineModal: React.FC<DeadlineModalProps> = ({
             type="button"
             disabled={!isValidDuration || isCompleted}
             onClick={handleConfirm}
-            className={`w-full sm:flex-[1.6] py-3 px-6 rounded-md font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-sm ${
+            className={`w-full sm:flex-[1.6] py-3 px-6 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-sm ${
               isCompleted
                 ? 'bg-emerald-600/80 text-white cursor-not-allowed'
                 : isValidDuration 
                   ? 'bg-[#6c5ce7] hover:bg-[#5b4bc4] text-white shadow-xs hover:opacity-95 cursor-pointer' 
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+                  : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed shadow-none'
             }`}
             id="btn-confirm-deadline"
           >
