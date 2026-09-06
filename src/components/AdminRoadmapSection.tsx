@@ -184,18 +184,18 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Skill Selector & Action Header */}
-      <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-xs border border-slate-200">
+      <div className="bg-white dark:bg-[#141726] rounded-2xl p-4 sm:p-5 shadow-xs border border-slate-200 dark:border-[#23273e]">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           
           {/* Skill Selector with styled dropdown and info pill */}
           <div className="flex flex-wrap items-center gap-3">
-            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">
+            <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">
               Skill Track:
             </span>
             
             <div className="relative min-w-[220px] sm:min-w-[260px]">
               <select 
-                className="w-full appearance-none bg-slate-50 hover:bg-slate-100/80 border border-slate-300 hover:border-slate-400 focus:border-[#6c5ce7] focus:ring-2 focus:ring-[#6c5ce7]/20 rounded-xl py-2.5 pl-3.5 pr-10 text-xs sm:text-sm font-bold text-slate-800 transition-all cursor-pointer outline-none"
+                className="w-full appearance-none bg-slate-50 dark:bg-[#101321] hover:bg-slate-100/80 dark:hover:bg-[#181c2e] border border-slate-300 dark:border-[#23273e] hover:border-slate-400 dark:hover:border-slate-600 focus:border-[#6c5ce7] focus:ring-2 focus:ring-[#6c5ce7]/20 rounded-xl py-2.5 pl-3.5 pr-10 text-xs sm:text-sm font-bold text-slate-800 dark:text-white transition-all cursor-pointer outline-none"
                 value={selectedSkillId}
                 onChange={(e) => onSelectSkillId(e.target.value)}
               >
@@ -208,21 +208,21 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
                   );
                 })}
               </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500 dark:text-slate-400">
                 <ChevronDown className="w-4 h-4" />
               </div>
             </div>
 
             {currentSkill && (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-50/70 border border-purple-100 rounded-xl">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-50/70 dark:bg-purple-950/40 border border-purple-100 dark:border-purple-800/40 rounded-xl">
                 <span 
                   className="w-6 h-6 rounded-lg text-white font-bold flex items-center justify-center text-xs shadow-2xs"
                   style={{ background: currentSkill.bg_color || '#6c5ce7' }}
                 >
                   {currentSkill.icon}
                 </span>
-                <span className="text-xs font-black text-slate-800">{currentSkill.name}</span>
-                <span className="text-[11px] font-bold text-[#6c5ce7] border-l border-purple-200 pl-2">
+                <span className="text-xs font-black text-slate-800 dark:text-white">{currentSkill.name}</span>
+                <span className="text-[11px] font-bold text-[#6c5ce7] dark:text-purple-300 border-l border-purple-200 dark:border-purple-800/60 pl-2">
                   {currentSteps.length} Steps · {currentResources.length} Materials
                 </span>
               </div>
@@ -255,34 +255,34 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* 1. Roadmap Curriculum Steps (Left Panel) */}
-        <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-xs border border-slate-200 flex flex-col justify-between">
+        <div className="bg-white dark:bg-[#141726] rounded-2xl p-5 sm:p-6 shadow-xs border border-slate-200 dark:border-[#23273e] flex flex-col justify-between">
           <div>
             {/* Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-[#23273e] mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-purple-50 text-[#6c5ce7] flex items-center justify-center font-bold text-xs shadow-2xs">
+                <div className="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/70 text-[#6c5ce7] dark:text-purple-300 flex items-center justify-center font-bold text-xs shadow-2xs">
                   <Layers className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="text-sm sm:text-base font-black text-slate-800 tracking-tight">
+                  <h4 className="text-sm sm:text-base font-black text-slate-800 dark:text-white tracking-tight">
                     Roadmap Curriculum Steps
                   </h4>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-400 dark:text-slate-400">
                     Milestones learners complete during timed challenge
                   </p>
                 </div>
               </div>
-              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-purple-50 text-[#6c5ce7] border border-purple-100">
+              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-purple-50 dark:bg-purple-950/60 text-[#6c5ce7] dark:text-purple-300 border border-purple-100 dark:border-purple-800/40">
                 {currentSteps.length} {currentSteps.length === 1 ? 'Step' : 'Steps'}
               </span>
             </div>
 
             {/* List */}
             {currentSteps.length === 0 ? (
-              <div className="py-12 px-4 text-center border-2 border-dashed border-slate-200 rounded-2xl my-3 bg-slate-50/50">
-                <Layers className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                <div className="text-xs font-bold text-slate-700">No curriculum steps for this track</div>
-                <p className="text-[11px] text-slate-400 mt-1">Add step-by-step milestones for learners to complete.</p>
+              <div className="py-12 px-4 text-center border-2 border-dashed border-slate-200 dark:border-[#23273e] rounded-2xl my-3 bg-slate-50/50 dark:bg-[#101321]">
+                <Layers className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                <div className="text-xs font-bold text-slate-700 dark:text-slate-200">No curriculum steps for this track</div>
+                <p className="text-[11px] text-slate-400 dark:text-slate-400 mt-1">Add step-by-step milestones for learners to complete.</p>
                 <button
                   onClick={onOpenAddStep}
                   className="mt-3 px-3.5 py-2 bg-[#6c5ce7] text-white text-xs font-bold rounded-xl shadow-2xs hover:bg-[#5848c2] cursor-pointer"
@@ -295,7 +295,7 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
                 {currentSteps.map((st, idx) => (
                   <div 
                     key={st.id} 
-                    className="p-4 rounded-xl border border-slate-200/90 hover:border-[#6c5ce7]/50 bg-slate-50/40 hover:bg-white transition-all shadow-2xs hover:shadow-xs group"
+                    className="p-4 rounded-xl border border-slate-200/90 dark:border-[#23273e] hover:border-[#6c5ce7]/50 dark:hover:border-purple-400 bg-slate-50/40 dark:bg-[#101321]/60 hover:bg-white dark:hover:bg-[#181c2e] transition-all shadow-2xs hover:shadow-xs group"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-start gap-3 min-w-0 flex-1">
@@ -303,11 +303,11 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
                           {idx + 1}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h5 className="font-bold text-xs sm:text-sm text-slate-900 group-hover:text-[#6c5ce7] transition-colors leading-snug">
+                          <h5 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 group-hover:text-[#6c5ce7] dark:group-hover:text-purple-300 transition-colors leading-snug">
                             {st.title}
                           </h5>
                           {st.description && (
-                            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                               {st.description}
                             </p>
                           )}
@@ -317,7 +317,7 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
                                 href={st.resource_link} 
                                 target="_blank" 
                                 rel="noreferrer" 
-                                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#6c5ce7] hover:text-[#5848c2] bg-purple-50 hover:bg-purple-100 px-2.5 py-1 rounded-md transition-colors"
+                                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#6c5ce7] dark:text-purple-300 hover:text-[#5848c2] dark:hover:text-purple-200 bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 dark:hover:bg-purple-900/60 px-2.5 py-1 rounded-md transition-colors"
                               >
                                 <Link2 className="w-3 h-3" />
                                 <span>Guide Reference</span>
@@ -331,14 +331,14 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
                       <div className="flex items-center gap-1 shrink-0">
                         <button 
                           onClick={() => onOpenEditStep(st)}
-                          className="text-slate-400 hover:text-[#6c5ce7] p-1.5 rounded-lg hover:bg-purple-50 transition-colors cursor-pointer"
+                          className="text-slate-400 dark:text-slate-400 hover:text-[#6c5ce7] dark:hover:text-purple-300 p-1.5 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-950/60 transition-colors cursor-pointer"
                           title="Edit Step"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button 
                           onClick={() => onDeleteStep(currentSkill.id, st.id)}
-                          className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                          className="text-slate-400 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
                           title="Delete Step"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -352,10 +352,10 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
           </div>
 
           {/* Bottom Action */}
-          <div className="pt-4 mt-4 border-t border-slate-100">
+          <div className="pt-4 mt-4 border-t border-slate-100 dark:border-[#23273e]">
             <button
               onClick={onOpenAddStep}
-              className="w-full py-2.5 bg-slate-50 hover:bg-purple-50 border border-slate-200 hover:border-purple-200 text-[#6c5ce7] text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+              className="w-full py-2.5 bg-slate-50 dark:bg-[#101321] hover:bg-purple-50 dark:hover:bg-[#1e2238] border border-slate-200 dark:border-[#23273e] hover:border-purple-200 dark:hover:border-purple-800 text-[#6c5ce7] dark:text-purple-300 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
             >
               <Plus className="w-4 h-4" />
               <span>Add Next Step (#{currentSteps.length + 1})</span>
@@ -364,24 +364,24 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
         </div>
 
         {/* 2. Official Documentation & References (Right Panel) */}
-        <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-xs border border-slate-200 flex flex-col justify-between">
+        <div className="bg-white dark:bg-[#141726] rounded-2xl p-5 sm:p-6 shadow-xs border border-slate-200 dark:border-[#23273e] flex flex-col justify-between">
           <div>
             {/* Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-[#23273e] mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-xs shadow-2xs">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold text-xs shadow-2xs">
                   <BookOpen className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="text-sm sm:text-base font-black text-slate-800 tracking-tight">
+                  <h4 className="text-sm sm:text-base font-black text-slate-800 dark:text-white tracking-tight">
                     Official Documentation &amp; References
                   </h4>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-400 dark:text-slate-400">
                     PDFs, Google Drive, web docs &amp; YouTube tutorials
                   </p>
                 </div>
               </div>
-              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800/40">
                 {currentResources.length} {currentResources.length === 1 ? 'Material' : 'Materials'}
               </span>
             </div>
@@ -394,7 +394,7 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     resourceFilter === 'all' 
                       ? 'bg-[#6c5ce7] text-white shadow-2xs' 
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      : 'bg-slate-100 dark:bg-[#101321] text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-[#1e2238]'
                   }`}
                 >
                   All ({currentResources.length})
@@ -404,7 +404,7 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                     resourceFilter === 'documents' 
                       ? 'bg-[#6c5ce7] text-white shadow-2xs' 
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      : 'bg-slate-100 dark:bg-[#101321] text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-[#1e2238]'
                   }`}
                 >
                   <FileText className="w-3.5 h-3.5" />
@@ -415,7 +415,7 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                     resourceFilter === 'references' 
                       ? 'bg-[#6c5ce7] text-white shadow-2xs' 
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      : 'bg-slate-100 dark:bg-[#101321] text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-[#1e2238]'
                   }`}
                 >
                   <Youtube className="w-3.5 h-3.5 text-red-500" />
@@ -426,10 +426,10 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
 
             {/* Resources List */}
             {displayedResources.length === 0 ? (
-              <div className="py-12 px-4 text-center border-2 border-dashed border-slate-200 rounded-2xl my-3 bg-slate-50/50">
-                <BookOpen className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                <div className="text-xs font-bold text-slate-700">No documents or references uploaded</div>
-                <p className="text-[11px] text-slate-400 mt-1">Upload lecture slide PDFs, Drive links, or tutorial videos.</p>
+              <div className="py-12 px-4 text-center border-2 border-dashed border-slate-200 dark:border-[#23273e] rounded-2xl my-3 bg-slate-50/50 dark:bg-[#101321]">
+                <BookOpen className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                <div className="text-xs font-bold text-slate-700 dark:text-slate-200">No documents or references uploaded</div>
+                <p className="text-[11px] text-slate-400 dark:text-slate-400 mt-1">Upload lecture slide PDFs, Drive links, or tutorial videos.</p>
                 <button
                   onClick={onOpenAddResource}
                   className="mt-3 px-3.5 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl shadow-2xs hover:bg-emerald-700 cursor-pointer"
@@ -442,7 +442,7 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
                 {displayedResources.map((res) => (
                   <div 
                     key={res.id} 
-                    className="p-4 rounded-xl border border-slate-200/90 hover:border-emerald-300 bg-slate-50/40 hover:bg-white transition-all shadow-2xs hover:shadow-xs flex flex-col justify-between group"
+                    className="p-4 rounded-xl border border-slate-200/90 dark:border-[#23273e] hover:border-emerald-300 dark:hover:border-emerald-600 bg-slate-50/40 dark:bg-[#101321]/60 hover:bg-white dark:hover:bg-[#181c2e] transition-all shadow-2xs hover:shadow-xs flex flex-col justify-between group"
                   >
                     <div>
                       {/* Top Row: Badge on left, Trash action on right */}
@@ -451,14 +451,14 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
                         <div className="flex items-center gap-1">
                           <button 
                             onClick={() => onOpenEditResource(res)}
-                            className="text-slate-400 hover:text-emerald-700 p-1.5 rounded-lg hover:bg-emerald-50 transition-colors cursor-pointer"
+                            className="text-slate-400 dark:text-slate-400 hover:text-emerald-700 dark:hover:text-emerald-400 p-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-950/60 transition-colors cursor-pointer"
                             title="Edit Resource"
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>
                           <button 
                             onClick={() => onDeleteResource(res.id, currentSkill.id)}
-                            className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                            className="text-slate-400 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
                             title="Delete Resource"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -467,21 +467,21 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
                       </div>
 
                       {/* Title */}
-                      <h5 className="font-bold text-xs sm:text-sm text-slate-900 group-hover:text-emerald-700 transition-colors leading-snug">
+                      <h5 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors leading-snug">
                         {res.title}
                       </h5>
                       
                       {/* Description */}
                       {res.description && (
-                        <p className="text-xs text-slate-500 mt-1.5 leading-relaxed line-clamp-2">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed line-clamp-2">
                           {res.description}
                         </p>
                       )}
                     </div>
 
                     {/* Footer Row: Domain source & Direct action link */}
-                    <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                      <span className="text-[10px] font-mono text-slate-400 truncate max-w-[130px] sm:max-w-[180px]">
+                    <div className="pt-3 mt-3 border-t border-slate-100 dark:border-[#23273e] flex items-center justify-between gap-2">
+                      <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 truncate max-w-[130px] sm:max-w-[180px]">
                         {res.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]}
                       </span>
 
@@ -489,7 +489,7 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
                         href={res.url} 
                         target="_blank" 
                         rel="noreferrer" 
-                        className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:text-emerald-800 dark:hover:text-emerald-200 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
                       >
                         <span>{getActionLabel(res)}</span>
                         <ExternalLink className="w-3 h-3" />
@@ -502,10 +502,10 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
           </div>
 
           {/* Bottom Action */}
-          <div className="pt-4 mt-4 border-t border-slate-100">
+          <div className="pt-4 mt-4 border-t border-slate-100 dark:border-[#23273e]">
             <button
               onClick={onOpenAddResource}
-              className="w-full py-2.5 bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200 text-emerald-700 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+              className="w-full py-2.5 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
             >
               <Plus className="w-4 h-4" />
               <span>Upload PDF or Add Reference Link</span>

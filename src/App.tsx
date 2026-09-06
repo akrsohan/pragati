@@ -3925,31 +3925,31 @@ export default function App() {
 
               {/* TAB: FIELDS / CATEGORIES */}
               {adminTab === 'fields' && (
-                <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
+                <div className="bg-white dark:bg-[#141726] border border-[#e4e5ee] dark:border-[#23273e] rounded-2xl p-4 sm:p-6 shadow-sm">
                   <div className="flex items-center justify-between mb-4">
-                    <div className="text-sm font-bold text-[#1a1c2e]">Browse by Field Categories</div>
+                    <div className="text-sm font-bold text-[#1a1c2e] dark:text-white">Browse by Field Categories</div>
                     <button
                       onClick={() => {
                         setEditingField(null);
                         setIsFieldModalOpen(true);
                       }}
-                      className="px-3.5 py-2 bg-[#6c5ce7] text-white text-xs font-bold rounded-lg hover:opacity-90 flex items-center gap-1.5"
+                      className="px-3.5 py-2 bg-[#6c5ce7] text-white text-xs font-bold rounded-lg hover:opacity-90 flex items-center gap-1.5 cursor-pointer shadow-xs"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       Add Field Category
                     </button>
                   </div>
                   {fields.length === 0 ? (
-                    <div className="p-8 text-center bg-[#f8f9fc] rounded-xl border border-dashed border-[#e4e5ee] my-2">
+                    <div className="p-8 text-center bg-[#f8f9fc] dark:bg-[#101321] rounded-xl border border-dashed border-[#e4e5ee] dark:border-[#23273e] my-2">
                       <span className="text-3xl block mb-2">🧭</span>
-                      <div className="text-sm font-bold text-[#1a1c2e]">No field categories available yet.</div>
-                      <p className="text-xs text-[#8a8ca3] mt-1 mb-4">Add your first engineering field category to organize skill tracks.</p>
+                      <div className="text-sm font-bold text-[#1a1c2e] dark:text-white">No field categories available yet.</div>
+                      <p className="text-xs text-[#8a8ca3] dark:text-slate-400 mt-1 mb-4">Add your first engineering field category to organize skill tracks.</p>
                       <button
                         onClick={() => {
                           setEditingField(null);
                           setIsFieldModalOpen(true);
                         }}
-                        className="px-4 py-2 bg-[#6c5ce7] text-white text-xs font-bold rounded-lg hover:opacity-90 inline-flex items-center gap-1.5"
+                        className="px-4 py-2 bg-[#6c5ce7] text-white text-xs font-bold rounded-lg hover:opacity-90 inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         Add First Field
@@ -3965,15 +3965,15 @@ export default function App() {
                       </div>
                       {fields.map((f) => (
                         <div key={f.id} className="admin-table-row">
-                          <div className="font-bold flex items-center gap-2">
+                          <div className="font-bold flex items-center gap-2 text-[#1a1c2e] dark:text-white">
                             <span className="text-lg">{f.icon || '💻'}</span>
                             {f.name}
                           </div>
-                          <div className="text-xs text-[#8a8ca3] truncate max-w-xs">{f.description || 'No description'}</div>
+                          <div className="text-xs text-[#8a8ca3] dark:text-slate-400 truncate max-w-xs">{f.description || 'No description'}</div>
                           <div>{f.icon || '💻'}</div>
                           <div>
                             <button 
-                              className="admin-action-btn hover:bg-slate-100"
+                              className="admin-action-btn hover:bg-slate-100 dark:hover:bg-[#282e4b]"
                               onClick={() => {
                                 setEditingField(f);
                                 setIsFieldModalOpen(true);
@@ -3982,7 +3982,7 @@ export default function App() {
                               Edit
                             </button>
                             <button 
-                              className="admin-action-btn danger hover:bg-red-50"
+                              className="admin-action-btn danger hover:bg-red-50 dark:hover:bg-red-950/40"
                               onClick={() => handleDeleteField(f.id)}
                             >
                               Delete
@@ -3997,17 +3997,17 @@ export default function App() {
 
               {/* TAB 1: REAL USERS TABLE */}
               {adminTab === 'users' && (
-                <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
+                <div className="bg-white dark:bg-[#141726] border border-[#e4e5ee] dark:border-[#23273e] rounded-2xl p-4 sm:p-6 shadow-sm">
                   {/* Search Bar & Header */}
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-5">
                     <div>
-                      <div className="text-sm font-bold text-[#1a1c2e] flex items-center gap-2">
+                      <div className="text-sm font-bold text-[#1a1c2e] dark:text-white flex items-center gap-2">
                         <span>Registered Students &amp; Users</span>
-                        <span className="text-xs px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 font-bold border border-purple-100">
+                        <span className="text-xs px-2.5 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-bold border border-purple-100 dark:border-purple-800/40">
                           {adminUserSearch.trim() ? `${filteredAdminProfiles.length} of ${profiles.length}` : `${profiles.length} total`}
                         </span>
                       </div>
-                      <p className="text-xs text-[#8a8ca3] mt-0.5">
+                      <p className="text-xs text-[#8a8ca3] dark:text-slate-400 mt-0.5">
                         Newest accounts appear at the top. Search instantly by name, email, or student roll.
                       </p>
                     </div>
@@ -4015,7 +4015,7 @@ export default function App() {
                     {/* Search Input Box */}
                     <div className="w-full sm:w-80">
                       <div className="search-wrapper">
-                        <span className="search-icon-inside">
+                        <span className="search-icon-inside text-slate-400 dark:text-slate-500">
                           <Search className="w-4 h-4" />
                         </span>
                         <input 
@@ -4031,7 +4031,7 @@ export default function App() {
                           <button
                             type="button"
                             onClick={() => setAdminUserSearch('')}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 rounded-full cursor-pointer z-10 transition-colors"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 rounded-full cursor-pointer z-10 transition-colors"
                             title="Clear search"
                           >
                             <X className="w-3.5 h-3.5" />
@@ -4042,15 +4042,15 @@ export default function App() {
                   </div>
 
                   {filteredAdminProfiles.length === 0 ? (
-                    <div className="border border-dashed border-slate-200 rounded-xl p-8 text-center my-2">
-                      <Search className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                      <div className="text-sm font-bold text-slate-700">No matching users found</div>
-                      <p className="text-xs text-slate-400 mt-1">
+                    <div className="border border-dashed border-slate-200 dark:border-[#23273e] bg-slate-50/50 dark:bg-[#101321] rounded-xl p-8 text-center my-2">
+                      <Search className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                      <div className="text-sm font-bold text-slate-700 dark:text-slate-200">No matching users found</div>
+                      <p className="text-xs text-slate-400 dark:text-slate-400 mt-1">
                         No user matched "{adminUserSearch}". You can search by partial name, full email address, or student roll number.
                       </p>
                       <button
                         onClick={() => setAdminUserSearch('')}
-                        className="mt-3 px-3.5 py-1.5 bg-[#6c5ce7] hover:bg-[#5b4bc4] text-xs font-semibold text-white rounded-lg transition-colors shadow-xs"
+                        className="mt-3 px-3.5 py-1.5 bg-[#6c5ce7] hover:bg-[#5b4bc4] text-xs font-semibold text-white rounded-lg transition-colors shadow-xs cursor-pointer"
                       >
                         Clear Search Filter
                       </button>
@@ -4072,7 +4072,7 @@ export default function App() {
                         <div key={p.id} className="admin-table-row">
                           <div className="flex items-center gap-3">
                             {/* Avatar Thumbnail */}
-                            <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 flex items-center justify-center bg-purple-100 text-[#6c5ce7] font-bold text-xs border border-purple-200">
+                            <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 flex items-center justify-center bg-purple-100 dark:bg-purple-950/70 text-[#6c5ce7] dark:text-purple-300 font-bold text-xs border border-purple-200 dark:border-purple-800/40">
                               {p.avatar_url ? (
                                 <img src={p.avatar_url} alt={displayName} className="w-full h-full object-cover" />
                               ) : (
@@ -4081,35 +4081,35 @@ export default function App() {
                             </div>
 
                             <div className="flex flex-col min-w-0">
-                              <div className="font-bold flex items-center gap-2">
+                              <div className="font-bold flex items-center gap-2 text-[#1a1c2e] dark:text-white">
                                 <span className="truncate">{displayName}</span>
                                 {p.is_admin && (
-                                  <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-extrabold flex items-center gap-0.5 shrink-0">
+                                  <span className="text-[10px] bg-purple-100 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full font-extrabold flex items-center gap-0.5 shrink-0 border border-purple-200 dark:border-purple-800/40">
                                     <Shield className="w-3 h-3" /> Admin
                                   </span>
                                 )}
                               </div>
                               {p.email ? (
-                                <div className="text-[11px] text-[#8a8ca3] font-normal truncate">{p.email}</div>
+                                <div className="text-[11px] text-[#8a8ca3] dark:text-slate-400 font-normal truncate">{p.email}</div>
                               ) : p.roll_number && p.roll_number !== 'N/A' ? (
-                                <div className="text-[11px] text-slate-500 font-normal">Roll: {p.roll_number}</div>
+                                <div className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">Roll: {p.roll_number}</div>
                               ) : (
-                                <div className="text-[11px] text-slate-400 font-normal italic">Email syncing...</div>
+                                <div className="text-[11px] text-slate-400 dark:text-slate-500 font-normal italic">Email syncing...</div>
                               )}
                               {(p.fb_link || p.whatsapp_link || p.telegram_link) && (
                                 <div className="flex items-center gap-2 mt-1">
                                   {p.fb_link && (
-                                    <a href={p.fb_link.startsWith('http') ? p.fb_link : `https://${p.fb_link}`} target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-700 text-[10px] flex items-center gap-0.5">
+                                    <a href={p.fb_link.startsWith('http') ? p.fb_link : `https://${p.fb_link}`} target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-400 text-[10px] flex items-center gap-0.5">
                                       FB ↗
                                     </a>
                                   )}
                                   {p.whatsapp_link && (
-                                    <a href={p.whatsapp_link.startsWith('http') ? p.whatsapp_link : `https://wa.me/${p.whatsapp_link.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="text-emerald-600 hover:text-emerald-700 text-[10px] flex items-center gap-0.5">
+                                    <a href={p.whatsapp_link.startsWith('http') ? p.whatsapp_link : `https://wa.me/${p.whatsapp_link.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="text-emerald-600 hover:text-emerald-400 text-[10px] flex items-center gap-0.5">
                                       WA ↗
                                     </a>
                                   )}
                                   {p.telegram_link && (
-                                    <a href={p.telegram_link.startsWith('http') ? p.telegram_link : `https://t.me/${p.telegram_link.replace('@', '')}`} target="_blank" rel="noreferrer" className="text-sky-500 hover:text-sky-700 text-[10px] flex items-center gap-0.5">
+                                    <a href={p.telegram_link.startsWith('http') ? p.telegram_link : `https://t.me/${p.telegram_link.replace('@', '')}`} target="_blank" rel="noreferrer" className="text-sky-500 hover:text-sky-400 text-[10px] flex items-center gap-0.5">
                                       TG ↗
                                     </a>
                                   )}
@@ -4117,33 +4117,33 @@ export default function App() {
                               )}
                             </div>
                           </div>
-                          <div>
+                          <div className="text-slate-700 dark:text-slate-300">
                             <div>{p.department || 'N/A'}</div>
                             {p.roll_number && p.roll_number !== 'N/A' && (
-                              <div className="text-[10px] text-slate-400">Roll: {p.roll_number}</div>
+                              <div className="text-[10px] text-slate-400 dark:text-slate-500">Roll: {p.roll_number}</div>
                             )}
                           </div>
-                          <div>{p.batch_number || 'N/A'}</div>
-                          <div className="font-bold">{p.points}</div>
+                          <div className="text-slate-700 dark:text-slate-300">{p.batch_number || 'N/A'}</div>
+                          <div className="font-bold text-[#1a1c2e] dark:text-white">{p.points}</div>
                           <div>
-                            <span className={`admin-badge-role ${p.is_banned ? 'bg-red-100 text-red-600' : ''}`}>
+                            <span className={`admin-badge-role ${p.is_banned ? 'banned' : ''}`}>
                               {p.is_banned ? 'Banned' : 'Active'}
                             </span>
                           </div>
                           <div className="flex items-center gap-1.5">
                             <button 
-                              className="admin-action-btn hover:bg-slate-100"
+                              className="admin-action-btn hover:bg-slate-100 dark:hover:bg-[#282e4b]"
                               onClick={() => handleOpenUserProfile(p.id)}
                             >
                               View
                             </button>
                             {p.is_admin || p.id === currentUser?.id || (p.email || '').toLowerCase().trim() === ADMIN_EMAIL.toLowerCase() ? (
-                              <span className="text-[11px] text-[#8a8ca3] font-medium italic px-2 py-1 select-none">
+                              <span className="text-[11px] text-[#8a8ca3] dark:text-slate-500 font-medium italic px-2 py-1 select-none">
                                 Protected
                               </span>
                             ) : (
                               <button 
-                                className="admin-action-btn danger hover:bg-red-50"
+                                className="admin-action-btn danger hover:bg-red-50 dark:hover:bg-red-950/40"
                                 onClick={() => handleBanToggle(p.id)}
                               >
                                 {p.is_banned ? 'Unban' : 'Ban'}
@@ -4160,18 +4160,18 @@ export default function App() {
 
             {/* TAB 2: SKILL TRACKS */}
             {adminTab === 'skills' && (
-              <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
+              <div className="bg-white dark:bg-[#141726] border border-[#e4e5ee] dark:border-[#23273e] rounded-2xl p-4 sm:p-6 shadow-sm">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <div className="text-sm font-bold text-[#1a1c2e]">Global Skill Tracks</div>
-                    <div className="text-xs text-[#8a8ca3]">Centrally synchronized in Supabase database</div>
+                    <div className="text-sm font-bold text-[#1a1c2e] dark:text-white">Global Skill Tracks</div>
+                    <div className="text-xs text-[#8a8ca3] dark:text-slate-400">Centrally synchronized in Supabase database</div>
                   </div>
                   <button
                     onClick={() => {
                       setEditingSkill(null);
                       setIsSkillModalOpen(true);
                     }}
-                    className="px-3.5 py-2 bg-[#6c5ce7] text-white text-xs font-bold rounded-lg hover:opacity-90 flex items-center gap-1.5"
+                    className="px-3.5 py-2 bg-[#6c5ce7] text-white text-xs font-bold rounded-lg hover:opacity-90 flex items-center gap-1.5 cursor-pointer shadow-xs"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     Add Skill Track
@@ -4179,16 +4179,16 @@ export default function App() {
                 </div>
 
                 {skills.length === 0 ? (
-                  <div className="p-8 text-center bg-[#f8f9fc] rounded-xl border border-dashed border-[#e4e5ee] my-2">
+                  <div className="p-8 text-center bg-[#f8f9fc] dark:bg-[#101321] rounded-xl border border-dashed border-[#e4e5ee] dark:border-[#23273e] my-2">
                     <span className="text-3xl block mb-2">⚡</span>
-                    <div className="text-sm font-bold text-[#1a1c2e]">No skills available yet.</div>
-                    <p className="text-xs text-[#8a8ca3] mt-1 mb-4">Add your first skill track to populate the Supabase database.</p>
+                    <div className="text-sm font-bold text-[#1a1c2e] dark:text-white">No skills available yet.</div>
+                    <p className="text-xs text-[#8a8ca3] dark:text-slate-400 mt-1 mb-4">Add your first skill track to populate the Supabase database.</p>
                     <button
                       onClick={() => {
                         setEditingSkill(null);
                         setIsSkillModalOpen(true);
                       }}
-                      className="px-4 py-2 bg-[#6c5ce7] text-white text-xs font-bold rounded-lg hover:opacity-90 inline-flex items-center gap-1.5"
+                      className="px-4 py-2 bg-[#6c5ce7] text-white text-xs font-bold rounded-lg hover:opacity-90 inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       Add First Skill
@@ -4210,7 +4210,7 @@ export default function App() {
                       const stepsCount = roadmapSteps[s.id]?.length || 3;
                       return (
                         <div key={s.id} className="admin-table-row">
-                          <div className="font-bold flex items-center gap-2">
+                          <div className="font-bold flex items-center gap-2 text-[#1a1c2e] dark:text-white">
                             <span 
                               className="w-7 h-7 rounded-lg text-white font-bold flex items-center justify-center text-xs"
                               style={{ background: s.bg_color || '#6c5ce7' }}
@@ -4219,13 +4219,13 @@ export default function App() {
                             </span>
                             {s.name}
                           </div>
-                          <div>{parentField?.name || 'General'}</div>
-                          <div>{s.difficulty || 'Beginner'}</div>
-                          <div>{s.avg_days || '3 days'}</div>
-                          <div className="font-bold">{stepsCount} steps</div>
+                          <div className="text-slate-700 dark:text-slate-300">{parentField?.name || 'General'}</div>
+                          <div className="text-slate-700 dark:text-slate-300">{s.difficulty || 'Beginner'}</div>
+                          <div className="text-slate-700 dark:text-slate-300">{s.avg_days || '3 days'}</div>
+                          <div className="font-bold text-[#1a1c2e] dark:text-white">{stepsCount} steps</div>
                           <div>
                             <button 
-                              className="admin-action-btn hover:bg-slate-100"
+                              className="admin-action-btn hover:bg-slate-100 dark:hover:bg-[#282e4b]"
                               onClick={() => {
                                 setEditingSkill(s);
                                 setIsSkillModalOpen(true);
@@ -4234,7 +4234,7 @@ export default function App() {
                               Edit
                             </button>
                             <button 
-                              className="admin-action-btn danger hover:bg-red-50"
+                              className="admin-action-btn danger hover:bg-red-50 dark:hover:bg-red-950/40"
                               onClick={() => handleDeleteSkill(s.id)}
                             >
                               Delete

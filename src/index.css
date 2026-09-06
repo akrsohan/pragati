@@ -3288,6 +3288,146 @@ body.dark-mode .empty-profile-skills-card h4 {
   }
 }
 
+/* Dark Mode overrides for Admin Panel */
+html.dark .admin-tabs,
+body.dark-mode .admin-tabs {
+  border-bottom-color: #23273e;
+}
+
+html.dark .admin-tab,
+body.dark-mode .admin-tab {
+  color: #94a3b8;
+}
+
+html.dark .admin-tab:hover,
+body.dark-mode .admin-tab:hover {
+  color: #f1f5f9;
+}
+
+html.dark .admin-tab.active,
+body.dark-mode .admin-tab.active {
+  color: #a29bfe;
+  border-bottom-color: #a29bfe;
+}
+
+html.dark .admin-stat-card,
+body.dark-mode .admin-stat-card {
+  background: #141726 !important;
+  border: 1px solid #23273e !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
+}
+
+html.dark .admin-stat-card .val,
+body.dark-mode .admin-stat-card .val {
+  color: #ffffff !important;
+}
+
+html.dark .admin-stat-card .lbl,
+body.dark-mode .admin-stat-card .lbl {
+  color: #94a3b8 !important;
+}
+
+html.dark .admin-table,
+body.dark-mode .admin-table {
+  background: #141726 !important;
+  border: 1px solid #23273e !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
+}
+
+html.dark .admin-table-head,
+body.dark-mode .admin-table-head {
+  background: #101321 !important;
+  color: #94a3b8 !important;
+  border-bottom: 1px solid #23273e !important;
+}
+
+html.dark .admin-table-row,
+body.dark-mode .admin-table-row {
+  border-top: 1px solid #23273e !important;
+  color: #e2e8f0 !important;
+}
+
+html.dark .admin-table-row:hover,
+body.dark-mode .admin-table-row:hover {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+html.dark .admin-badge-role,
+body.dark-mode .admin-badge-role {
+  background: rgba(108, 92, 231, 0.2) !important;
+  color: #a29bfe !important;
+}
+
+html.dark .admin-badge-role.banned,
+body.dark-mode .admin-badge-role.banned {
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: #f87171 !important;
+}
+
+html.dark .admin-action-btn,
+body.dark-mode .admin-action-btn {
+  background: #1e2238 !important;
+  border-color: #2e3452 !important;
+  color: #e2e8f0 !important;
+}
+
+html.dark .admin-action-btn:hover,
+body.dark-mode .admin-action-btn:hover {
+  background: #282e4b !important;
+  border-color: #3b4267 !important;
+  color: #ffffff !important;
+}
+
+html.dark .admin-action-btn.danger,
+body.dark-mode .admin-action-btn.danger {
+  color: #f87171 !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+}
+
+html.dark .admin-action-btn.danger:hover,
+body.dark-mode .admin-action-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.2) !important;
+  border-color: rgba(239, 68, 68, 0.5) !important;
+  color: #fca5a5 !important;
+}
+
+html.dark .field-label,
+body.dark-mode .field-label {
+  color: #cbd5e1 !important;
+}
+
+html.dark .field-input,
+body.dark-mode .field-input {
+  background: #101321 !important;
+  border-color: #23273e !important;
+  color: #f8fafc !important;
+}
+
+html.dark .field-input:focus,
+body.dark-mode .field-input:focus {
+  border-color: #6c5ce7 !important;
+  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.25) !important;
+}
+
+html.dark .field-input::placeholder,
+body.dark-mode .field-input::placeholder {
+  color: #64748b !important;
+}
+
+html.dark .btn-ghost,
+body.dark-mode .btn-ghost {
+  background: #1e2238 !important;
+  color: #cbd5e1 !important;
+  border-color: #23273e !important;
+}
+
+html.dark .btn-ghost:hover,
+body.dark-mode .btn-ghost:hover {
+  background: #282e4b !important;
+  color: #ffffff !important;
+}
+
 /* ========================================================================= */
 /* Modern Edit Profile / Profile Settings Layout */
 /* ========================================================================= */

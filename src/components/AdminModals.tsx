@@ -60,15 +60,15 @@ export const SkillModal: React.FC<SkillModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4">
-      <div className="bg-white rounded-md p-5 sm:p-7 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl relative border border-slate-200">
+      <div className="bg-white dark:bg-[#141726] rounded-2xl p-5 sm:p-7 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl relative border border-slate-200 dark:border-[#23273e]">
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 sm:top-5 sm:right-5 text-[#8a8ca3] hover:text-[#1a1c2e] p-1 rounded-md hover:bg-slate-100 transition-colors"
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 text-[#8a8ca3] hover:text-[#1a1c2e] dark:hover:text-white p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-[#1e2238] transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <h3 className="text-lg sm:text-xl font-extrabold text-[#1a1c2e] mb-4 sm:mb-6 pr-8">
+        <h3 className="text-lg sm:text-xl font-extrabold text-[#1a1c2e] dark:text-white mb-4 sm:mb-6 pr-8">
           {initialData ? 'Edit Skill Track' : 'Add New Skill Track'}
         </h3>
 
@@ -207,15 +207,15 @@ export const FieldModal: React.FC<FieldModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4">
-      <div className="bg-white rounded-md p-5 sm:p-7 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl relative border border-slate-200">
+      <div className="bg-white dark:bg-[#141726] rounded-2xl p-5 sm:p-7 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl relative border border-slate-200 dark:border-[#23273e]">
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 sm:top-5 sm:right-5 text-[#8a8ca3] hover:text-[#1a1c2e] p-1 rounded-md hover:bg-slate-100 transition-colors"
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 text-[#8a8ca3] hover:text-[#1a1c2e] dark:hover:text-white p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-[#1e2238] transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <h3 className="text-lg sm:text-xl font-extrabold text-[#1a1c2e] mb-4 pr-8">
+        <h3 className="text-lg sm:text-xl font-extrabold text-[#1a1c2e] dark:text-white mb-4 pr-8">
           {initialData ? 'Edit Field / Category' : 'Add New Field / Category'}
         </h3>
 
@@ -325,18 +325,18 @@ export const StepModal: React.FC<StepModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4">
-      <div className="bg-white rounded-md p-5 sm:p-7 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl relative border border-slate-200">
+      <div className="bg-white dark:bg-[#141726] rounded-2xl p-5 sm:p-7 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl relative border border-slate-200 dark:border-[#23273e]">
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 sm:top-5 sm:right-5 text-[#8a8ca3] hover:text-[#1a1c2e] p-1 rounded-md hover:bg-slate-100 transition-colors"
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 text-[#8a8ca3] hover:text-[#1a1c2e] dark:hover:text-white p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-[#1e2238] transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <h3 className="text-lg sm:text-xl font-extrabold text-[#1a1c2e] mb-1 pr-8">
+        <h3 className="text-lg sm:text-xl font-extrabold text-[#1a1c2e] dark:text-white mb-1 pr-8">
           {initialData ? 'Edit Roadmap Step' : 'Add Roadmap Step'}
         </h3>
-        <p className="text-xs text-[#8a8ca3] mb-6">
+        <p className="text-xs text-[#8a8ca3] dark:text-slate-400 mb-6">
           For {skillName} (Step #{initialData?.step_order || nextOrder})
         </p>
 
@@ -482,31 +482,31 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-150">
-      <div className="bg-white rounded-2xl p-5 sm:p-7 max-w-lg w-full max-h-[92vh] overflow-y-auto shadow-2xl relative border border-slate-200">
+      <div className="bg-white dark:bg-[#141726] rounded-2xl p-5 sm:p-7 max-w-lg w-full max-h-[92vh] overflow-y-auto shadow-2xl relative border border-slate-200 dark:border-[#23273e]">
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 sm:top-5 sm:right-5 text-[#8a8ca3] hover:text-[#1a1c2e] p-1.5 rounded-xl hover:bg-slate-100 transition-colors"
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 text-[#8a8ca3] hover:text-[#1a1c2e] dark:hover:text-white p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-[#1e2238] transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
         <div className="flex items-center gap-2.5 mb-1">
-          <div className="w-8 h-8 rounded-xl bg-[#6c5ce7]/10 text-[#6c5ce7] flex items-center justify-center font-bold">
+          <div className="w-8 h-8 rounded-xl bg-[#6c5ce7]/10 dark:bg-[#6c5ce7]/20 text-[#6c5ce7] dark:text-purple-300 flex items-center justify-center font-bold">
             <BookOpen className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-lg font-black text-[#1a1c2e]">
+            <h3 className="text-lg font-black text-[#1a1c2e] dark:text-white">
               {initialData ? 'Edit Resource & Material' : 'Add Resource & Material'}
             </h3>
-            <p className="text-xs text-[#8a8ca3]">For {skillName} roadmap</p>
+            <p className="text-xs text-[#8a8ca3] dark:text-slate-400">For {skillName} roadmap</p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-5">
           {/* Category Tabs: Document vs Reference */}
           <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1.5">Resource Category</label>
-            <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">Resource Category</label>
+            <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 dark:bg-[#101321] rounded-xl border border-slate-200 dark:border-[#23273e]">
               <button
                 type="button"
                 onClick={() => {
@@ -517,8 +517,8 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
                 }}
                 className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                   type === 'document' 
-                    ? 'bg-white text-[#6c5ce7] shadow-xs' 
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-white dark:bg-[#1e2238] text-[#6c5ce7] dark:text-purple-300 shadow-xs border border-slate-200 dark:border-[#2b304c]' 
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 <FileText className="w-3.5 h-3.5" />
@@ -534,8 +534,8 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
                 }}
                 className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                   type === 'reference' 
-                    ? 'bg-white text-red-600 shadow-xs' 
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-white dark:bg-[#1e2238] text-red-600 dark:text-red-400 shadow-xs border border-slate-200 dark:border-[#2b304c]' 
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 <Youtube className="w-3.5 h-3.5 text-red-500 fill-current" />
@@ -546,7 +546,7 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
 
           {/* Format Selector */}
           <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1.5">Format Type</label>
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">Format Type</label>
             <div className="flex flex-wrap gap-1.5">
               {type === 'document' ? (
                 <>
@@ -554,7 +554,7 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
                     type="button"
                     onClick={() => setFormat('link')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold border cursor-pointer transition-all flex items-center gap-1.5 ${
-                      format === 'link' ? 'bg-[#6c5ce7] text-white border-[#6c5ce7]' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                      format === 'link' ? 'bg-[#6c5ce7] text-white border-[#6c5ce7]' : 'bg-white dark:bg-[#101321] border-slate-200 dark:border-[#23273e] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1e2238]'
                     }`}
                   >
                     <Globe className="w-3.5 h-3.5" /> Web Docs / Page
@@ -563,7 +563,7 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
                     type="button"
                     onClick={() => setFormat('pdf')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold border cursor-pointer transition-all flex items-center gap-1.5 ${
-                      format === 'pdf' ? 'bg-[#6c5ce7] text-white border-[#6c5ce7]' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                      format === 'pdf' ? 'bg-[#6c5ce7] text-white border-[#6c5ce7]' : 'bg-white dark:bg-[#101321] border-slate-200 dark:border-[#23273e] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1e2238]'
                     }`}
                   >
                     <FileText className="w-3.5 h-3.5 text-red-400" /> Direct PDF Note
@@ -572,7 +572,7 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
                     type="button"
                     onClick={() => setFormat('drive')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold border cursor-pointer transition-all flex items-center gap-1.5 ${
-                      format === 'drive' ? 'bg-[#6c5ce7] text-white border-[#6c5ce7]' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                      format === 'drive' ? 'bg-[#6c5ce7] text-white border-[#6c5ce7]' : 'bg-white dark:bg-[#101321] border-slate-200 dark:border-[#23273e] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1e2238]'
                     }`}
                   >
                     <Link className="w-3.5 h-3.5 text-amber-500" /> Google Drive Notes
@@ -584,7 +584,7 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
                     type="button"
                     onClick={() => setFormat('youtube')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold border cursor-pointer transition-all flex items-center gap-1.5 ${
-                      format === 'youtube' ? 'bg-red-600 text-white border-red-600 shadow-2xs' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                      format === 'youtube' ? 'bg-red-600 text-white border-red-600 shadow-2xs' : 'bg-white dark:bg-[#101321] border-slate-200 dark:border-[#23273e] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1e2238]'
                     }`}
                   >
                     <Youtube className="w-3.5 h-3.5 fill-current" />
@@ -594,7 +594,7 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
                     type="button"
                     onClick={() => setFormat('article')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold border cursor-pointer transition-all flex items-center gap-1.5 ${
-                      format === 'article' ? 'bg-[#6c5ce7] text-white border-[#6c5ce7]' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                      format === 'article' ? 'bg-[#6c5ce7] text-white border-[#6c5ce7]' : 'bg-white dark:bg-[#101321] border-slate-200 dark:border-[#23273e] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1e2238]'
                     }`}
                   >
                     <BookOpen className="w-3.5 h-3.5 text-emerald-500" /> Article / Blog
@@ -603,16 +603,16 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
                     type="button"
                     onClick={() => setFormat('github')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold border cursor-pointer transition-all flex items-center gap-1.5 ${
-                      format === 'github' ? 'bg-[#6c5ce7] text-white border-[#6c5ce7]' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                      format === 'github' ? 'bg-[#6c5ce7] text-white border-[#6c5ce7]' : 'bg-white dark:bg-[#101321] border-slate-200 dark:border-[#23273e] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1e2238]'
                     }`}
                   >
-                    <Github className="w-3.5 h-3.5 text-slate-800" /> GitHub Repository
+                    <Github className="w-3.5 h-3.5 text-slate-800 dark:text-slate-200" /> GitHub Repository
                   </button>
                   <button
                     type="button"
                     onClick={() => setFormat('link')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold border cursor-pointer transition-all flex items-center gap-1.5 ${
-                      format === 'link' ? 'bg-[#6c5ce7] text-white border-[#6c5ce7]' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                      format === 'link' ? 'bg-[#6c5ce7] text-white border-[#6c5ce7]' : 'bg-white dark:bg-[#101321] border-slate-200 dark:border-[#23273e] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1e2238]'
                     }`}
                   >
                     <Globe className="w-3.5 h-3.5 text-sky-500" /> External Tool / Site
@@ -624,7 +624,7 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
 
           {/* Optional Direct PDF Upload Box when format === 'pdf' */}
           {format === 'pdf' && (
-            <div className="p-3.5 bg-slate-50 border border-dashed border-slate-300 rounded-xl">
+            <div className="p-3.5 bg-slate-50 dark:bg-[#101321] border border-dashed border-slate-300 dark:border-[#23273e] rounded-xl">
               <input 
                 type="file" 
                 ref={fileInputRef} 
@@ -634,14 +634,14 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
               />
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-lg bg-red-100 text-red-600 flex items-center justify-center font-bold shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center font-bold shrink-0">
                     <FileText className="w-5 h-5" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-slate-800">
+                    <div className="text-xs font-bold text-slate-800 dark:text-slate-100">
                       {uploadedFileName || 'Upload PDF Document directly'}
                     </div>
-                    <div className="text-[11px] text-slate-500">
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400">
                       {uploadingPdf ? 'Uploading file...' : uploadedFileName ? 'PDF linked successfully' : 'Supports books, lecture slides & cheat sheets'}
                     </div>
                   </div>
@@ -650,7 +650,7 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploadingPdf}
-                  className="px-3 py-1.5 bg-white border border-slate-300 hover:border-[#6c5ce7] text-[#6c5ce7] text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                  className="px-3 py-1.5 bg-white dark:bg-[#1e2238] border border-slate-300 dark:border-[#2e3452] hover:border-[#6c5ce7] text-[#6c5ce7] dark:text-purple-300 text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
                 >
                   <UploadCloud className="w-3.5 h-3.5" />
                   {uploadingPdf ? 'Processing...' : uploadedFileName ? 'Change PDF' : 'Select PDF File'}
@@ -661,7 +661,7 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
 
           {/* Resource Title */}
           <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
               Resource Title <span className="text-red-500">*</span>
             </label>
             <input 
@@ -681,7 +681,7 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
 
           {/* Resource URL */}
           <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
               URL / Link <span className="text-red-500">*</span>
             </label>
             <input 
@@ -717,7 +717,7 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
 
           {/* Description */}
           <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
               Short Note or Description (Optional)
             </label>
             <textarea 
@@ -988,23 +988,23 @@ WITH CHECK (auth.role() = 'authenticated');
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-150">
-      <div className="bg-white rounded-2xl p-5 sm:p-7 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative border border-slate-200">
+      <div className="bg-white dark:bg-[#141726] rounded-2xl p-5 sm:p-7 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative border border-slate-200 dark:border-[#23273e]">
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 sm:top-5 sm:right-5 text-[#8a8ca3] hover:text-[#1a1c2e] p-1.5 rounded-xl hover:bg-slate-100 transition-colors"
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 text-[#8a8ca3] hover:text-[#1a1c2e] dark:hover:text-white p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-[#1e2238] transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-black">
+          <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 flex items-center justify-center font-black">
             <Database className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-lg font-black text-[#1a1c2e]">
+            <h3 className="text-lg font-black text-[#1a1c2e] dark:text-white">
               Supabase SQL Schema Script
             </h3>
-            <p className="text-xs text-[#8a8ca3]">
+            <p className="text-xs text-[#8a8ca3] dark:text-slate-400">
               Copy &amp; run this SQL in your Supabase SQL Editor to support persistent Roadmaps &amp; Resources.
             </p>
           </div>
@@ -1031,13 +1031,13 @@ WITH CHECK (auth.role() = 'authenticated');
               )}
             </button>
           </div>
-          <pre className="bg-[#1a1c2e] text-slate-100 font-mono text-xs p-4 rounded-xl overflow-x-auto max-h-[380px] leading-relaxed select-all">
+          <pre className="bg-[#101321] text-slate-100 font-mono text-xs p-4 rounded-xl border border-slate-200 dark:border-[#23273e] overflow-x-auto max-h-[380px] leading-relaxed select-all">
             {sqlCode}
           </pre>
         </div>
 
-        <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2.5 text-xs text-amber-900">
-          <span className="font-bold text-amber-700 mt-0.5">ℹ️ Storage Note:</span>
+        <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40 rounded-xl flex items-start gap-2.5 text-xs text-amber-900 dark:text-amber-200">
+          <span className="font-bold text-amber-700 dark:text-amber-300 mt-0.5">ℹ️ Storage Note:</span>
           <div>
             For direct PDF uploads to work smoothly with Supabase Storage, make sure to create a Public bucket named <b>"skill-materials"</b> in your Supabase project under <b>Storage &gt; New Bucket</b>.
           </div>
@@ -1047,7 +1047,7 @@ WITH CHECK (auth.role() = 'authenticated');
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-[#1a1c2e] font-bold text-xs rounded-xl transition-colors cursor-pointer"
+            className="px-5 py-2.5 bg-slate-100 dark:bg-[#1e2238] hover:bg-slate-200 dark:hover:bg-[#282e4b] text-[#1a1c2e] dark:text-white font-bold text-xs rounded-xl transition-colors cursor-pointer"
           >
             Close
           </button>
@@ -1085,27 +1085,27 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
       }}
     >
       <div 
-        className="bg-white rounded-md p-5 sm:p-7 max-w-md w-full shadow-2xl relative border border-slate-200 animate-in fade-in zoom-in-95"
+        className="bg-white dark:bg-[#141726] rounded-2xl p-5 sm:p-7 max-w-md w-full shadow-2xl relative border border-slate-200 dark:border-[#23273e] animate-in fade-in zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 text-[#8a8ca3] hover:text-[#1a1c2e] p-1 rounded-md hover:bg-slate-100 transition-colors"
+          className="absolute top-4 right-4 text-[#8a8ca3] hover:text-[#1a1c2e] dark:hover:text-white p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-[#1e2238] transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-md bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
             <Trash2 className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-base sm:text-lg font-bold text-[#1a1c2e]">{title}</h3>
-            {itemTitle && <p className="text-xs text-rose-600 font-semibold truncate max-w-xs">{itemTitle}</p>}
+            <h3 className="text-base sm:text-lg font-bold text-[#1a1c2e] dark:text-white">{title}</h3>
+            {itemTitle && <p className="text-xs text-rose-600 dark:text-rose-400 font-semibold truncate max-w-xs">{itemTitle}</p>}
           </div>
         </div>
 
-        <p className="text-xs sm:text-sm text-[#5a5c73] mb-6 leading-relaxed">
+        <p className="text-xs sm:text-sm text-[#5a5c73] dark:text-slate-300 mb-6 leading-relaxed">
           {message}
         </p>
 
@@ -1113,7 +1113,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-[#1a1c2e] text-xs sm:text-sm font-semibold rounded-md transition-colors cursor-pointer"
+            className="flex-1 py-2.5 px-4 bg-slate-100 dark:bg-[#1e2238] hover:bg-slate-200 dark:hover:bg-[#282e4b] text-[#1a1c2e] dark:text-white text-xs sm:text-sm font-semibold rounded-xl transition-colors cursor-pointer"
           >
             Cancel
           </button>
@@ -1123,7 +1123,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
               onConfirm();
               onClose();
             }}
-            className="flex-1 py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white text-xs sm:text-sm font-bold rounded-md transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+            className="flex-1 py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
           >
             <Trash2 className="w-4 h-4" />
             {confirmLabel}
