@@ -41,6 +41,7 @@ export interface Field {
 export interface Skill {
   id: string;
   field_id?: string | null;
+  field_ids?: string[]; // Multiple categories / fields support
   name: string;
   description: string;
   order_index: number;
@@ -50,6 +51,30 @@ export interface Skill {
   avg_days?: string;
   learner_count?: number;
   step_count?: number;
+}
+
+/**
+ * Returns true if a skill is associated with a given field ID.
+ * Supports skills assigned to multiple fields (field_ids) as well as legacy field_id.
+ */
+export function skillBelongsToField(skill: Skill | undefined | null, fieldId: string): boolean {
+  if (!skill) return false;
+  if (!fieldId) return true;
+  if (skill.field_ids && Array.isArray(skill.field_ids) && skill.field_ids.length > 0) {
+    return skill.field_ids.includes(fieldId);
+  }
+  return skill.field_id === fieldId;
+}
+
+/**
+ * Returns all field IDs associated with a skill.
+ */
+export function getSkillFieldIds(skill: Skill | undefined | null): string[] {
+  if (!skill) return [];
+  if (skill.field_ids && Array.isArray(skill.field_ids) && skill.field_ids.length > 0) {
+    return skill.field_ids;
+  }
+  return skill.field_id ? [skill.field_id] : [];
 }
 
 export interface RoadmapStep {

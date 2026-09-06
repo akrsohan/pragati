@@ -20,7 +20,12 @@ export const SkillModal: React.FC<SkillModalProps> = ({
 }) => {
   const [name, setName] = useState(initialData?.name || '');
   const [description, setDescription] = useState(initialData?.description || '');
-  const [fieldId, setFieldId] = useState(initialData?.field_id || fields[0]?.id || '');
+  const [selectedFieldIds, setSelectedFieldIds] = useState<string[]>(() => {
+    if (initialData?.field_ids && initialData.field_ids.length > 0) {
+      return initialData.field_ids;
+    }
+    return initialData?.field_id ? [initialData.field_id] : (fields[0]?.id ? [fields[0].id] : []);
+  });
   const [icon, setIcon] = useState(initialData?.icon || 'S');
   const [bgColor, setBgColor] = useState(initialData?.bg_color || '#6c5ce7');
   const [difficulty, setDifficulty] = useState(initialData?.difficulty || 'Beginner');
@@ -30,7 +35,10 @@ export const SkillModal: React.FC<SkillModalProps> = ({
     if (isOpen) {
       setName(initialData?.name || '');
       setDescription(initialData?.description || '');
-      setFieldId(initialData?.field_id || fields[0]?.id || '');
+      const initialFields = (initialData?.field_ids && initialData.field_ids.length > 0)
+        ? initialData.field_ids
+        : (initialData?.field_id ? [initialData.field_id] : (fields[0]?.id ? [fields[0].id] : []));
+      setSelectedFieldIds(initialFields);
       setIcon(initialData?.icon || 'S');
       setBgColor(initialData?.bg_color || '#6c5ce7');
       setDifficulty(initialData?.difficulty || 'Beginner');
@@ -40,14 +48,32 @@ export const SkillModal: React.FC<SkillModalProps> = ({
 
   if (!isOpen) return null;
 
+  const toggleField = (fieldIdToToggle: string) => {
+    setSelectedFieldIds(prev => {
+      if (prev.includes(fieldIdToToggle)) {
+        if (prev.length === 1) return prev; // Keep at least one field selected
+        return prev.filter(id => id !== fieldIdToToggle);
+      } else {
+        return [...prev, fieldIdToToggle];
+      }
+    });
+  };
+
+  const selectAllFields = () => {
+    setSelectedFieldIds(fields.map(f => f.id));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
+    if (selectedFieldIds.length === 0) return;
+
     onSave({
       id: initialData?.id || `skill-${name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
       name: name.trim(),
       description: description.trim(),
-      field_id: fieldId,
+      field_id: selectedFieldIds[0] || (fields[0]?.id || ''),
+      field_ids: selectedFieldIds,
       icon: icon.trim() || name.slice(0, 2).toUpperCase(),
       bg_color: bgColor,
       difficulty,
@@ -95,19 +121,128 @@ export const SkillModal: React.FC<SkillModalProps> = ({
             />
           </div>
 
-          <div className="row2">
-            <div>
-              <label className="field-label">Parent Field</label>
-              <select 
-                className="field-input"
-                value={fieldId || ''}
-                onChange={(e) => setFieldId(e.target.value)}
-              >
-                {fields.map(f => (
-                  <option key={f.id} value={f.id}>{f.name}</option>
-                ))}
-              </select>
+          {/* Associated Fields (Multi-field Selection) */}
+          <div className="mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-2.5">
+              <div>
+                <label className="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                  <span>Assigned Fields / Categories</span>
+                  <span className="text-rose-500 font-bold">*</span>
+                </label>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                  Select one or more fields where this skill will appear
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 pr-1">
+                <button
+                  type="button"
+                  onClick={selectedFieldIds.length === fields.length ? () => setSelectedFieldIds([fields[0]?.id || 'field-1']) : selectAllFields}
+                  className="text-[11px] font-bold text-[#6c5ce7] dark:text-[#a29bfe] hover:underline cursor-pointer px-2 py-0.5 rounded-md hover:bg-purple-50 dark:hover:bg-purple-950/30 transition-colors"
+                >
+                  {selectedFieldIds.length === fields.length ? 'Reset' : 'Select All'}
+                </button>
+                <span className="text-slate-300 dark:text-slate-700">|</span>
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-black px-2.5 py-1 rounded-lg bg-purple-100/80 dark:bg-purple-950/60 text-[#6c5ce7] dark:text-purple-300 border border-purple-200 dark:border-purple-800/60 shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#6c5ce7] dark:bg-purple-400"></span>
+                  {selectedFieldIds.length} {selectedFieldIds.length === 1 ? 'Field' : 'Fields'} Selected
+                </span>
+              </div>
             </div>
+
+            <div className="p-3 bg-slate-50/80 dark:bg-[#0f1222] rounded-2xl border border-slate-200 dark:border-[#23273e]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-52 overflow-y-auto pr-1">
+                {fields.map(f => {
+                  const isSelected = selectedFieldIds.includes(f.id);
+                  return (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => toggleField(f.id)}
+                      className={`group relative flex items-center justify-between p-2.5 rounded-xl text-left transition-all cursor-pointer border ${
+                        isSelected
+                          ? 'bg-purple-50/90 dark:bg-[#1a1c32] border-[#6c5ce7] text-[#1a1c2e] dark:text-white shadow-xs ring-1 ring-[#6c5ce7]/40'
+                          : 'bg-white dark:bg-[#15182a] border-slate-200 dark:border-[#23273e] text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50/80 dark:hover:bg-[#191d34]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-base shrink-0 transition-colors ${
+                          isSelected
+                            ? 'bg-[#6c5ce7]/15 dark:bg-[#6c5ce7]/25 text-[#6c5ce7] dark:text-purple-300 border border-[#6c5ce7]/30'
+                            : 'bg-slate-100 dark:bg-[#1c2038] text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-800'
+                        }`}>
+                          {f.icon}
+                        </div>
+                        <div className="min-w-0">
+                          <div className={`text-xs font-bold truncate transition-colors ${
+                            isSelected
+                              ? 'text-[#6c5ce7] dark:text-purple-300'
+                              : 'text-slate-800 dark:text-slate-200 group-hover:text-[#6c5ce7] dark:group-hover:text-purple-300'
+                          }`}>
+                            {f.name}
+                          </div>
+                          <div className="text-[10px] text-slate-600 dark:text-slate-300 truncate">
+                            {isSelected ? '✓ Associated' : 'Click to add'}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 border transition-all ${
+                        isSelected 
+                          ? 'bg-[#6c5ce7] border-[#6c5ce7] text-white shadow-xs' 
+                          : 'border-slate-300 dark:border-slate-600 bg-white/40 dark:bg-transparent group-hover:border-slate-400 dark:group-hover:border-slate-500'
+                      }`}>
+                        {isSelected && <Check className="w-3.5 h-3.5 stroke-[2.5]" />}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Active tags overview */}
+              {selectedFieldIds.length > 0 && (
+                <div className="mt-3 pt-2.5 border-t border-slate-200/80 dark:border-[#1e233d] flex flex-wrap items-center gap-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mr-1">
+                    Active in:
+                  </span>
+                  {selectedFieldIds.map(fid => {
+                    const fieldObj = fields.find(f => f.id === fid);
+                    if (!fieldObj) return null;
+                    return (
+                      <span
+                        key={fid}
+                        className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md bg-purple-50 dark:bg-purple-950/50 text-[#6c5ce7] dark:text-purple-300 border border-purple-200 dark:border-purple-800/40"
+                      >
+                        <span className="text-xs">{fieldObj.icon}</span>
+                        <span>{fieldObj.name}</span>
+                        {selectedFieldIds.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleField(fid);
+                            }}
+                            className="ml-0.5 hover:text-red-500 transition-colors cursor-pointer"
+                            title={`Remove from ${fieldObj.name}`}
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {selectedFieldIds.length === 0 && (
+              <p className="text-[11px] text-red-500 mt-1.5 font-medium">
+                Please select at least one field for this skill.
+              </p>
+            )}
+          </div>
+
+          <div className="row2">
             <div>
               <label className="field-label">Difficulty</label>
               <select 
@@ -119,6 +254,16 @@ export const SkillModal: React.FC<SkillModalProps> = ({
                 <option value="Intermediate">Intermediate</option>
                 <option value="Advanced">Advanced</option>
               </select>
+            </div>
+            <div>
+              <label className="field-label">Avg Duration</label>
+              <input 
+                type="text" 
+                className="field-input" 
+                placeholder="e.g. 3 days, 1 week"
+                value={avgDays}
+                onChange={(e) => setAvgDays(e.target.value)}
+              />
             </div>
           </div>
 
@@ -887,6 +1032,7 @@ USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_admin 
 CREATE TABLE IF NOT EXISTS public.skills (
     id TEXT PRIMARY KEY,
     field_id TEXT REFERENCES public.fields(id) ON DELETE RESTRICT,
+    field_ids TEXT[] DEFAULT '{}',
     name TEXT NOT NULL,
     description TEXT,
     order_index INT DEFAULT 1,
@@ -899,6 +1045,9 @@ CREATE TABLE IF NOT EXISTS public.skills (
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Ensure multi-field column exists if table was previously created
+ALTER TABLE public.skills ADD COLUMN IF NOT EXISTS field_ids TEXT[] DEFAULT '{}';
 
 -- Index for skill category lookup
 CREATE INDEX IF NOT EXISTS idx_skills_field_id ON public.skills (field_id);

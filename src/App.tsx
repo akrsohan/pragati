@@ -7,7 +7,9 @@ import {
   RoadmapStep, 
   UserProgress, 
   Badge,
-  SkillResource
+  SkillResource,
+  skillBelongsToField,
+  getSkillFieldIds
 } from './types';
 import { supabase, isSupabaseConfigured } from './lib/supabase';
 import { 
@@ -1250,12 +1252,23 @@ export default function App() {
   // Admin Add/Edit Skill
   const handleSaveSkill = async (skillData: Partial<Skill>) => {
     let targetSkill: Skill;
+    const targetFieldIds = (skillData.field_ids && skillData.field_ids.length > 0)
+      ? skillData.field_ids
+      : (skillData.field_id ? [skillData.field_id] : (fields[0]?.id ? [fields[0].id] : ['field-1']));
+    const primaryFieldId = targetFieldIds[0] || skillData.field_id || (fields[0]?.id || 'field-1');
+
     if (editingSkill) {
-      targetSkill = { ...editingSkill, ...skillData } as Skill;
+      targetSkill = { 
+        ...editingSkill, 
+        ...skillData,
+        field_id: primaryFieldId,
+        field_ids: targetFieldIds
+      } as Skill;
     } else {
       targetSkill = {
         id: `skill-${Date.now()}`,
-        field_id: skillData.field_id || (fields[0]?.id || 'field-1'),
+        field_id: primaryFieldId,
+        field_ids: targetFieldIds,
         name: skillData.name || 'New Skill',
         description: skillData.description || '',
         order_index: skills.length + 1,
@@ -1348,7 +1361,7 @@ export default function App() {
     const fieldToDelete = fields.find(f => f.id === fieldId);
     if (!fieldToDelete) return;
 
-    const hasDependentSkills = skills.some(s => s.field_id === fieldId);
+    const hasDependentSkills = skills.some(s => skillBelongsToField(s, fieldId));
     if (hasDependentSkills) {
       showToast('This field contains skills. Move or delete those skills first.');
       return;
@@ -2324,7 +2337,7 @@ export default function App() {
 
                 <div className="skills-grid">
                   {skills
-                    .filter(s => !fieldFilter || s.field_id === fieldFilter)
+                    .filter(s => !fieldFilter || skillBelongsToField(s, fieldFilter))
                     .filter(s => !skillFilter || s.id === skillFilter)
                     .filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.description.toLowerCase().includes(searchQuery.toLowerCase()))
                     .map((s) => {
@@ -2363,7 +2376,7 @@ export default function App() {
                     })}
                 </div>
 
-                {skills.filter(s => (!fieldFilter || s.field_id === fieldFilter) && (!skillFilter || s.id === skillFilter) && (s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.description.toLowerCase().includes(searchQuery.toLowerCase()))).length === 0 && (
+                {skills.filter(s => (!fieldFilter || skillBelongsToField(s, fieldFilter)) && (!skillFilter || s.id === skillFilter) && (s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.description.toLowerCase().includes(searchQuery.toLowerCase()))).length === 0 && (
                   <div className="p-8 text-center bg-white rounded-2xl border border-dashed border-[#e4e5ee] my-4">
                     <span className="text-3xl block mb-2">⚡</span>
                     <div className="text-sm font-bold text-[#1a1c2e]">No skills available yet.</div>
@@ -2396,7 +2409,7 @@ export default function App() {
                           <span className="domain-card-icon text-2xl">{f.icon}</span>
                           <div>
                             <div className="font-bold text-sm text-[#1a1c2e]">{f.name}</div>
-                            <div className="text-xs text-[#8a8ca3]">{skills.filter(s => s.field_id === f.id).length} Roadmaps</div>
+                            <div className="text-xs text-[#8a8ca3]">{skills.filter(s => skillBelongsToField(s, f.id)).length} Roadmaps</div>
                           </div>
                         </div>
                         <ChevronRight className="w-4 h-4 text-[#8a8ca3]" />
@@ -2438,7 +2451,7 @@ export default function App() {
                       <div className="font-bold text-base text-[#1a1c2e] dark:text-white mb-1">{f.name}</div>
                       <div className="text-xs text-[#8a8ca3] dark:text-slate-400 mb-3">{f.description}</div>
                       <div className="text-xs font-bold text-[#6c5ce7] dark:text-[#a29bfe] flex items-center gap-1">
-                        View {skills.filter(s => s.field_id === f.id).length} Tracks <ArrowRight className="w-3 h-3" />
+                        View {skills.filter(s => skillBelongsToField(s, f.id)).length} Tracks <ArrowRight className="w-3 h-3" />
                       </div>
                     </div>
                   ))}
@@ -2466,7 +2479,7 @@ export default function App() {
                   {fields.find(f => f.id === selectedFieldId)?.name || 'Field'} Roadmaps
                 </div>
                 <div className="skills-grid">
-                  {skills.filter(s => s.field_id === selectedFieldId).map(s => {
+                  {skills.filter(s => skillBelongsToField(s, selectedFieldId)).map(s => {
                     const isCompleted = currentUserCompletedSkillIds.has(s.id);
                     const isActive = activeProgress?.skill_id === s.id && activeProgress?.status === 'in_progress';
                     return (
@@ -4198,7 +4211,7 @@ export default function App() {
                   <div className="admin-table">
                     <div className="admin-table-head">
                       <div>Skill Track</div>
-                      <div>Parent Field</div>
+                      <div>Assigned Fields</div>
                       <div>Difficulty</div>
                       <div>Avg Duration</div>
                       <div>Steps Count</div>
@@ -4206,20 +4219,34 @@ export default function App() {
                     </div>
 
                     {skills.map((s) => {
-                      const parentField = fields.find(f => f.id === s.field_id);
+                      const assigned = fields.filter(f => skillBelongsToField(s, f.id));
                       const stepsCount = roadmapSteps[s.id]?.length || 3;
                       return (
                         <div key={s.id} className="admin-table-row">
                           <div className="font-bold flex items-center gap-2 text-[#1a1c2e] dark:text-white">
                             <span 
-                              className="w-7 h-7 rounded-lg text-white font-bold flex items-center justify-center text-xs"
+                              className="w-7 h-7 rounded-lg text-white font-bold flex items-center justify-center text-xs shrink-0"
                               style={{ background: s.bg_color || '#6c5ce7' }}
                             >
                               {s.icon}
                             </span>
-                            {s.name}
+                            <span className="truncate">{s.name}</span>
                           </div>
-                          <div className="text-slate-700 dark:text-slate-300">{parentField?.name || 'General'}</div>
+                          <div className="flex flex-wrap gap-1 items-center">
+                            {assigned.length > 0 ? (
+                              assigned.map(f => (
+                                <span 
+                                  key={f.id} 
+                                  className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-purple-50 dark:bg-purple-950/40 text-[#6c5ce7] dark:text-purple-300 border border-purple-200 dark:border-purple-800/40"
+                                >
+                                  <span>{f.icon}</span>
+                                  <span>{f.name}</span>
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-slate-400 text-xs italic">General</span>
+                            )}
+                          </div>
                           <div className="text-slate-700 dark:text-slate-300">{s.difficulty || 'Beginner'}</div>
                           <div className="text-slate-700 dark:text-slate-300">{s.avg_days || '3 days'}</div>
                           <div className="font-bold text-[#1a1c2e] dark:text-white">{stepsCount} steps</div>

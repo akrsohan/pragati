@@ -36,8 +36,20 @@ export function getStoredSkills(): Skill[] {
     const raw = localStorage.getItem(STORAGE_SKILLS_KEY);
     if (raw !== null) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.map((s: any) => {
+          let fIds: string[] = [];
+          if (Array.isArray(s.field_ids) && s.field_ids.length > 0) {
+            fIds = s.field_ids;
+          } else if (s.field_id) {
+            fIds = [s.field_id];
+          }
+          return {
+            ...s,
+            field_id: s.field_id || fIds[0] || null,
+            field_ids: fIds
+          };
+        });
       }
     }
   } catch (e) {}
@@ -1813,19 +1825,39 @@ export async function fetchAllSkillsDb(): Promise<Skill[]> {
     }
 
     if (data && Array.isArray(data)) {
-      const formatted: Skill[] = data.map((row: any) => ({
-        id: row.id,
-        field_id: row.field_id,
-        name: row.name,
-        description: row.description || '',
-        order_index: Number(row.order_index) || 1,
-        icon: row.icon || '★',
-        bg_color: row.bg_color || '#6c5ce7',
-        difficulty: row.difficulty || 'Beginner',
-        avg_days: row.avg_days || '3 days',
-        learner_count: Number(row.learner_count) || 0,
-        step_count: Number(row.step_count) || 3
-      }));
+      const formatted: Skill[] = data.map((row: any) => {
+        let fieldIds: string[] = [];
+        if (row.field_ids) {
+          if (Array.isArray(row.field_ids)) {
+            fieldIds = row.field_ids;
+          } else if (typeof row.field_ids === 'string') {
+            try {
+              const parsed = JSON.parse(row.field_ids);
+              fieldIds = Array.isArray(parsed) ? parsed : [row.field_ids];
+            } catch {
+              fieldIds = row.field_ids.split(',').map((s: string) => s.trim()).filter(Boolean);
+            }
+          }
+        }
+        if (fieldIds.length === 0 && row.field_id) {
+          fieldIds = [row.field_id];
+        }
+
+        return {
+          id: row.id,
+          field_id: row.field_id || fieldIds[0] || null,
+          field_ids: fieldIds,
+          name: row.name,
+          description: row.description || '',
+          order_index: Number(row.order_index) || 1,
+          icon: row.icon || '★',
+          bg_color: row.bg_color || '#6c5ce7',
+          difficulty: row.difficulty || 'Beginner',
+          avg_days: row.avg_days || '3 days',
+          learner_count: Number(row.learner_count) || 0,
+          step_count: Number(row.step_count) || 3
+        };
+      });
       saveStoredSkills(formatted);
       return formatted;
     }
@@ -1837,21 +1869,45 @@ export async function fetchAllSkillsDb(): Promise<Skill[]> {
 
 export async function saveSkillToDb(skill: Skill): Promise<{ success: boolean; error?: string }> {
   try {
-    const { error } = await supabase
+    const primaryFieldId = (skill.field_ids && skill.field_ids.length > 0)
+      ? skill.field_ids[0]
+      : (skill.field_id || null);
+
+    const payloadWithArray: any = {
+      id: skill.id,
+      field_id: primaryFieldId,
+      field_ids: skill.field_ids && skill.field_ids.length > 0 ? skill.field_ids : (primaryFieldId ? [primaryFieldId] : []),
+      name: skill.name,
+      description: skill.description,
+      order_index: skill.order_index,
+      icon: skill.icon,
+      bg_color: skill.bg_color,
+      difficulty: skill.difficulty,
+      avg_days: skill.avg_days,
+      learner_count: skill.learner_count,
+      step_count: skill.step_count
+    };
+
+    // Attempt with field_ids
+    let { error } = await supabase
       .from('skills')
-      .upsert({
-        id: skill.id,
-        field_id: skill.field_id,
-        name: skill.name,
-        description: skill.description,
-        order_index: skill.order_index,
-        icon: skill.icon,
-        bg_color: skill.bg_color,
-        difficulty: skill.difficulty,
-        avg_days: skill.avg_days,
-        learner_count: skill.learner_count,
-        step_count: skill.step_count
-      });
+      .upsert(payloadWithArray);
+
+    // If Supabase table schema doesn't have field_ids column yet, retry without field_ids
+    if (error && (
+      error.message?.includes('field_ids') || 
+      error.code === 'PGRST204' || 
+      error.message?.includes('column') || 
+      error.message?.includes('schema cache')
+    )) {
+      console.warn('[Supabase saveSkill] field_ids column not detected in DB table, fallback saving with primary field_id');
+      const standardPayload = { ...payloadWithArray };
+      delete standardPayload.field_ids;
+      const retryResult = await supabase
+        .from('skills')
+        .upsert(standardPayload);
+      error = retryResult.error;
+    }
 
     if (error) {
       console.error('[Supabase saveSkill error]:', error.message);

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Skill, RoadmapStep, SkillResource, Field } from '../types';
+import { Skill, RoadmapStep, SkillResource, Field, skillBelongsToField } from '../types';
 import { 
   Plus, 
   Trash2, 
@@ -200,10 +200,11 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
                 onChange={(e) => onSelectSkillId(e.target.value)}
               >
                 {skills.map(s => {
-                  const parent = fields.find(f => f.id === s.field_id);
+                  const assigned = fields.filter(f => skillBelongsToField(s, f.id));
+                  const fieldsText = assigned.map(f => f.name).join(', ') || 'General';
                   return (
                     <option key={s.id} value={s.id}>
-                      {s.name} ({parent?.name || 'General'})
+                      {s.name} ({fieldsText})
                     </option>
                   );
                 })}

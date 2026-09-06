@@ -56,6 +56,7 @@ export const initialSkills: Skill[] = [
   {
     id: 'skill-html',
     field_id: 'field-1',
+    field_ids: ['field-1'],
     name: 'HTML',
     description: 'Building the fundamental semantic structure of web applications',
     order_index: 1,
@@ -69,6 +70,7 @@ export const initialSkills: Skill[] = [
   {
     id: 'skill-css',
     field_id: 'field-1',
+    field_ids: ['field-1'],
     name: 'CSS',
     description: 'Master modern layouts with Flexbox, CSS Grid, animations and responsive design',
     order_index: 2,
@@ -82,6 +84,7 @@ export const initialSkills: Skill[] = [
   {
     id: 'skill-js',
     field_id: 'field-1',
+    field_ids: ['field-1', 'field-6'],
     name: 'JavaScript',
     description: 'Core ES6+, asynchronous programming, closures, DOM manipulation and event loop',
     order_index: 3,
@@ -95,6 +98,7 @@ export const initialSkills: Skill[] = [
   {
     id: 'skill-react',
     field_id: 'field-1',
+    field_ids: ['field-1', 'field-6'],
     name: 'React.js',
     description: 'Component architecture, Hooks, Context, performance optimization and state management',
     order_index: 4,
@@ -108,6 +112,7 @@ export const initialSkills: Skill[] = [
   {
     id: 'skill-c',
     field_id: 'field-general',
+    field_ids: ['field-general', 'field-3', 'field-5'],
     name: 'C Programming',
     description: 'Pointers, manual memory allocation, structs, linked lists and low-level fundamentals',
     order_index: 5,
@@ -121,6 +126,7 @@ export const initialSkills: Skill[] = [
   {
     id: 'skill-python',
     field_id: 'field-4',
+    field_ids: ['field-4', 'field-3', 'field-general'],
     name: 'Python',
     description: 'Data structures, OOP, file handling, automation, scripting and ML fundamentals',
     order_index: 6,
@@ -134,6 +140,7 @@ export const initialSkills: Skill[] = [
   {
     id: 'skill-git',
     field_id: 'field-general',
+    field_ids: ['field-general', 'field-1', 'field-3'],
     name: 'Git & GitHub',
     description: 'Version control, branching strategies, merge conflicts, pull requests and collaboration',
     order_index: 7,
@@ -147,6 +154,7 @@ export const initialSkills: Skill[] = [
   {
     id: 'skill-sql',
     field_id: 'field-3',
+    field_ids: ['field-3', 'field-1', 'field-4'],
     name: 'SQL & Relational DBs',
     description: 'Schema normalization, complex queries, joins, indexes, ACID transactions and PostgreSQL',
     order_index: 8,
