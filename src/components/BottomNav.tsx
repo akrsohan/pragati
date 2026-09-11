@@ -71,11 +71,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#141726]/95 backdrop-blur-xl border-t border-[#E8E4DC] dark:border-[#23273e] shadow-2xl transition-all"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#141726]/95 backdrop-blur-xl border-t border-[#E8E4DC] dark:border-[#23273e] shadow-2xl transition-all pb-[env(safe-area-inset-bottom,0px)]"
       id="app-bottom-navbar"
       aria-label="Bottom Navigation"
     >
-      <div className="max-w-md md:max-w-xl mx-auto px-3 py-2 flex items-center justify-around gap-1">
+      <div className="w-full max-w-md md:max-w-xl mx-auto px-1.5 sm:px-3 py-1.5 sm:py-2 flex items-center justify-around gap-0.5 sm:gap-1">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentPage === item.id || (item.id === 'profile' && currentPage === 'profile-setup');
@@ -88,7 +88,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 onNavigate(item.id);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className={`relative flex flex-col items-center justify-center py-1.5 px-3 rounded-2xl transition-all select-none cursor-pointer flex-1 group ${
+              className={`relative flex flex-col items-center justify-center min-h-[44px] py-1 px-1 sm:px-2.5 rounded-xl transition-all select-none cursor-pointer flex-1 group ${
                 isActive 
                   ? 'text-[#6C5CE7] dark:text-purple-300 bg-[#6C5CE7]/10 dark:bg-purple-950/40 shadow-xs font-black' 
                   : 'text-[#8B8A86] dark:text-slate-400 hover:text-[#22252E] dark:hover:text-white hover:bg-[#F3F1EC] dark:hover:bg-[#1e2238]'
@@ -97,22 +97,22 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             >
               {/* Active Highlight Top Pip */}
               {isActive && (
-                <span className="absolute -top-2 w-8 h-1 bg-gradient-to-r from-[#6C5CE7] to-[#a29bfe] rounded-full shadow-sm shadow-[#6C5CE7]/50" />
+                <span className="absolute -top-1.5 w-6 sm:w-8 h-1 bg-gradient-to-r from-[#6C5CE7] to-[#a29bfe] rounded-full shadow-sm shadow-[#6C5CE7]/50" />
               )}
 
               {/* Icon / Avatar Wrapper */}
-              <div className="relative flex items-center justify-center mb-1">
+              <div className="relative flex items-center justify-center mb-0.5">
                 {item.isAvatar && currentUser.avatar_url ? (
                   <img 
                     src={currentUser.avatar_url} 
                     alt={currentUser.full_name} 
-                    className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover ring-2 ${
+                    className={`w-5 h-5 rounded-full object-cover ring-2 ${
                       isActive ? 'ring-[#6C5CE7]' : 'ring-[#E8E4DC] dark:ring-[#23273e]'
                     }`}
                   />
                 ) : (
                   <Icon 
-                    className={`w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:scale-110 ${
+                    className={`w-5 h-5 transition-transform group-hover:scale-110 ${
                       isActive ? 'text-[#6C5CE7] dark:text-purple-300' : 'text-current'
                     }`} 
                   />
@@ -120,15 +120,15 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
                 {/* Pulse Notification dot for Active Sprint */}
                 {item.isPulse && (
-                  <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                  <span className="absolute -top-1 -right-1 flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 ring-2 ring-white dark:ring-[#141726]" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 ring-1.5 ring-white dark:ring-[#141726]" />
                   </span>
                 )}
               </div>
 
               {/* Label */}
-              <span className={`text-[11px] tracking-tight leading-tight ${
+              <span className={`text-[10px] sm:text-[11px] tracking-tight leading-tight truncate max-w-[64px] text-center ${
                 isActive ? 'text-[#6C5CE7] dark:text-purple-300 font-extrabold' : 'text-[#8B8A86] dark:text-slate-400 font-semibold'
               }`}>
                 {item.label}

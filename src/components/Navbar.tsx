@@ -538,32 +538,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>Admin</span>
           </button>
         )}
-
-        {onToggleTheme && (
-          <button 
-            type="button"
-            className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 select-none whitespace-nowrap shrink-0 cursor-pointer ml-auto ${
-              isDark 
-                ? 'text-amber-300 hover:text-white hover:bg-white/5' 
-                : 'text-indigo-600 hover:text-indigo-900 hover:bg-slate-200/60'
-            }`}
-            onClick={onToggleTheme}
-            id="mobile-nav-theme-toggle"
-            title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-          >
-            {theme === 'dark' ? (
-              <>
-                <Sun className="w-3.5 h-3.5 text-amber-400" />
-                <span>Light</span>
-              </>
-            ) : (
-              <>
-                <Moon className="w-3.5 h-3.5 text-indigo-600" />
-                <span>Dark</span>
-              </>
-            )}
-          </button>
-        )}
       </div>
     </header>
   );

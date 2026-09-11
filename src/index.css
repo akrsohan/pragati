@@ -35,6 +35,13 @@ html, body {
   position: relative;
   min-height: 100vh;
   overflow-x: hidden;
+  padding-bottom: 76px;
+}
+
+@media (min-width: 768px) {
+  .page {
+    padding-bottom: 0px;
+  }
 }
 
 /* Navbar */
@@ -1149,7 +1156,7 @@ html, body {
 .countdown-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  gap: 6px;
   margin-bottom: 16px;
 }
 
@@ -1162,14 +1169,22 @@ html, body {
 .count-unit {
   background: #f7f8fc;
   border: 1px solid #e4e5ee;
-  border-radius: 4px;
-  padding: 12px 8px;
+  border-radius: 6px;
+  padding: 8px 4px;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .count-unit {
+    border-radius: 4px;
+    padding: 12px 8px;
+  }
 }
 
 .count-unit:hover {
@@ -1178,7 +1193,7 @@ html, body {
 }
 
 .count-unit b {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 800;
   color: #1a1c2e;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -1192,12 +1207,20 @@ html, body {
 }
 
 .count-unit span {
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 700;
   color: #8a8ca3;
   text-transform: uppercase;
-  letter-spacing: 0.6px;
-  margin-top: 4px;
+  letter-spacing: 0.4px;
+  margin-top: 2px;
+}
+
+@media (min-width: 640px) {
+  .count-unit span {
+    font-size: 11px;
+    letter-spacing: 0.6px;
+    margin-top: 4px;
+  }
 }
 
 /* Modern 2-Column Roadmap Overview & Steps */
@@ -2712,8 +2735,8 @@ body.dark-mode .lb-rank-badge.rank-other {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.32);
-  border-radius: 14px;
-  padding: 10px 8px;
+  border-radius: 12px;
+  padding: 8px 4px;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -2721,7 +2744,8 @@ body.dark-mode .lb-rank-badge.rank-other {
   justify-content: center;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.45);
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, box-shadow 0.2s ease;
-  min-width: 80px;
+  min-width: 0;
+  width: 100%;
 }
 
 @media (min-width: 640px) {
@@ -2729,6 +2753,7 @@ body.dark-mode .lb-rank-badge.rank-other {
     padding: 12px 14px;
     border-radius: 16px;
     min-width: 90px;
+    width: auto;
   }
 }
 

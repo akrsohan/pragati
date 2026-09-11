@@ -29,7 +29,6 @@ export const SkillModal: React.FC<SkillModalProps> = ({
   const [icon, setIcon] = useState(initialData?.icon || 'S');
   const [bgColor, setBgColor] = useState(initialData?.bg_color || '#6c5ce7');
   const [difficulty, setDifficulty] = useState(initialData?.difficulty || 'Beginner');
-  const [avgDays, setAvgDays] = useState(initialData?.avg_days || '3 days');
 
   useEffect(() => {
     if (isOpen) {
@@ -42,7 +41,6 @@ export const SkillModal: React.FC<SkillModalProps> = ({
       setIcon(initialData?.icon || 'S');
       setBgColor(initialData?.bg_color || '#6c5ce7');
       setDifficulty(initialData?.difficulty || 'Beginner');
-      setAvgDays(initialData?.avg_days || '3 days');
     }
   }, [isOpen, initialData, fields]);
 
@@ -77,7 +75,6 @@ export const SkillModal: React.FC<SkillModalProps> = ({
       icon: icon.trim() || name.slice(0, 2).toUpperCase(),
       bg_color: bgColor,
       difficulty,
-      avg_days: avgDays,
       order_index: initialData?.order_index || 1,
       learner_count: initialData?.learner_count || 1,
       step_count: initialData?.step_count || 3
@@ -244,7 +241,7 @@ export const SkillModal: React.FC<SkillModalProps> = ({
 
           <div className="row2">
             <div>
-              <label className="field-label">Difficulty</label>
+              <label className="field-label">Difficulty Level</label>
               <select 
                 className="field-input"
                 value={difficulty}
@@ -256,19 +253,6 @@ export const SkillModal: React.FC<SkillModalProps> = ({
               </select>
             </div>
             <div>
-              <label className="field-label">Avg Duration</label>
-              <input 
-                type="text" 
-                className="field-input" 
-                placeholder="e.g. 3 days, 1 week"
-                value={avgDays}
-                onChange={(e) => setAvgDays(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="row2">
-            <div>
               <label className="field-label">Icon Badge (1-2 chars)</label>
               <input 
                 type="text" 
@@ -279,15 +263,16 @@ export const SkillModal: React.FC<SkillModalProps> = ({
                 onChange={(e) => setIcon(e.target.value)}
               />
             </div>
-            <div>
-              <label className="field-label">Badge Color</label>
-              <input 
-                type="color" 
-                className="field-input h-[46px] p-1 cursor-pointer" 
-                value={bgColor}
-                onChange={(e) => setBgColor(e.target.value)}
-              />
-            </div>
+          </div>
+
+          <div>
+            <label className="field-label">Badge Color</label>
+            <input 
+              type="color" 
+              className="field-input h-[46px] p-1 cursor-pointer" 
+              value={bgColor}
+              onChange={(e) => setBgColor(e.target.value)}
+            />
           </div>
 
           <div className="btn-row pt-2">

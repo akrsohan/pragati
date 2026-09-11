@@ -22,6 +22,7 @@ import {
   initialSkillResources
 } from './data/mockData';
 import { Navbar } from './components/Navbar';
+import { BottomNav } from './components/BottomNav';
 import { Footer } from './components/Footer';
 import { LandingPage } from './components/LandingPage';
 import { getMainName } from './lib/nameHelper';
@@ -2278,20 +2279,19 @@ export default function App() {
                   <div className="filter-pills-row flex-1">
                     <button 
                       onClick={() => setSkillFilter(null)}
-                      className={`filter-pill-btn ${!skillFilter ? 'active-accent' : 'inactive'} flex items-center gap-1.5`}
+                      className={`filter-pill-btn ${!skillFilter ? 'active-accent' : 'inactive'}`}
                       id="pill-all-skills-option"
                     >
-                      <span>⚡ All Skills</span>
+                      All Skills
                     </button>
                     {skills.slice(0, 10).map(s => (
                       <button
                         key={s.id}
                         onClick={() => setSkillFilter(skillFilter === s.id ? null : s.id)}
-                        className={`filter-pill-btn ${skillFilter === s.id ? 'active-accent' : 'inactive'} flex items-center gap-1.5`}
+                        className={`filter-pill-btn ${skillFilter === s.id ? 'active-accent' : 'inactive'}`}
                         id={`pill-quick-skill-${s.id}`}
                       >
-                        <span>{s.icon}</span>
-                        <span>{s.name}</span>
+                        {s.name}
                       </button>
                     ))}
                     <button 
@@ -2368,7 +2368,7 @@ export default function App() {
                           <div className="meta">
                             <span className="diff">{s.difficulty || 'Beginner'}</span>
                             <span className={`learners ${isCompleted ? 'text-emerald-600 font-bold' : ''}`}>
-                              {isCompleted ? '✓ Completed (+10 XP)' : isActive ? '⚡ In progress' : `⏱ ${s.avg_days || '3 days'}`}
+                              {isCompleted ? '✓ Completed (+10 XP)' : isActive ? '⚡ In progress' : `${roadmapSteps[s.id]?.length || s.step_count || 3} Steps`}
                             </span>
                           </div>
                         </div>
@@ -2506,7 +2506,7 @@ export default function App() {
                         <div className="meta">
                           <span className="diff">{s.difficulty || 'Beginner'}</span>
                           <span className={`learners ${isCompleted ? 'text-emerald-600 dark:text-emerald-400 font-bold' : ''}`}>
-                            {isCompleted ? '✓ Completed (+10 XP)' : isActive ? '⚡ In progress' : `⏱ ${s.avg_days || '3 days'}`}
+                            {isCompleted ? '✓ Completed (+10 XP)' : isActive ? '⚡ In progress' : `${roadmapSteps[s.id]?.length || s.step_count || 3} Steps`}
                           </span>
                         </div>
                       </div>
@@ -2577,7 +2577,7 @@ export default function App() {
                           <div className="meta">
                             <span className="diff">{s.difficulty || 'Beginner'}</span>
                             <span className={`learners ${isCompleted ? 'text-emerald-600 font-bold' : ''}`}>
-                              {isCompleted ? '✓ Completed (+10 XP)' : isActive ? '⚡ In progress' : `⏱ ${s.avg_days || '3 days'}`}
+                              {isCompleted ? '✓ Completed (+10 XP)' : isActive ? '⚡ In progress' : `${roadmapSteps[s.id]?.length || s.step_count || 3} Steps`}
                             </span>
                           </div>
                         </div>
@@ -3014,10 +3014,10 @@ export default function App() {
 
                     {/* Challenge Action Controls */}
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-5 mt-5 border-t border-slate-100">
-                      <div className="flex flex-wrap items-center gap-2.5">
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
                         <button 
                           onClick={handleCompleteActiveChallenge}
-                          className="btn-complete-3d px-4 py-2.5 text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer select-none"
+                          className="btn-complete-3d w-full sm:w-auto min-h-[44px] px-4 py-3 text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer select-none"
                           id="btn-complete-challenge"
                         >
                           <CheckCircle2 className="w-4 h-4" />
@@ -3026,7 +3026,7 @@ export default function App() {
 
                         <button 
                           onClick={() => setIsAddTimeModalOpen(true)}
-                          className="btn-secondary-3d px-3.5 py-2.5 bg-white border border-[#e4e5ee] text-[#1a1c2e] hover:bg-[#f4f5f8] text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer select-none"
+                          className="btn-secondary-3d w-full sm:w-auto min-h-[44px] px-3.5 py-3 bg-white border border-[#e4e5ee] text-[#1a1c2e] hover:bg-[#f4f5f8] text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer select-none"
                           id="btn-add-extra-time"
                         >
                           <Clock className="w-4 h-4 text-[#6c5ce7]" />
@@ -3036,7 +3036,7 @@ export default function App() {
 
                       <button 
                         onClick={() => setIsCancelModalOpen(true)}
-                        className="btn-cancel-3d px-3.5 py-2 text-red-500 hover:bg-red-50 border border-transparent hover:border-red-200 text-xs font-bold rounded-xl transition-all text-center sm:text-right cursor-pointer select-none"
+                        className="btn-cancel-3d w-full sm:w-auto min-h-[44px] px-3.5 py-2.5 text-red-500 hover:bg-red-50 border border-transparent hover:border-red-200 text-xs font-bold rounded-xl transition-all text-center cursor-pointer select-none"
                         id="btn-cancel-challenge"
                       >
                         Cancel Challenge
@@ -3696,19 +3696,21 @@ export default function App() {
                       </div>
 
                       {(targetProfile.fb_link || targetProfile.telegram_link || targetProfile.whatsapp_link) ? (
-                        <div className="social-links-row flex flex-wrap gap-2.5">
+                        <div className="social-links-row grid grid-cols-1 sm:grid-cols-3 gap-2.5 w-full">
                           {targetProfile.fb_link && (
                             <a 
                               href={formatSocialLink('facebook', targetProfile.fb_link)}
                               target="_blank"
                               rel="noreferrer"
-                              className="social-icon-3d social-fb flex items-center gap-2 px-3 py-2 rounded-xl text-white text-xs font-bold transition-all shadow-xs" 
+                              className="social-icon-3d social-fb flex items-center justify-between gap-2 px-3.5 py-2.5 min-h-[44px] rounded-xl text-white text-xs font-bold transition-all shadow-xs" 
                               title="Facebook Profile"
                               id="btn-social-fb"
                             >
-                              <span className="font-black text-sm">f</span>
-                              <span className="text-xs">Facebook</span>
-                              <ExternalLink className="w-3 h-3 opacity-70 ml-auto" />
+                              <div className="flex items-center gap-2">
+                                <span className="font-black text-sm">f</span>
+                                <span className="text-xs">Facebook</span>
+                              </div>
+                              <ExternalLink className="w-3.5 h-3.5 opacity-80" />
                             </a>
                           )}
                           {targetProfile.telegram_link && (
@@ -3716,13 +3718,15 @@ export default function App() {
                               href={formatSocialLink('telegram', targetProfile.telegram_link)}
                               target="_blank"
                               rel="noreferrer"
-                              className="social-icon-3d social-tg flex items-center gap-2 px-3 py-2 rounded-xl text-white text-xs font-bold transition-all shadow-xs" 
+                              className="social-icon-3d social-tg flex items-center justify-between gap-2 px-3.5 py-2.5 min-h-[44px] rounded-xl text-white text-xs font-bold transition-all shadow-xs" 
                               title="Telegram Profile"
                               id="btn-social-tg"
                             >
-                              <MessageSquare className="w-3.5 h-3.5" />
-                              <span className="text-xs">Telegram</span>
-                              <ExternalLink className="w-3 h-3 opacity-70 ml-auto" />
+                              <div className="flex items-center gap-2">
+                                <MessageSquare className="w-3.5 h-3.5" />
+                                <span className="text-xs">Telegram</span>
+                              </div>
+                              <ExternalLink className="w-3.5 h-3.5 opacity-80" />
                             </a>
                           )}
                           {targetProfile.whatsapp_link && (
@@ -3730,13 +3734,15 @@ export default function App() {
                               href={formatSocialLink('whatsapp', targetProfile.whatsapp_link)}
                               target="_blank"
                               rel="noreferrer"
-                              className="social-icon-3d social-wa flex items-center gap-2 px-3 py-2 rounded-xl text-white text-xs font-bold transition-all shadow-xs" 
+                              className="social-icon-3d social-wa flex items-center justify-between gap-2 px-3.5 py-2.5 min-h-[44px] rounded-xl text-white text-xs font-bold transition-all shadow-xs" 
                               title="WhatsApp Contact"
                               id="btn-social-wa"
                             >
-                              <Phone className="w-3.5 h-3.5" />
-                              <span className="text-xs">WhatsApp</span>
-                              <ExternalLink className="w-3 h-3 opacity-70 ml-auto" />
+                              <div className="flex items-center gap-2">
+                                <Phone className="w-3.5 h-3.5" />
+                                <span className="text-xs">WhatsApp</span>
+                              </div>
+                              <ExternalLink className="w-3.5 h-3.5 opacity-80" />
                             </a>
                           )}
                         </div>
@@ -4213,7 +4219,6 @@ export default function App() {
                       <div>Skill Track</div>
                       <div>Assigned Fields</div>
                       <div>Difficulty</div>
-                      <div>Avg Duration</div>
                       <div>Steps Count</div>
                       <div>Actions</div>
                     </div>
@@ -4248,7 +4253,6 @@ export default function App() {
                             )}
                           </div>
                           <div className="text-slate-700 dark:text-slate-300">{s.difficulty || 'Beginner'}</div>
-                          <div className="text-slate-700 dark:text-slate-300">{s.avg_days || '3 days'}</div>
                           <div className="font-bold text-[#1a1c2e] dark:text-white">{stepsCount} steps</div>
                           <div>
                             <button 
@@ -4477,6 +4481,27 @@ export default function App() {
         message={deleteConfirmState.message}
         confirmLabel={deleteConfirmState.confirmLabel}
       />
+
+      {/* Mobile Bottom Navigation Bar (below 768px) */}
+      {currentUser && currentUser.id && (
+        <div className="md:hidden">
+          <BottomNav 
+            currentPage={currentPage}
+            onNavigate={(page) => {
+              if (page === 'discover') {
+                setDiscoverView('main');
+                setSelectedFieldId(null);
+              }
+              if (page === 'profile') {
+                setSelectedUserId(currentUser.id);
+              }
+              setCurrentPage(page);
+            }}
+            currentUser={currentUser}
+            activeProgress={activeProgress}
+          />
+        </div>
+      )}
 
     </div>
   );

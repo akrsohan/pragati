@@ -300,81 +300,88 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           .stage {
             flex-direction: column !important;
             width: 100% !important;
-            max-width: 420px !important;
-            height: 550px !important;
-            min-height: 550px !important;
-            border-radius: 24px;
-            box-shadow: 0 30px 80px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.08);
-            margin: 12px auto;
+            max-width: 100% !important;
+            height: auto !important;
+            min-height: auto !important;
+            max-height: none !important;
+            border-radius: 20px !important;
+            box-shadow: 0 20px 60px rgba(0,0,0,.8), 0 0 0 1px rgba(255,255,255,.08) !important;
+            margin: 8px auto !important;
             position: relative;
             overflow: hidden;
           }
           .visual {
             width: 100% !important;
-            height: 140px !important;
-            min-height: 140px !important;
-            padding: 16px 16px 14px !important;
-            transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1) !important;
+            height: 130px !important;
+            min-height: 130px !important;
+            max-height: 130px !important;
+            padding: 12px 16px !important;
+            transition: none !important;
+            transform: none !important;
             z-index: 2 !important;
           }
           .stage.signup .visual {
-            transform: translateY(410px) !important;
+            transform: none !important;
           }
           .formside {
             width: 100% !important;
-            height: 410px !important;
-            padding: 20px 20px 24px !important;
-            overflow-y: auto !important;
-            transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1) !important;
+            height: auto !important;
+            padding: 20px 16px 24px !important;
+            overflow-y: visible !important;
+            transition: none !important;
+            transform: none !important;
             z-index: 3 !important;
           }
           .stage.signup .formside {
-            transform: translateY(-140px) !important;
+            transform: none !important;
           }
           .brand {
-            padding: 0 12px;
+            padding: 0 8px !important;
           }
           .brand .logo-icon {
-            width: 42px !important;
-            height: 42px !important;
-            font-size: 16px !important;
-            margin-bottom: 6px !important;
-            border-radius: 14px !important;
+            margin-bottom: 4px !important;
+          }
+          .brand .logo-icon svg {
+            width: 40px !important;
+            height: 40px !important;
           }
           .brand h1 {
-            font-size: 20px !important;
-            margin-bottom: 3px !important;
+            font-size: 18px !important;
+            margin-bottom: 2px !important;
             font-weight: 800 !important;
           }
           .brand p {
-            font-size: 12px !important;
-            line-height: 1.4 !important;
-            max-width: 280px !important;
+            font-size: 11px !important;
+            line-height: 1.3 !important;
+            max-width: 260px !important;
+            opacity: 0.85;
           }
           .formside form {
-            max-width: 100%;
+            max-width: 100% !important;
+            width: 100% !important;
           }
           .formside h2 {
-            font-size: 24px !important;
+            font-size: 22px !important;
             margin-bottom: 14px !important;
             font-weight: 800 !important;
           }
           .toggle-title {
-            font-size: 11px !important;
+            font-size: 10px !important;
             margin-bottom: 2px !important;
-            letter-spacing: 2px !important;
+            letter-spacing: 1.5px !important;
           }
           .field {
-            margin-bottom: 13px !important;
+            margin-bottom: 14px !important;
           }
           .field input {
-            font-size: 16px !important; /* Prevents auto zoom on mobile */
+            font-size: 16px !important; /* Prevents auto zoom on iOS */
             padding: 12px 14px !important;
+            min-height: 46px !important;
             border-radius: 12px !important;
           }
           .field label {
             font-size: 13px !important;
-            top: 12px !important;
+            top: 13px !important;
             left: 14px !important;
           }
           .field input:focus + label, .field input:not(:placeholder-shown) + label {
@@ -384,14 +391,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             padding: 0 5px !important;
           }
           .btn {
-            padding: 12px !important;
+            padding: 13px !important;
+            min-height: 46px !important;
             border-radius: 12px !important;
             font-size: 15px !important;
             font-weight: 800 !important;
           }
           .switch {
-            margin-top: 14px !important;
-            font-size: 12.5px !important;
+            margin-top: 16px !important;
+            font-size: 13px !important;
           }
         }
       ` }} />
