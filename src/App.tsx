@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Routes, Route, useNavigate, useParams, useLocation, Navigate, Link } from 'react-router-dom';
 import { 
   PageType, 
   Profile, 
@@ -157,8 +158,23 @@ function formatSocialLink(type: 'facebook' | 'telegram' | 'whatsapp', input?: st
 }
 
 export default function App() {
-  // Navigation (Default always to 'discover' on refresh / load)
-  const [currentPage, setCurrentPage] = useState<PageType>('discover');
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Navigation derived from current URL path
+  const getCurrentPage = (): PageType => {
+    const p = location.pathname;
+    if (p.startsWith('/roadmap')) return 'roadmap';
+    if (p.startsWith('/profile-setup')) return 'profile-setup';
+    if (p.startsWith('/profile')) return 'profile';
+    if (p.startsWith('/dashboard')) return 'dashboard';
+    if (p.startsWith('/leaderboard')) return 'leaderboard';
+    if (p.startsWith('/admin')) return 'admin';
+    if (p.startsWith('/login') || p.startsWith('/signup')) return 'login';
+    return 'discover';
+  };
+
+  const currentPage = getCurrentPage();
   const [discoverView, setDiscoverView] = useState<'main' | 'fields' | 'field-skills' | 'all-skills'>('main');
   const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
@@ -259,15 +275,15 @@ export default function App() {
     if (isAuthLoading) return;
 
     if (!currentUser || !currentUser.id) {
-      if (currentPage !== 'login' && currentPage !== 'signup') {
-        setCurrentPage('login');
+      if (location.pathname !== '/login' && location.pathname !== '/signup') {
+        navigate('/login', { replace: true });
       }
     } else if (!currentUser.profile_completed) {
-      if (currentPage !== 'profile-setup') {
-        setCurrentPage('profile-setup');
+      if (location.pathname !== '/profile-setup') {
+        navigate('/profile-setup', { replace: true });
       }
     }
-  }, [isAuthLoading, currentUser, currentPage]);
+  }, [isAuthLoading, currentUser, location.pathname, navigate]);
 
   // Active Challenge (User Progress)
   const [activeProgress, setActiveProgress] = useState<UserProgress | null>(null);
@@ -423,7 +439,7 @@ export default function App() {
         setConfirmRecoveryPassword('');
         if (data?.user) {
           await refreshAppData(data.user.id);
-          setCurrentPage('discover');
+          navigate('/discover');
         }
       }
     } catch (err: any) {
@@ -507,7 +523,7 @@ export default function App() {
         if (!isSupabaseConfigured()) {
           if (isMounted) {
             setIsAuthLoading(false);
-            setCurrentPage('login');
+            navigate('/login', { replace: true });
           }
           return;
         }
@@ -541,15 +557,15 @@ export default function App() {
             setCurrentUser(profile);
             await refreshAppData(uid);
             if (!profile.profile_completed) {
-              setCurrentPage('profile-setup');
-            } else {
-              setCurrentPage('discover');
+              navigate('/profile-setup', { replace: true });
+            } else if (location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/') {
+              navigate('/discover', { replace: true });
             }
           }
         } else {
           if (isMounted) {
             setCurrentUser(null);
-            setCurrentPage('login');
+            navigate('/login', { replace: true });
             await refreshAppData();
           }
         }
@@ -557,7 +573,7 @@ export default function App() {
         console.error('[Supabase Auth Init] Exception:', err);
         if (isMounted) {
           setCurrentUser(null);
-          setCurrentPage('login');
+          navigate('/login', { replace: true });
         }
       } finally {
         if (isMounted) {
@@ -597,14 +613,9 @@ export default function App() {
           setCurrentUser(profile);
           await refreshAppData(uid);
           if (!profile.profile_completed) {
-            setCurrentPage('profile-setup');
-          } else {
-            setCurrentPage(prev => {
-              if (prev === 'login' || prev === 'signup') {
-                return 'discover';
-              }
-              return prev;
-            });
+            navigate('/profile-setup');
+          } else if (location.pathname === '/login' || location.pathname === '/signup') {
+            navigate('/discover');
           }
           setIsAuthLoading(false);
         }
@@ -613,7 +624,7 @@ export default function App() {
           setCurrentUser(null);
           setActiveProgress(null);
           setUserBadgeIds([]);
-          setCurrentPage('login');
+          navigate('/login');
           try {
             localStorage.removeItem('pragatii_active_page');
           } catch (e) {}
@@ -877,7 +888,7 @@ export default function App() {
           setSetupAvatarPreview(null);
 
           showToast('Account created successfully! Please complete your profile.');
-          setCurrentPage('profile-setup');
+          navigate('/profile-setup');
           await refreshAppData(data.user.id);
         }
       } else {
@@ -929,9 +940,9 @@ export default function App() {
           showToast(`Welcome back, ${userProf.full_name || 'Student'}!`);
 
           if (!userProf.profile_completed) {
-            setCurrentPage('profile-setup');
+            navigate('/profile-setup');
           } else {
-            setCurrentPage('discover');
+            navigate('/discover');
           }
         }
       }
@@ -966,7 +977,7 @@ export default function App() {
       setAuthEmail('');
       setAuthPassword('');
       setAuthName('');
-      setCurrentPage('login');
+      navigate('/login');
       showToast('You have been signed out.');
     } catch (err) {
       console.error('Error signing out:', err);
@@ -997,7 +1008,7 @@ export default function App() {
     if (!currentUser || !currentUser.id) {
       setSetupError('Session expired. Please log in again.');
       setSetupLoading(false);
-      setCurrentPage('login');
+      navigate('/login');
       return;
     }
 
@@ -1049,7 +1060,7 @@ export default function App() {
 
     setSetupLoading(false);
     showToast('Profile setup completed successfully!');
-    setCurrentPage('discover');
+    navigate('/discover');
     await refreshAppData(currentUser.id);
   };
 
@@ -1101,7 +1112,7 @@ export default function App() {
     if (!currentUser.profile_completed) {
       showToast('Please complete your profile setup before starting a skill challenge!');
       setIsDeadlineModalOpen(false);
-      setCurrentPage('profile-setup');
+      navigate('/profile-setup');
       return;
     }
 
@@ -1116,7 +1127,7 @@ export default function App() {
     if (activeProgress && activeProgress.status === 'in_progress') {
       showToast('You already have an active challenge. Complete or cancel it before starting another.');
       setIsDeadlineModalOpen(false);
-      setCurrentPage('dashboard');
+      navigate('/dashboard');
       return;
     }
 
@@ -1127,7 +1138,7 @@ export default function App() {
       setActiveProgress(progress);
       setIsDeadlineModalOpen(false);
       showToast(`Started ${targetSkill.name} challenge! Deadline: ${days > 0 ? `${days}d ` : ''}${hours > 0 ? `${hours}h` : ''}`);
-      setCurrentPage('dashboard');
+      navigate('/dashboard');
     } else {
       showToast('Could not start challenge. Please try again.');
     }
@@ -1224,7 +1235,7 @@ export default function App() {
   // Open Public Profile
   const handleOpenUserProfile = (userId: string) => {
     setSelectedUserId(userId);
-    setCurrentPage('profile');
+    navigate(`/profile/${userId}`);
   };
 
   // Admin Ban Toggle
@@ -1592,27 +1603,35 @@ export default function App() {
             if (page === 'discover') {
               setDiscoverView('main');
               setSelectedFieldId(null);
-            }
-            if (page === 'profile') {
+              navigate('/discover');
+            } else if (page === 'profile') {
               setSelectedUserId(currentUser.id);
+              navigate(`/profile/${currentUser.id}`);
+            } else if (page === 'roadmap') {
+              navigate(`/roadmap/${selectedSkillId || 'skill-html'}`);
+            } else {
+              navigate(`/${page}`);
             }
-            setCurrentPage(page);
           }}
           onNavigate={(page) => {
             if (page === 'discover') {
               setDiscoverView('main');
               setSelectedFieldId(null);
-            }
-            if (page === 'profile') {
+              navigate('/discover');
+            } else if (page === 'profile') {
               setSelectedUserId(currentUser.id);
+              navigate(`/profile/${currentUser.id}`);
+            } else if (page === 'roadmap') {
+              navigate(`/roadmap/${selectedSkillId || 'skill-html'}`);
+            } else {
+              navigate(`/${page}`);
             }
-            setCurrentPage(page);
           }}
           currentUser={currentUser}
           onSignOut={handleSignOut}
           onSelectUserForProfile={(userId) => {
             setSelectedUserId(userId);
-            setCurrentPage('profile');
+            navigate(`/profile/${userId}`);
           }}
           onOpenSendFeedback={() => setIsFeedbackModalOpen(true)}
           onOpenMyFeedback={() => setIsMyFeedbackModalOpen(true)}
@@ -1709,7 +1728,7 @@ export default function App() {
               <div>
                 {currentUser.profile_completed && (
                   <button 
-                    onClick={() => setCurrentPage('profile')}
+                    onClick={() => navigate(`/profile/${currentUser.id}`)}
                     className="text-xs font-bold text-[#6c5ce7] hover:underline flex items-center gap-1.5 mb-2 transition-all cursor-pointer"
                   >
                     <ArrowLeft className="w-3.5 h-3.5" /> Back to My Profile
@@ -2097,7 +2116,7 @@ export default function App() {
                       {currentUser.profile_completed && (
                         <button
                           type="button"
-                          onClick={() => setCurrentPage('profile')}
+                          onClick={() => navigate(`/profile/${currentUser.id}`)}
                           className="btn-setup-discard-3d min-w-[140px] sm:min-w-[160px] px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl text-sm sm:text-base font-bold text-[#475569] cursor-pointer"
                         >
                           Discard
@@ -2187,7 +2206,7 @@ export default function App() {
 
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                   <button 
-                    onClick={() => setCurrentPage('dashboard')}
+                    onClick={() => navigate('/dashboard')}
                     className="flex-1 sm:flex-none px-4 py-2 bg-white text-[#6c5ce7] text-xs font-bold rounded-xl hover:bg-white/95 transition-colors shadow-sm"
                   >
                     Go to Challenge →
@@ -2348,7 +2367,7 @@ export default function App() {
                           className={`skill-card group hover:shadow-md transition-all cursor-pointer relative ${isCompleted ? 'border-emerald-200/80 bg-emerald-50/10' : ''}`}
                           onClick={() => {
                             setSelectedSkillId(s.id);
-                            setCurrentPage('roadmap');
+                            navigate(`/roadmap/${s.id}`);
                           }}
                           id={`skill-card-${s.id}`}
                         >
@@ -2487,7 +2506,7 @@ export default function App() {
                         className={`skill-card cursor-pointer hover:shadow-md transition-all ${isCompleted ? 'border-emerald-200/80 bg-emerald-50/10' : ''}`}
                         onClick={() => {
                           setSelectedSkillId(s.id);
-                          setCurrentPage('roadmap');
+                          navigate(`/roadmap/${s.id}`);
                         }}
                       >
                         <div className="icon" style={{ background: s.bg_color || '#6c5ce7' }}>
@@ -2558,7 +2577,7 @@ export default function App() {
                           className={`skill-card cursor-pointer hover:shadow-md transition-all ${isCompleted ? 'border-emerald-200/80 bg-emerald-50/10' : ''}`}
                           onClick={() => {
                             setSelectedSkillId(s.id);
-                            setCurrentPage('roadmap');
+                            navigate(`/roadmap/${s.id}`);
                           }}
                         >
                           <div className="icon" style={{ background: s.bg_color || '#6c5ce7' }}>
@@ -2601,7 +2620,7 @@ export default function App() {
             
             <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
               <button 
-                onClick={() => setCurrentPage('discover')}
+                onClick={() => navigate('/discover')}
                 className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-white dark:bg-[#141726] text-[#22252E] dark:text-slate-100 hover:text-[#6C5CE7] dark:hover:text-[#a29bfe] font-bold text-xs sm:text-sm border border-[#E8E4DC] dark:border-[#23273e] hover:border-[#6C5CE7] dark:hover:border-[#6c5ce7] shadow-xs hover:shadow-md hover:-translate-x-1 transition-all duration-200 group cursor-pointer"
                 id="btn-back-to-discover"
               >
@@ -2654,7 +2673,7 @@ export default function App() {
                     </div>
                   ) : activeProgress?.skill_id === currentSkill.id && activeProgress?.status === 'in_progress' ? (
                     <button 
-                      onClick={() => setCurrentPage('dashboard')}
+                      onClick={() => navigate('/dashboard')}
                       className="btn-challenge-active w-full sm:w-auto animate-pulse-glow"
                       id="btn-active-challenge-dashboard"
                     >
@@ -2695,7 +2714,7 @@ export default function App() {
                     </div>
                   </div>
                   <button
-                    onClick={() => setCurrentPage('discover')}
+                    onClick={() => navigate('/discover')}
                     className="text-xs sm:text-sm font-extrabold px-5 py-2.5 rounded-xl bg-[#1B9C63] hover:bg-[#15804f] text-white transition-all cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 shrink-0 flex items-center gap-2 group"
                   >
                     <span>Explore Other Skills</span>
@@ -3073,7 +3092,7 @@ export default function App() {
                   Select a skill track from the discover roadmaps and set your custom sprint deadline to earn +10 points and build your streak.
                 </p>
                 <button 
-                  onClick={() => setCurrentPage('discover')}
+                  onClick={() => navigate('/discover')}
                   className="btn-challenge-cta inline-flex items-center gap-2 px-6 py-3 text-xs font-extrabold rounded-xl transition-all cursor-pointer"
                 >
                   <span>Pick a Skill to Learn</span>
@@ -3348,7 +3367,7 @@ export default function App() {
                     Be the first in this cohort to finish a skill challenge and take the top spot!
                   </p>
                   <button 
-                    onClick={() => setCurrentPage('discover')} 
+                    onClick={() => navigate('/discover')} 
                     className="px-5 py-2.5 bg-[#6c5ce7] text-white text-xs font-bold rounded-xl hover:opacity-90 transition-opacity shadow-md shadow-[#6c5ce7]/20"
                   >
                     Explore Roadmaps →
@@ -3488,7 +3507,7 @@ export default function App() {
               {/* Back Navigation Bar */}
               <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
                 <button 
-                  onClick={() => setCurrentPage('leaderboard')}
+                  onClick={() => navigate('/leaderboard')}
                   className="btn-secondary-3d px-3.5 py-2 bg-white border border-[#e4e5ee] text-[#1a1c2e] hover:bg-[#f4f5f8] text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs select-none"
                   id="btn-back-to-leaderboard"
                 >
@@ -3523,7 +3542,7 @@ export default function App() {
                   </div>
                   {isOwn && (
                     <button
-                      onClick={() => setCurrentPage('profile-setup')}
+                      onClick={() => navigate('/profile-setup')}
                       className="profile-avatar-edit-badge"
                       title="Change avatar & details"
                     >
@@ -3561,7 +3580,7 @@ export default function App() {
                   <div className="flex items-center gap-2 mt-3.5 justify-center sm:justify-start flex-wrap">
                     {isOwn ? (
                       <button
-                        onClick={() => setCurrentPage('profile-setup')}
+                        onClick={() => navigate('/profile-setup')}
                         className="profile-hero-btn-edit flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white text-[#6c5ce7] font-bold text-xs shadow-xs hover:bg-white/90 transition-all cursor-pointer select-none"
                         id="btn-hero-edit-profile"
                       >
@@ -3686,7 +3705,7 @@ export default function App() {
                         <span>Peer Contact Channels</span>
                         {isOwn && (
                           <button
-                            onClick={() => setCurrentPage('profile-setup')}
+                            onClick={() => navigate('/profile-setup')}
                             className="text-[10px] text-[#6c5ce7] hover:underline font-bold"
                           >
                             Edit
@@ -3751,7 +3770,7 @@ export default function App() {
                           {isOwn && (
                             <div className="mt-1.5">
                               <button
-                                onClick={() => setCurrentPage('profile-setup')}
+                                onClick={() => navigate('/profile-setup')}
                                 className="text-xs font-bold text-[#6c5ce7] hover:underline"
                               >
                                 + Add Social Contacts
@@ -3782,7 +3801,7 @@ export default function App() {
                             className="completed-skill-card profile-skill-3d-card group cursor-pointer hover:border-[#6c5ce7] transition-all"
                             onClick={() => {
                               setSelectedSkillId(cs.skill_id);
-                              setCurrentPage('roadmap');
+                              navigate(`/roadmap/${cs.skill_id}`);
                             }}
                           >
                             <div className="icon skill-3d-badge" style={{ background: sk.bg_color || '#e84393' }}>
@@ -3820,7 +3839,7 @@ export default function App() {
                       </p>
                       {isOwn && (
                         <button
-                          onClick={() => setCurrentPage('discover')}
+                          onClick={() => navigate('/discover')}
                           className="btn-challenge-cta px-4 py-2 text-xs font-bold rounded-xl inline-flex items-center gap-1.5"
                         >
                           <span>Explore Roadmaps</span>
@@ -3855,7 +3874,7 @@ export default function App() {
                 Only the designated system administrator (<span className="text-[#6c5ce7] font-semibold">{ADMIN_EMAIL}</span>) has permission to manage platform skills, tracks, and student accounts.
               </p>
               <button
-                onClick={() => setCurrentPage('discover')}
+                onClick={() => navigate('/discover')}
                 className="px-6 py-2.5 bg-[#6c5ce7] hover:opacity-90 text-white font-bold text-sm rounded-xl transition-all shadow-md shadow-[#6c5ce7]/20"
               >
                 Return to Home
@@ -4314,7 +4333,7 @@ export default function App() {
                 profiles={profiles}
                 onOpenUserProfile={(userId) => {
                   setSelectedUserId(userId);
-                  setCurrentPage('profile');
+                  navigate(`/profile/${userId}`);
                 }}
                 showToast={showToast}
               />
@@ -4333,11 +4352,15 @@ export default function App() {
             if (page === 'discover') {
               setDiscoverView('main');
               setSelectedFieldId(null);
-            }
-            if (page === 'profile') {
+              navigate('/discover');
+            } else if (page === 'profile') {
               setSelectedUserId(currentUser.id);
+              navigate(`/profile/${currentUser.id}`);
+            } else if (page === 'roadmap') {
+              navigate(`/roadmap/${selectedSkillId || 'skill-html'}`);
+            } else {
+              navigate(`/${page}`);
             }
-            setCurrentPage(page);
           }}
           onOpenSendFeedback={() => setIsFeedbackModalOpen(true)}
         />

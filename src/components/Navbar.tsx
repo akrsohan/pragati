@@ -96,11 +96,11 @@ export const Navbar: React.FC<NavbarProps> = ({
       id="app-navbar-header"
     >
       {/* Top Navbar Row */}
-      <div className="max-w-7xl mx-auto px-3.5 sm:px-8 py-3 sm:py-4 flex items-center justify-between gap-3 sm:gap-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3.5 sm:py-4.5 flex items-center justify-between gap-4 sm:gap-8 min-h-[68px] sm:min-h-[76px]">
         
         {/* Brand Logo & Title */}
         <div 
-          className="logo cursor-pointer hover:opacity-95 transition-all group flex items-center gap-2.5 sm:gap-3 select-none shrink-0" 
+          className="logo cursor-pointer hover:opacity-95 transition-all group flex items-center gap-3 sm:gap-3.5 select-none shrink-0" 
           onClick={() => {
             handleNav('discover');
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -110,16 +110,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           title="Go to Pragatii Home (Discover)"
           id="navbar-brand-logo"
         >
-          <div className="shrink-0 flex items-center justify-center">
-            <PragatiiLogo size={46} theme={theme} />
+          <div className="shrink-0 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
+            <PragatiiLogo size={48} theme={theme} />
           </div>
-          <div className="flex flex-col">
-            <span className={`font-black text-xl sm:text-2xl tracking-tight leading-none ${
+          <div className="flex flex-col justify-center">
+            <span className={`font-black text-xl sm:text-2xl tracking-tight leading-tight ${
               isDark ? 'text-white' : 'text-slate-900'
             }`}>
               Pragatii
             </span>
-            <span className={`text-[10px] sm:text-[11px] uppercase font-extrabold tracking-wider mt-1 ${
+            <span className={`text-[11px] sm:text-xs uppercase font-extrabold tracking-wider mt-0.5 ${
               isDark ? 'text-[#37f0ff]' : 'text-blue-600'
             }`}>
               Skill &amp; Growth Hub
@@ -129,7 +129,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Main Desktop Navigation Links (Spacious, Single Line, Crisp Separation) */}
         <div 
-          className={`hidden md:flex items-center gap-2.5 p-1.5 rounded-2xl border transition-colors ${
+          className={`hidden md:flex items-center gap-2 p-1.5 rounded-2xl border transition-colors ${
             isDark 
               ? 'bg-[#0e101a] border-white/10 shadow-inner' 
               : 'bg-slate-100/90 border-slate-200/90 shadow-inner'
@@ -153,7 +153,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => handleNav(item.id)}
                 id={`nav-link-${item.id}`}
               >
-                <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                <Icon className={`w-4.5 h-4.5 ${
                   isActive ? 'text-white' : (isDark ? 'text-[#8a8ca3]' : 'text-slate-500')
                 }`} />
                 <span>{item.label}</span>
@@ -164,7 +164,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {currentUser.is_admin && (
             <button 
               type="button"
-              className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm sm:text-base font-extrabold transition-all flex items-center gap-2 select-none whitespace-nowrap cursor-pointer ${
+              className={`px-5 sm:px-6 py-2.5 rounded-xl text-sm sm:text-base font-extrabold transition-all flex items-center gap-2 select-none whitespace-nowrap cursor-pointer ${
                 currentPage === 'admin' 
                   ? 'bg-purple-600 text-white shadow-md shadow-purple-600/40 ring-1 ring-purple-300/30' 
                   : isDark
@@ -174,21 +174,21 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => handleNav('admin')}
               id="nav-link-admin"
             >
-              <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
+              <Shield className="w-4.5 h-4.5 text-purple-400" />
               <span>Admin</span>
             </button>
           )}
         </div>
 
         {/* Right Controls: Theme Toggle & User Avatar Dropdown */}
-        <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
+        <div className="flex items-center gap-3 sm:gap-4 shrink-0">
           
-          {/* Dark / Light Mode Toggle Button */}
+          {/* Dark / Light Mode Toggle Button (Kept next to profile per user request) */}
           {onToggleTheme && (
             <button
               type="button"
               onClick={onToggleTheme}
-              className={`relative flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-2xl border shadow-inner transition-all group focus:outline-none focus:ring-2 focus:ring-purple-400 cursor-pointer ${
+              className={`relative flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-2xl border shadow-inner transition-all group focus:outline-none focus:ring-2 focus:ring-purple-400 cursor-pointer ${
                 isDark 
                   ? 'bg-[#0e101a] hover:bg-white/10 border-white/10 text-white' 
                   : 'bg-slate-100 hover:bg-slate-200/80 border-slate-200 text-slate-700'
@@ -209,7 +209,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="relative shrink-0" ref={dropdownRef}>
             <button 
               type="button"
-              className="flex items-center gap-2.5 bg-gradient-to-r from-[#1d4ed8] via-[#2563eb] to-[#3b82f6] hover:from-[#1e40af] hover:to-[#2563eb] text-white border border-white/20 rounded-full pl-1.5 pr-4 py-1.5 sm:py-2 transition-all shadow-lg shadow-blue-600/30 group focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer"
+              className="flex items-center gap-3 bg-gradient-to-r from-[#1d4ed8] via-[#2563eb] to-[#3b82f6] hover:from-[#1e40af] hover:to-[#2563eb] text-white border border-white/20 rounded-full pl-2 pr-4 sm:pr-5 py-2 transition-all shadow-lg shadow-blue-600/30 group focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer h-11 sm:h-12"
               onClick={() => setDropdownOpen(!dropdownOpen)}
               id="navbar-user-avatar-btn"
               aria-expanded={dropdownOpen}
@@ -220,20 +220,20 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <img 
                   src={currentUser.avatar_url} 
                   alt={currentUser.full_name} 
-                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover ring-2 ring-white/50 shadow-inner group-hover:scale-105 transition-transform" 
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover ring-2 ring-white/60 shadow-inner group-hover:scale-105 transition-transform shrink-0" 
                 />
               ) : (
-                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/20 text-white flex items-center justify-center font-black text-xs sm:text-sm shadow-inner ring-2 ring-white/40 group-hover:scale-105 transition-transform">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/20 text-white flex items-center justify-center font-black text-xs sm:text-sm shadow-inner ring-2 ring-white/50 group-hover:scale-105 transition-transform shrink-0">
                   {getInitials(currentUser.full_name)}
                 </div>
               )}
               
               {/* Name */}
-              <span className="text-sm font-black tracking-wide text-white uppercase leading-none select-none">
+              <span className="text-sm sm:text-base font-extrabold tracking-wide text-white uppercase leading-none select-none truncate max-w-[120px] sm:max-w-[160px]">
                 {getMainName(currentUser.full_name)}
               </span>
 
-              <ChevronDown className={`w-4 h-4 text-white/90 group-hover:text-white transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-4 h-4 text-white/90 group-hover:text-white transition-transform duration-200 shrink-0 ${dropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {/* Clean Modern White Dropdown Menu (Matches Reference) */}
@@ -272,39 +272,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
                 {/* Menu items */}
                 <div className="py-3 space-y-1.5">
-                  {/* Theme Mode Toggle in Dropdown */}
-                  {onToggleTheme && (
-                    <button 
-                      type="button"
-                      className="w-full flex items-center justify-between p-2 rounded-2xl hover:bg-slate-50 text-slate-900 transition-all text-left group cursor-pointer"
-                      onClick={() => {
-                        onToggleTheme();
-                      }}
-                      id="dropdown-theme-toggle"
-                    >
-                      <div className="flex items-center gap-3.5">
-                        <div className="w-11 h-11 rounded-2xl bg-slate-100/90 text-slate-800 flex items-center justify-center group-hover:bg-slate-200 transition-colors shrink-0">
-                          {theme === 'dark' ? (
-                            <Sun className="w-5 h-5 text-amber-500" />
-                          ) : (
-                            <Moon className="w-5 h-5 text-indigo-500" />
-                          )}
-                        </div>
-                        <div>
-                          <div className="font-extrabold text-slate-900 text-sm sm:text-base tracking-tight">
-                            {theme === 'dark' ? 'Light Theme' : 'Dark Theme'}
-                          </div>
-                          <div className="text-[11px] text-slate-400 font-medium">
-                            {theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-                          </div>
-                        </div>
-                      </div>
-                      <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 uppercase">
-                        {theme === 'dark' ? 'Dark' : 'Light'}
-                      </span>
-                    </button>
-                  )}
-                {/* My Dashboard */}
+                  {/* My Dashboard */}
                 <button 
                   type="button"
                   className="w-full flex items-center gap-3.5 p-2 rounded-2xl hover:bg-slate-50 text-slate-900 transition-all text-left group cursor-pointer"
@@ -491,7 +459,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Responsive Secondary Nav Bar (Spacious, beautifully proportioned segmented tab pills) */}
       <div 
-        className={`md:hidden border-t px-2.5 sm:px-6 py-2 sm:py-2.5 transition-colors ${
+        className={`md:hidden border-t px-3.5 sm:px-6 py-2.5 sm:py-3 transition-colors ${
           isDark 
             ? 'border-white/10 bg-[#121422]/95' 
             : 'border-slate-200/80 bg-slate-50/95'
@@ -499,7 +467,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         id="mobile-navbar-links"
       >
         <div 
-          className={`p-1 sm:p-1.5 rounded-2xl border flex items-center justify-between gap-1 sm:gap-2 overflow-x-auto no-scrollbar shadow-inner transition-colors ${
+          className={`p-1.5 rounded-2xl border flex items-center justify-between gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar shadow-inner transition-colors ${
             isDark 
               ? 'bg-[#0b0d17] border-white/10' 
               : 'bg-slate-200/70 border-slate-300/70'
@@ -512,7 +480,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button 
                 key={item.id}
                 type="button"
-                className={`flex-1 min-w-fit min-h-[42px] px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center justify-center gap-2 select-none whitespace-nowrap cursor-pointer ${
+                className={`flex-1 min-w-fit min-h-[46px] px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center justify-center gap-2 select-none whitespace-nowrap cursor-pointer ${
                   isActive 
                     ? 'bg-[#6c5ce7] text-white shadow-md shadow-[#6c5ce7]/40 ring-1 ring-white/20 font-black' 
                     : isDark
@@ -522,7 +490,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => handleNav(item.id)}
                 id={`mobile-nav-${item.id}`}
               >
-                <Icon className={`w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 ${isActive ? 'text-white' : (isDark ? 'text-slate-400' : 'text-slate-500')}`} />
+                <Icon className={`w-4.5 h-4.5 shrink-0 ${isActive ? 'text-white' : (isDark ? 'text-slate-400' : 'text-slate-500')}`} />
                 <span className="tracking-tight">{item.label}</span>
               </button>
             );
@@ -531,7 +499,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {currentUser.is_admin && (
             <button 
               type="button"
-              className={`flex-1 min-w-fit min-h-[42px] px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center justify-center gap-1.5 sm:gap-2 select-none whitespace-nowrap cursor-pointer ${
+              className={`flex-1 min-w-fit min-h-[46px] px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center justify-center gap-1.5 sm:gap-2 select-none whitespace-nowrap cursor-pointer ${
                 currentPage === 'admin' 
                   ? 'bg-purple-600 text-white shadow-md shadow-purple-600/40 ring-1 ring-purple-300/30 font-black' 
                   : isDark
@@ -541,7 +509,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => handleNav('admin')}
               id="mobile-nav-admin"
             >
-              <Shield className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 text-purple-400" />
+              <Shield className="w-4.5 h-4.5 shrink-0 text-purple-400" />
               <span className="tracking-tight">Admin</span>
             </button>
           )}
