@@ -96,11 +96,11 @@ export const Navbar: React.FC<NavbarProps> = ({
       id="app-navbar-header"
     >
       {/* Top Navbar Row */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3.5 sm:py-4 flex items-center justify-between gap-4 sm:gap-6">
+      <div className="max-w-7xl mx-auto px-3.5 sm:px-8 py-3 sm:py-4 flex items-center justify-between gap-3 sm:gap-6">
         
         {/* Brand Logo & Title */}
         <div 
-          className="logo cursor-pointer hover:opacity-95 transition-all group flex items-center gap-3 select-none shrink-0" 
+          className="logo cursor-pointer hover:opacity-95 transition-all group flex items-center gap-2.5 sm:gap-3 select-none shrink-0" 
           onClick={() => {
             handleNav('discover');
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -114,12 +114,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             <PragatiiLogo size={46} theme={theme} />
           </div>
           <div className="flex flex-col">
-            <span className={`font-extrabold text-xl sm:text-2xl tracking-tight leading-none ${
+            <span className={`font-black text-xl sm:text-2xl tracking-tight leading-none ${
               isDark ? 'text-white' : 'text-slate-900'
             }`}>
               Pragatii
             </span>
-            <span className={`text-[10px] sm:text-[11px] uppercase font-bold tracking-widest mt-1.5 ${
+            <span className={`text-[10px] sm:text-[11px] uppercase font-extrabold tracking-wider mt-1 ${
               isDark ? 'text-[#37f0ff]' : 'text-blue-600'
             }`}>
               Skill &amp; Growth Hub
@@ -489,55 +489,63 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       </div>
 
-      {/* Responsive Secondary Nav Bar (For mobile & smaller screens: smooth, spacious single horizontal line) */}
+      {/* Responsive Secondary Nav Bar (Spacious, beautifully proportioned segmented tab pills) */}
       <div 
-        className={`md:hidden border-t px-4 py-2 flex items-center justify-start gap-2.5 overflow-x-auto no-scrollbar transition-colors ${
+        className={`md:hidden border-t px-2.5 sm:px-6 py-2 sm:py-2.5 transition-colors ${
           isDark 
-            ? 'border-white/10 bg-[#121422]' 
-            : 'border-slate-200 bg-slate-50/95'
+            ? 'border-white/10 bg-[#121422]/95' 
+            : 'border-slate-200/80 bg-slate-50/95'
         }`} 
         id="mobile-navbar-links"
       >
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = currentPage === item.id;
-          return (
-            <button 
-              key={item.id}
-              type="button"
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 select-none whitespace-nowrap shrink-0 cursor-pointer ${
-                isActive 
-                  ? 'bg-[#6c5ce7] text-white shadow-md shadow-[#6c5ce7]/40 ring-1 ring-white/20' 
-                  : isDark
-                    ? 'text-[#9ca3af] hover:text-white hover:bg-white/5'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
-              }`}
-              onClick={() => handleNav(item.id)}
-              id={`mobile-nav-${item.id}`}
-            >
-              <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : (isDark ? 'text-[#8a8ca3]' : 'text-slate-500')}`} />
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
+        <div 
+          className={`p-1 sm:p-1.5 rounded-2xl border flex items-center justify-between gap-1 sm:gap-2 overflow-x-auto no-scrollbar shadow-inner transition-colors ${
+            isDark 
+              ? 'bg-[#0b0d17] border-white/10' 
+              : 'bg-slate-200/70 border-slate-300/70'
+          }`}
+        >
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = currentPage === item.id;
+            return (
+              <button 
+                key={item.id}
+                type="button"
+                className={`flex-1 min-w-fit min-h-[42px] px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center justify-center gap-2 select-none whitespace-nowrap cursor-pointer ${
+                  isActive 
+                    ? 'bg-[#6c5ce7] text-white shadow-md shadow-[#6c5ce7]/40 ring-1 ring-white/20 font-black' 
+                    : isDark
+                      ? 'text-slate-300 hover:text-white hover:bg-white/10'
+                      : 'text-slate-700 hover:text-slate-900 hover:bg-white/80'
+                }`}
+                onClick={() => handleNav(item.id)}
+                id={`mobile-nav-${item.id}`}
+              >
+                <Icon className={`w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 ${isActive ? 'text-white' : (isDark ? 'text-slate-400' : 'text-slate-500')}`} />
+                <span className="tracking-tight">{item.label}</span>
+              </button>
+            );
+          })}
 
-        {currentUser.is_admin && (
-          <button 
-            type="button"
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 select-none whitespace-nowrap shrink-0 cursor-pointer ${
-              currentPage === 'admin' 
-                ? 'bg-purple-600 text-white shadow-md shadow-purple-600/40 ring-1 ring-purple-300/30' 
-                : isDark
-                  ? 'text-purple-300 hover:text-white hover:bg-purple-500/15'
-                  : 'text-purple-700 hover:text-purple-900 hover:bg-purple-100'
-            }`}
-            onClick={() => handleNav('admin')}
-            id="mobile-nav-admin"
-          >
-            <Shield className="w-3.5 h-3.5 text-purple-400" />
-            <span>Admin</span>
-          </button>
-        )}
+          {currentUser.is_admin && (
+            <button 
+              type="button"
+              className={`flex-1 min-w-fit min-h-[42px] px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center justify-center gap-1.5 sm:gap-2 select-none whitespace-nowrap cursor-pointer ${
+                currentPage === 'admin' 
+                  ? 'bg-purple-600 text-white shadow-md shadow-purple-600/40 ring-1 ring-purple-300/30 font-black' 
+                  : isDark
+                    ? 'text-purple-300 hover:text-white hover:bg-purple-500/15'
+                    : 'text-purple-700 hover:text-purple-900 hover:bg-purple-100/80'
+              }`}
+              onClick={() => handleNav('admin')}
+              id="mobile-nav-admin"
+            >
+              <Shield className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 text-purple-400" />
+              <span className="tracking-tight">Admin</span>
+            </button>
+          )}
+        </div>
       </div>
     </header>
   );

@@ -22,7 +22,6 @@ import {
   initialSkillResources
 } from './data/mockData';
 import { Navbar } from './components/Navbar';
-import { BottomNav } from './components/BottomNav';
 import { Footer } from './components/Footer';
 import { LandingPage } from './components/LandingPage';
 import { getMainName } from './lib/nameHelper';
@@ -4481,27 +4480,6 @@ export default function App() {
         message={deleteConfirmState.message}
         confirmLabel={deleteConfirmState.confirmLabel}
       />
-
-      {/* Mobile Bottom Navigation Bar (below 768px) */}
-      {currentUser && currentUser.id && (
-        <div className="md:hidden">
-          <BottomNav 
-            currentPage={currentPage}
-            onNavigate={(page) => {
-              if (page === 'discover') {
-                setDiscoverView('main');
-                setSelectedFieldId(null);
-              }
-              if (page === 'profile') {
-                setSelectedUserId(currentUser.id);
-              }
-              setCurrentPage(page);
-            }}
-            currentUser={currentUser}
-            activeProgress={activeProgress}
-          />
-        </div>
-      )}
 
     </div>
   );

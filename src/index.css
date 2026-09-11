@@ -35,13 +35,6 @@ html, body {
   position: relative;
   min-height: 100vh;
   overflow-x: hidden;
-  padding-bottom: 76px;
-}
-
-@media (min-width: 768px) {
-  .page {
-    padding-bottom: 0px;
-  }
 }
 
 /* Navbar */
