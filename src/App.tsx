@@ -39,6 +39,7 @@ import { SkillResourcesSection } from './components/SkillResourcesSection';
 import { AdminRoadmapSection } from './components/AdminRoadmapSection';
 import { HeroProgressCore3D } from './components/HeroProgressCore3D';
 import { ChangePasswordModal } from './components/ChangePasswordModal';
+import ScrollToTop from './components/ScrollToTop';
 import { 
   getProfile,
   updateProfile,
@@ -1561,6 +1562,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#f4f5f8] dark:bg-[#0b0d17] text-[#1a1c2e] dark:text-[#f1f5f9] transition-colors duration-200 font-sans antialiased w-full">
+      {/* Route-level window scroll restoration */}
+      <ScrollToTop />
       
       {currentUser && currentUser.is_banned && !currentUser.is_admin && (
         <div className="fixed inset-0 z-[100] bg-[#111322] flex items-center justify-center p-6 text-white font-sans antialiased">
