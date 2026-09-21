@@ -119,7 +119,8 @@ import {
   Link2,
   Layers,
   X,
-  RotateCcw
+  RotateCcw,
+  FileText
 } from 'lucide-react';
 
 // Helper to format social contact links into working URLs
@@ -1407,7 +1408,8 @@ export default function App() {
         ...stepData,
         title: stepData.title || editingStep.title,
         description: stepData.description || editingStep.description,
-        resource_link: stepData.resource_link
+        resource_link: stepData.resource_link,
+        drive_link: stepData.drive_link
       };
       const saved = await updateRoadmapStepInDb(updated);
       const targetSkillId = updated.skill_id || currentSkill.id;
@@ -1429,7 +1431,8 @@ export default function App() {
         title: stepData.title || 'New Step',
         description: stepData.description || '',
         step_order: (roadmapSteps[targetSkillId] || []).length + 1,
-        resource_link: stepData.resource_link
+        resource_link: stepData.resource_link,
+        drive_link: stepData.drive_link
       };
 
       const saved = await addRoadmapStepToDb(newStep);
@@ -2780,16 +2783,34 @@ export default function App() {
                                 <h5 className="font-extrabold text-sm sm:text-base text-[#22252E] dark:text-white group-hover:text-[#6C5CE7] dark:group-hover:text-purple-300 leading-snug transition-colors">
                                   {st.title}
                                 </h5>
-                                {st.resource_link && (
-                                  <a
-                                    href={st.resource_link}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="text-[11px] font-bold text-[#6C5CE7] dark:text-purple-300 hover:text-white hover:bg-[#6C5CE7] dark:hover:bg-[#6C5CE7] inline-flex items-center gap-1 bg-[#F3F1EC] dark:bg-purple-950/60 px-2.5 py-1 rounded-lg border border-[#E8E4DC] dark:border-purple-800/40 transition-all duration-200 shrink-0 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95"
-                                  >
-                                    <span>Doc</span>
-                                    <ExternalLink className="w-3 h-3" />
-                                  </a>
+                                {(st.resource_link || st.drive_link) && (
+                                  <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                                    {st.resource_link && (
+                                      <a
+                                        href={st.resource_link}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="text-[11px] font-bold text-[#6C5CE7] dark:text-purple-300 hover:text-white hover:bg-[#6C5CE7] dark:hover:bg-[#6C5CE7] inline-flex items-center gap-1 bg-[#F3F1EC] dark:bg-purple-950/60 px-2.5 py-1 rounded-lg border border-[#E8E4DC] dark:border-purple-800/40 transition-all duration-200 shrink-0 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95"
+                                        title="Official Documentation / Guide Reference"
+                                      >
+                                        <span>Doc</span>
+                                        <ExternalLink className="w-3 h-3" />
+                                      </a>
+                                    )}
+                                    {st.drive_link && (
+                                      <a
+                                        href={st.drive_link}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="text-[11px] font-extrabold text-amber-700 dark:text-amber-300 hover:text-white hover:bg-amber-600 dark:hover:bg-amber-600 inline-flex items-center gap-1.5 bg-amber-50 dark:bg-amber-950/60 px-2.5 py-1 rounded-lg border border-amber-200/80 dark:border-amber-800/40 transition-all duration-200 shrink-0 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95"
+                                        title="Open Google Drive PDF / Lecture Notes for this topic"
+                                      >
+                                        <FileText className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                                        <span>Drive PDF</span>
+                                        <ExternalLink className="w-2.5 h-2.5" />
+                                      </a>
+                                    )}
+                                  </div>
                                 )}
                               </div>
 

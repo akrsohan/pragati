@@ -428,12 +428,14 @@ export const StepModal: React.FC<StepModalProps> = ({
   const [title, setTitle] = useState(initialData?.title || '');
   const [description, setDescription] = useState(initialData?.description || '');
   const [resourceLink, setResourceLink] = useState(initialData?.resource_link || '');
+  const [driveLink, setDriveLink] = useState(initialData?.drive_link || '');
 
   useEffect(() => {
     if (isOpen) {
       setTitle(initialData?.title || '');
       setDescription(initialData?.description || '');
       setResourceLink(initialData?.resource_link || '');
+      setDriveLink(initialData?.drive_link || '');
     }
   }, [isOpen, initialData]);
 
@@ -448,14 +450,25 @@ export const StepModal: React.FC<StepModalProps> = ({
       title: title.trim(),
       description: description.trim(),
       step_order: initialData?.step_order || nextOrder,
-      resource_link: resourceLink.trim()
+      resource_link: resourceLink.trim(),
+      drive_link: driveLink.trim()
     });
     onClose();
   };
 
+  const isGoogleDriveUrl = (url: string) => {
+    const l = url.toLowerCase();
+    return l.includes('drive.google.com') || l.includes('docs.google.com');
+  };
+
+  const isPdfUrl = (url: string) => {
+    const l = url.toLowerCase();
+    return l.endsWith('.pdf') || l.includes('.pdf?');
+  };
+
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4">
-      <div className="bg-white dark:bg-[#141726] rounded-2xl p-5 sm:p-7 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl relative border border-slate-200 dark:border-[#23273e]">
+      <div className="bg-white dark:bg-[#141726] rounded-2xl p-5 sm:p-7 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl relative border border-slate-200 dark:border-[#23273e]">
         <button 
           onClick={onClose}
           className="absolute top-4 right-4 sm:top-5 sm:right-5 text-[#8a8ca3] hover:text-[#1a1c2e] dark:hover:text-white p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-[#1e2238] transition-colors"
@@ -495,14 +508,67 @@ export const StepModal: React.FC<StepModalProps> = ({
           </div>
 
           <div>
-            <label className="field-label">Documentation / Guide URL (Optional)</label>
+            <label className="field-label flex items-center justify-between">
+              <span>Documentation / Guide URL (Optional)</span>
+              {resourceLink && (
+                <a
+                  href={resourceLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[11px] font-bold text-[#6c5ce7] hover:underline inline-flex items-center gap-1"
+                >
+                  <span>Test Link</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
+            </label>
             <input 
               type="url" 
               className="field-input" 
-              placeholder="https://..."
+              placeholder="https://developer.mozilla.org/..."
               value={resourceLink}
               onChange={(e) => setResourceLink(e.target.value)}
             />
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+              Link to official documentation, tutorial, or web reference.
+            </p>
+          </div>
+
+          <div className="p-3.5 bg-amber-50/70 dark:bg-amber-950/30 rounded-xl border border-amber-200/80 dark:border-amber-900/50">
+            <label className="field-label flex items-center justify-between !mb-1 text-amber-950 dark:text-amber-200">
+              <span className="flex items-center gap-1.5 font-bold">
+                <FileText className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <span>Google Drive / PDF Resource Link (Optional)</span>
+              </span>
+              {driveLink && (
+                <a
+                  href={driveLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[11px] font-bold text-amber-700 dark:text-amber-300 hover:underline inline-flex items-center gap-1"
+                >
+                  <span>Open Drive Link</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
+            </label>
+            <input 
+              type="url" 
+              className="field-input !bg-white dark:!bg-[#101321] !border-amber-200 dark:!border-amber-800/60 focus:!ring-amber-500" 
+              placeholder="https://drive.google.com/file/d/... or PDF URL"
+              value={driveLink}
+              onChange={(e) => setDriveLink(e.target.value)}
+            />
+            <div className="flex items-center justify-between flex-wrap gap-2 mt-1.5">
+              <p className="text-[11px] text-amber-900/80 dark:text-amber-300/80 leading-tight">
+                Share custom lecture notes, slide decks, cheatsheets, or topic PDF from Google Drive.
+              </p>
+              {driveLink && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-200/60 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200">
+                  {isGoogleDriveUrl(driveLink) ? '✓ Google Drive link' : isPdfUrl(driveLink) ? '✓ PDF file link' : '✓ Resource link'}
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="btn-row pt-2">
@@ -1065,8 +1131,12 @@ CREATE TABLE IF NOT EXISTS public.roadmap_steps (
     description TEXT,
     step_order INT DEFAULT 1,
     resource_link TEXT,
+    drive_link TEXT,
     created_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Migration: Ensure drive_link exists on roadmap_steps
+ALTER TABLE public.roadmap_steps ADD COLUMN IF NOT EXISTS drive_link TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_roadmap_steps_skill_id ON public.roadmap_steps (skill_id);
 

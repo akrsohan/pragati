@@ -84,6 +84,7 @@ export interface RoadmapStep {
   description: string;
   step_order: number;
   resource_link?: string;
+  drive_link?: string;
   created_at?: string;
 }
 

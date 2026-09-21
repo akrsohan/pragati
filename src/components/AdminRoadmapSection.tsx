@@ -312,18 +312,32 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
                               {st.description}
                             </p>
                           )}
-                          {st.resource_link && (
-                            <div className="mt-2.5">
-                              <a 
-                                href={st.resource_link} 
-                                target="_blank" 
-                                rel="noreferrer" 
-                                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#6c5ce7] dark:text-purple-300 hover:text-[#5848c2] dark:hover:text-purple-200 bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 dark:hover:bg-purple-900/60 px-2.5 py-1 rounded-md transition-colors"
-                              >
-                                <Link2 className="w-3 h-3" />
-                                <span>Guide Reference</span>
-                                <ExternalLink className="w-2.5 h-2.5 ml-0.5" />
-                              </a>
+                          {(st.resource_link || st.drive_link) && (
+                            <div className="mt-2.5 flex items-center flex-wrap gap-2">
+                              {st.resource_link && (
+                                <a 
+                                  href={st.resource_link} 
+                                  target="_blank" 
+                                  rel="noreferrer" 
+                                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#6c5ce7] dark:text-purple-300 hover:text-[#5848c2] dark:hover:text-purple-200 bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 dark:hover:bg-purple-900/60 px-2.5 py-1 rounded-md transition-colors"
+                                >
+                                  <Link2 className="w-3 h-3" />
+                                  <span>Guide Reference</span>
+                                  <ExternalLink className="w-2.5 h-2.5 ml-0.5" />
+                                </a>
+                              )}
+                              {st.drive_link && (
+                                <a 
+                                  href={st.drive_link} 
+                                  target="_blank" 
+                                  rel="noreferrer" 
+                                  className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-200 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 px-2.5 py-1 rounded-md transition-colors"
+                                >
+                                  <FileText className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                                  <span>Google Drive / PDF</span>
+                                  <ExternalLink className="w-2.5 h-2.5 ml-0.5" />
+                                </a>
+                              )}
                             </div>
                           )}
                         </div>

@@ -1602,6 +1602,7 @@ export async function fetchAllRoadmapSteps(): Promise<Record<string, RoadmapStep
           description: row.description || '',
           step_order: Number(row.step_order) || 1,
           resource_link: row.resource_link || undefined,
+          drive_link: row.drive_link || localMap[row.skill_id]?.find(s => s.id === row.id)?.drive_link || undefined,
           created_at: row.created_at
         };
         if (!dbMap[item.skill_id]) {
@@ -1633,6 +1634,7 @@ export async function addRoadmapStepToDb(stepData: Omit<RoadmapStep, 'id'>): Pro
     description: stepData.description.trim(),
     step_order: stepData.step_order || 1,
     resource_link: stepData.resource_link ? stepData.resource_link.trim() : undefined,
+    drive_link: stepData.drive_link ? stepData.drive_link.trim() : undefined,
     created_at: new Date().toISOString()
   };
 
@@ -1644,17 +1646,32 @@ export async function addRoadmapStepToDb(stepData: Omit<RoadmapStep, 'id'>): Pro
   saveStoredRoadmapSteps(localMap);
 
   try {
-    const { data, error } = await supabase
+    const payload: Record<string, any> = {
+      skill_id: newStep.skill_id,
+      title: newStep.title,
+      description: newStep.description,
+      step_order: newStep.step_order,
+      resource_link: newStep.resource_link,
+      drive_link: newStep.drive_link
+    };
+
+    let { data, error } = await supabase
       .from('roadmap_steps')
-      .insert({
-        skill_id: newStep.skill_id,
-        title: newStep.title,
-        description: newStep.description,
-        step_order: newStep.step_order,
-        resource_link: newStep.resource_link
-      })
+      .insert(payload)
       .select('*')
       .maybeSingle();
+
+    if (error && (error.message?.includes('drive_link') || error.code === '42703')) {
+      // Column drive_link doesn't exist yet in Supabase table; retry without it
+      delete payload.drive_link;
+      const retryRes = await supabase
+        .from('roadmap_steps')
+        .insert(payload)
+        .select('*')
+        .maybeSingle();
+      data = retryRes.data;
+      error = retryRes.error;
+    }
 
     if (!error && data) {
       newStep.id = data.id;
@@ -1677,7 +1694,8 @@ export async function updateRoadmapStepInDb(stepData: RoadmapStep): Promise<Road
     ...stepData,
     title: stepData.title.trim(),
     description: stepData.description.trim(),
-    resource_link: stepData.resource_link ? stepData.resource_link.trim() : undefined
+    resource_link: stepData.resource_link ? stepData.resource_link.trim() : undefined,
+    drive_link: stepData.drive_link ? stepData.drive_link.trim() : undefined
   };
 
   if (!localMap[updatedStep.skill_id]) {
@@ -1693,15 +1711,27 @@ export async function updateRoadmapStepInDb(stepData: RoadmapStep): Promise<Road
   saveStoredRoadmapSteps(localMap);
 
   try {
-    const { error } = await supabase
+    const updatePayload: Record<string, any> = {
+      title: updatedStep.title,
+      description: updatedStep.description,
+      step_order: updatedStep.step_order,
+      resource_link: updatedStep.resource_link,
+      drive_link: updatedStep.drive_link
+    };
+
+    let { error } = await supabase
       .from('roadmap_steps')
-      .update({
-        title: updatedStep.title,
-        description: updatedStep.description,
-        step_order: updatedStep.step_order,
-        resource_link: updatedStep.resource_link
-      })
+      .update(updatePayload)
       .eq('id', updatedStep.id);
+
+    if (error && (error.message?.includes('drive_link') || error.code === '42703')) {
+      delete updatePayload.drive_link;
+      const retryRes = await supabase
+        .from('roadmap_steps')
+        .update(updatePayload)
+        .eq('id', updatedStep.id);
+      error = retryRes.error;
+    }
 
     if (error) {
       console.error('[Supabase updateRoadmapStep error]:', error.message);

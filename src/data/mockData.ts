@@ -175,7 +175,8 @@ export const initialRoadmapSteps: Record<string, RoadmapStep[]> = {
       title: 'Semantic HTML5 Architecture',
       description: 'Master semantic tags (<header>, <nav>, <main>, <article>, <section>, <footer>) for clean document outlines and accessibility.',
       step_order: 1,
-      resource_link: 'https://developer.mozilla.org/en-US/docs/Glossary/Semantics'
+      resource_link: 'https://developer.mozilla.org/en-US/docs/Glossary/Semantics',
+      drive_link: 'https://drive.google.com/file/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs/view'
     },
     {
       id: 'step-html-2',
