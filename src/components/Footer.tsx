@@ -20,7 +20,7 @@ import { PragatiiLogo } from './PragatiiLogo';
 
 interface FooterProps {
   onNavigate: (page: PageType) => void;
-  currentUser: Profile;
+  currentUser: Profile | null;
   onOpenSendFeedback?: () => void;
 }
 

@@ -5,7 +5,7 @@ import { Compass, LayoutDashboard, Trophy, User, Shield, Flame, Settings } from 
 interface BottomNavProps {
   currentPage: PageType;
   onNavigate: (page: PageType) => void;
-  currentUser: Profile;
+  currentUser: Profile | null;
   activeProgress: UserProgress | null;
 }
 
@@ -53,14 +53,14 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     },
     {
       id: 'profile' as PageType,
-      label: 'My Profile',
+      label: currentUser ? 'My Profile' : 'Profile',
       icon: User,
       badge: null,
-      isAvatar: true
+      isAvatar: Boolean(currentUser)
     }
   ];
 
-  if (currentUser.is_admin) {
+  if (currentUser?.is_admin) {
     navItems.push({
       id: 'admin' as PageType,
       label: 'Admin',
@@ -102,10 +102,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
               {/* Icon / Avatar Wrapper */}
               <div className="relative flex items-center justify-center mb-0.5">
-                {item.isAvatar && currentUser.avatar_url ? (
+                {item.isAvatar && currentUser?.avatar_url ? (
                   <img 
                     src={currentUser.avatar_url} 
-                    alt={currentUser.full_name} 
+                    alt={currentUser.full_name || 'User'} 
                     className={`w-5 h-5 rounded-full object-cover ring-2 ${
                       isActive ? 'ring-[#6C5CE7]' : 'ring-[#E8E4DC] dark:ring-[#23273e]'
                     }`}

@@ -25,7 +25,7 @@ interface NavbarProps {
   currentPage: PageType;
   setCurrentPage?: (page: PageType) => void;
   onNavigate?: (page: PageType) => void;
-  currentUser: Profile;
+  currentUser: Profile | null;
   onSignOut: () => void;
   onSelectUserForProfile?: (userId: string) => void;
   onOpenSendFeedback?: () => void;
@@ -33,6 +33,8 @@ interface NavbarProps {
   onOpenChangePassword?: () => void;
   theme?: 'light' | 'dark';
   onToggleTheme?: () => void;
+  onOpenAuthModal?: (reason?: { title?: string; message?: string; intendedAction?: any }) => void;
+  onNavigateAuth?: (mode: 'login' | 'signup') => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -46,12 +48,48 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenMyFeedback,
   onOpenChangePassword,
   theme = 'light',
-  onToggleTheme
+  onToggleTheme,
+  onOpenAuthModal,
+  onNavigateAuth
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleNav = (page: PageType) => {
+    if (page === 'dashboard' && !currentUser) {
+      if (onOpenAuthModal) {
+        onOpenAuthModal({
+          title: 'Login Required',
+          message: 'Log in to access your personal learning dashboard.',
+          intendedAction: { type: 'view_dashboard' }
+        });
+      } else if (onNavigateAuth) {
+        onNavigateAuth('login');
+      }
+      return;
+    }
+    if (page === 'profile' && !currentUser) {
+      if (onOpenAuthModal) {
+        onOpenAuthModal({
+          title: 'Login Required',
+          message: 'Log in to view your Pragati profile.',
+          intendedAction: { type: 'view_profile' }
+        });
+      } else if (onNavigateAuth) {
+        onNavigateAuth('login');
+      }
+      return;
+    }
+    if (page === 'admin' && (!currentUser || !currentUser.is_admin)) {
+      if (onOpenAuthModal) {
+        onOpenAuthModal({
+          title: 'Admin Access Required',
+          message: 'Please log in with an administrator account to view the admin portal.',
+          intendedAction: { type: 'navigate', path: '/admin' }
+        });
+      }
+      return;
+    }
     if (onNavigate) {
       onNavigate(page);
     } else if (setCurrentPage) {
@@ -161,7 +199,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             );
           })}
 
-          {currentUser.is_admin && (
+          {currentUser?.is_admin && (
             <button 
               type="button"
               className={`px-5 sm:px-6 py-2.5 rounded-xl text-sm sm:text-base font-extrabold transition-all flex items-center gap-2 select-none whitespace-nowrap cursor-pointer ${
@@ -180,7 +218,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
 
-        {/* Right Controls: Theme Toggle & User Avatar Dropdown */}
+        {/* Right Controls: Theme Toggle & User Avatar Dropdown or Guest Auth */}
         <div className="flex items-center gap-3 sm:gap-4 shrink-0">
           
           {/* Dark / Light Mode Toggle Button (Kept next to profile per user request) */}
@@ -205,8 +243,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
 
-          {/* User Avatar & Profile Dropdown */}
-          <div className="relative shrink-0" ref={dropdownRef}>
+          {currentUser ? (
+            /* User Avatar & Profile Dropdown */
+            <div className="relative shrink-0" ref={dropdownRef}>
             <button 
               type="button"
               className="flex items-center gap-3 bg-gradient-to-r from-[#1d4ed8] via-[#2563eb] to-[#3b82f6] hover:from-[#1e40af] hover:to-[#2563eb] text-white border border-white/20 rounded-full pl-2 pr-4 sm:pr-5 py-2 transition-all shadow-lg shadow-blue-600/30 group focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer h-11 sm:h-12"
@@ -453,6 +492,31 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           )}
           </div>
+          ) : (
+            /* Guest Auth Buttons: Log In & Sign Up */
+            <div className="flex items-center gap-2 shrink-0" id="navbar-guest-controls">
+              <button
+                type="button"
+                onClick={() => onNavigateAuth ? onNavigateAuth('login') : (onNavigate && onNavigate('login'))}
+                className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer ${
+                  isDark 
+                    ? 'text-white hover:bg-white/10 border border-white/10' 
+                    : 'text-slate-700 hover:bg-slate-100 border border-slate-200'
+                }`}
+                id="navbar-guest-login-btn"
+              >
+                Log In
+              </button>
+              <button
+                type="button"
+                onClick={() => onNavigateAuth ? onNavigateAuth('signup') : (onNavigate && onNavigate('signup'))}
+                className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-black text-white bg-gradient-to-r from-[#6c5ce7] to-[#8075ff] hover:from-[#5b4bc4] hover:to-[#6c5ce7] shadow-md shadow-[#6c5ce7]/30 transition-all cursor-pointer"
+                id="navbar-guest-signup-btn"
+              >
+                Sign Up
+              </button>
+            </div>
+          )}
         </div>
 
       </div>
@@ -496,7 +560,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             );
           })}
 
-          {currentUser.is_admin && (
+          {currentUser?.is_admin && (
             <button 
               type="button"
               className={`flex-1 min-w-fit min-h-[46px] px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center justify-center gap-1.5 sm:gap-2 select-none whitespace-nowrap cursor-pointer ${

@@ -39,6 +39,9 @@ import { SkillResourcesSection } from './components/SkillResourcesSection';
 import { AdminRoadmapSection } from './components/AdminRoadmapSection';
 import { HeroProgressCore3D } from './components/HeroProgressCore3D';
 import { ChangePasswordModal } from './components/ChangePasswordModal';
+import { AuthModal } from './components/AuthModal';
+import { AiSkillGapModal } from './components/AiSkillGapModal';
+import { BottomNav } from './components/BottomNav';
 import ScrollToTop from './components/ScrollToTop';
 import { 
   getProfile,
@@ -73,6 +76,8 @@ import {
   addRoadmapStepToDb,
   updateRoadmapStepInDb,
   deleteRoadmapStepFromDb,
+  subscribeToRoadmapRealtime,
+  subscribeToSkillResourcesRealtime,
   fetchAllFieldsDb,
   saveFieldToDb,
   deleteFieldFromDb,
@@ -120,7 +125,12 @@ import {
   Layers,
   X,
   RotateCcw,
-  FileText
+  FileText,
+  LogIn,
+  UserPlus,
+  Compass,
+  LayoutDashboard,
+  Lock
 } from 'lucide-react';
 
 // Helper to format social contact links into working URLs
@@ -158,6 +168,13 @@ function formatSocialLink(type: 'facebook' | 'telegram' | 'whatsapp', input?: st
 
   return val;
 }
+
+export type IntendedAction = 
+  | { type: 'start_challenge'; skillId: string; challengeName?: string }
+  | { type: 'view_dashboard' }
+  | { type: 'view_profile' }
+  | { type: 'ai_feature'; featureName: string }
+  | { type: 'navigate'; path: string };
 
 export default function App() {
   const navigate = useNavigate();
@@ -231,6 +248,9 @@ export default function App() {
   // Selected Profile for Public Profile view
   const [selectedUserId, setSelectedUserId] = useState<string>('');
 
+  // Selected Skill for Roadmap view
+  const [selectedSkillId, setSelectedSkillId] = useState<string>('skill-html');
+
   // Loading & Initialization state (Explicit loading state so app does not redirect while restoring session)
   const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
 
@@ -272,20 +292,160 @@ export default function App() {
     return new Set(currentUserCompletedProgress.map(p => p.skill_id));
   }, [currentUserCompletedProgress]);
 
-  // Enforce Protected Route rules once session restoration is complete
+  // Return-to-intended-action system (persisted in sessionStorage)
+  const [intendedAction, setIntendedAction] = useState<IntendedAction | null>(() => {
+    try {
+      const raw = sessionStorage.getItem('pragatii_intended_action');
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
+  const saveIntendedAction = (action: IntendedAction | null) => {
+    setIntendedAction(action);
+    try {
+      if (action) {
+        sessionStorage.setItem('pragatii_intended_action', JSON.stringify(action));
+      } else {
+        sessionStorage.removeItem('pragatii_intended_action');
+      }
+    } catch (e) {}
+  };
+
+  // Auth Modal State for Action-Based Auth Prompts
+  const [authModalState, setAuthModalState] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    badge?: string;
+  }>({
+    isOpen: false,
+    title: 'Login Required',
+    message: 'Create an account or log in to start this challenge and track your progress.',
+    badge: 'Pragatii Skill Hub'
+  });
+
+  const openAuthModal = (opts: {
+    title?: string;
+    message?: string;
+    badge?: string;
+    intendedAction?: IntendedAction;
+  }) => {
+    if (opts.intendedAction) {
+      saveIntendedAction(opts.intendedAction);
+    }
+    setAuthModalState({
+      isOpen: true,
+      title: opts.title || 'Login Required',
+      message: opts.message || 'Create an account or log in to continue and track your progress.',
+      badge: opts.badge || 'Pragatii Skill Hub'
+    });
+  };
+
+  const closeAuthModal = () => {
+    setAuthModalState(prev => ({ ...prev, isOpen: false }));
+  };
+
+  const handleAuthModalLogin = () => {
+    closeAuthModal();
+    setAuthMode('login');
+    navigate('/login');
+  };
+
+  const handleAuthModalSignUp = () => {
+    closeAuthModal();
+    setAuthMode('signup');
+    navigate('/signup');
+  };
+
+  const fulfillIntendedAction = (action: IntendedAction | null, user: Profile) => {
+    saveIntendedAction(null);
+    if (!action) {
+      navigate('/discover');
+      return;
+    }
+
+    if (action.type === 'start_challenge') {
+      setSelectedSkillId(action.skillId);
+      navigate(`/roadmap/${action.skillId}`);
+      setIsDeadlineModalOpen(true);
+      showToast(`Welcome, ${getMainName(user.full_name)}! Let's set your challenge deadline.`);
+    } else if (action.type === 'view_dashboard') {
+      navigate('/dashboard');
+    } else if (action.type === 'view_profile') {
+      setSelectedUserId(user.id);
+      navigate(`/profile/${user.id}`);
+    } else if (action.type === 'ai_feature') {
+      setIsAiModalOpen(true);
+      showToast(`Welcome! ${action.featureName} is ready for you.`);
+      navigate('/discover');
+    } else if (action.type === 'navigate') {
+      navigate(action.path);
+    } else {
+      navigate('/discover');
+    }
+  };
+
+  // Sync selectedSkillId and selectedUserId from URL path
+  useEffect(() => {
+    const p = location.pathname;
+    if (p.startsWith('/roadmap/')) {
+      const sId = p.replace('/roadmap/', '').split('/')[0];
+      if (sId && sId !== selectedSkillId) {
+        setSelectedSkillId(sId);
+      }
+    } else if (p.startsWith('/profile/')) {
+      const uId = p.replace('/profile/', '').split('/')[0];
+      if (uId && uId !== selectedUserId) {
+        setSelectedUserId(uId);
+      }
+    }
+  }, [location.pathname, selectedSkillId, selectedUserId]);
+
+  // Enforce Guest-First & Protected Route rules once session restoration is complete
   useEffect(() => {
     if (isAuthLoading) return;
 
+    const p = location.pathname;
+
+    // 1. If Guest (Not Authenticated)
     if (!currentUser || !currentUser.id) {
-      if (location.pathname !== '/login' && location.pathname !== '/signup') {
+      if (p === '/profile-setup') {
         navigate('/login', { replace: true });
+      } else if (p === '/admin') {
+        openAuthModal({
+          title: 'Admin Access Required',
+          message: 'Please log in with an administrator account to access the Admin portal.',
+          intendedAction: { type: 'navigate', path: '/admin' }
+        });
+        navigate('/discover', { replace: true });
+      } else if (p === '/') {
+        navigate('/discover', { replace: true });
       }
-    } else if (!currentUser.profile_completed) {
-      if (location.pathname !== '/profile-setup') {
+      return;
+    }
+
+    // 2. If Authenticated User
+    if (p === '/login' || p === '/signup' || p === '/') {
+      const pending = intendedAction || (() => {
+        try {
+          const raw = sessionStorage.getItem('pragatii_intended_action');
+          return raw ? JSON.parse(raw) : null;
+        } catch (e) {
+          return null;
+        }
+      })();
+
+      if (pending && currentUser.profile_completed) {
+        fulfillIntendedAction(pending, currentUser);
+      } else if (pending && !currentUser.profile_completed) {
         navigate('/profile-setup', { replace: true });
+      } else {
+        navigate('/discover', { replace: true });
       }
     }
-  }, [isAuthLoading, currentUser, location.pathname, navigate]);
+  }, [isAuthLoading, currentUser, location.pathname]);
 
   // Active Challenge (User Progress)
   const [activeProgress, setActiveProgress] = useState<UserProgress | null>(null);
@@ -298,9 +458,6 @@ export default function App() {
     totalCompletions: 0
   });
 
-  // Selected Skill for Roadmap view
-  const [selectedSkillId, setSelectedSkillId] = useState<string>('skill-html');
-
   // Modals
   const [isDeadlineModalOpen, setIsDeadlineModalOpen] = useState(false);
   const [isAddTimeModalOpen, setIsAddTimeModalOpen] = useState(false);
@@ -310,6 +467,27 @@ export default function App() {
   const [isStepModalOpen, setIsStepModalOpen] = useState(false);
   const [isResourceModalOpen, setIsResourceModalOpen] = useState(false);
   const [isSqlModalOpen, setIsSqlModalOpen] = useState(false);
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+
+  // AI Feature Handler (Enforces Authentication for AI Features)
+  const handleOpenAiFeature = (featureName = 'AI Skill Gap Analyzer') => {
+    if (!currentUser || !currentUser.id) {
+      openAuthModal({
+        title: 'Login Required',
+        message: 'Log in to use personalized AI features.',
+        badge: 'AI Skill Intelligence',
+        intendedAction: { type: 'ai_feature', featureName }
+      });
+      return;
+    }
+    if (!currentUser.profile_completed) {
+      saveIntendedAction({ type: 'ai_feature', featureName });
+      showToast('Please complete your profile setup to generate your personalized AI skill report.');
+      navigate('/profile-setup');
+      return;
+    }
+    setIsAiModalOpen(true);
+  };
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
   const [editingField, setEditingField] = useState<Field | null>(null);
   const [editingStep, setEditingStep] = useState<RoadmapStep | null>(null);
@@ -525,7 +703,6 @@ export default function App() {
         if (!isSupabaseConfigured()) {
           if (isMounted) {
             setIsAuthLoading(false);
-            navigate('/login', { replace: true });
           }
           return;
         }
@@ -558,16 +735,33 @@ export default function App() {
           if (isMounted) {
             setCurrentUser(profile);
             await refreshAppData(uid);
-            if (!profile.profile_completed) {
-              navigate('/profile-setup', { replace: true });
-            } else if (location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/') {
+
+            const stored = sessionStorage.getItem('pragatii_intended_action');
+            if (stored) {
+              try {
+                const act = JSON.parse(stored);
+                if (act) {
+                  if (profile.profile_completed) {
+                    fulfillIntendedAction(act, profile);
+                    return;
+                  } else {
+                    navigate('/profile-setup', { replace: true });
+                    return;
+                  }
+                }
+              } catch (e) {}
+            }
+
+            if (location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/') {
               navigate('/discover', { replace: true });
             }
           }
         } else {
           if (isMounted) {
             setCurrentUser(null);
-            navigate('/login', { replace: true });
+            if (location.pathname === '/') {
+              navigate('/discover', { replace: true });
+            }
             await refreshAppData();
           }
         }
@@ -575,7 +769,9 @@ export default function App() {
         console.error('[Supabase Auth Init] Exception:', err);
         if (isMounted) {
           setCurrentUser(null);
-          navigate('/login', { replace: true });
+          if (location.pathname === '/') {
+            navigate('/discover', { replace: true });
+          }
         }
       } finally {
         if (isMounted) {
@@ -614,9 +810,26 @@ export default function App() {
         if (isMounted) {
           setCurrentUser(profile);
           await refreshAppData(uid);
-          if (!profile.profile_completed) {
-            navigate('/profile-setup');
-          } else if (location.pathname === '/login' || location.pathname === '/signup') {
+
+          const stored = sessionStorage.getItem('pragatii_intended_action');
+          if (stored) {
+            try {
+              const act = JSON.parse(stored);
+              if (act) {
+                if (profile.profile_completed) {
+                  fulfillIntendedAction(act, profile);
+                  setIsAuthLoading(false);
+                  return;
+                } else {
+                  navigate('/profile-setup');
+                  setIsAuthLoading(false);
+                  return;
+                }
+              }
+            } catch (e) {}
+          }
+
+          if (location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/') {
             navigate('/discover');
           }
           setIsAuthLoading(false);
@@ -626,7 +839,7 @@ export default function App() {
           setCurrentUser(null);
           setActiveProgress(null);
           setUserBadgeIds([]);
-          navigate('/login');
+          navigate('/discover');
           try {
             localStorage.removeItem('pragatii_active_page');
           } catch (e) {}
@@ -638,6 +851,113 @@ export default function App() {
     return () => {
       isMounted = false;
       authListener?.subscription.unsubscribe();
+    };
+  }, []);
+
+  // Real-time synchronization for Curriculum Roadmap Topics (Google Drive PDF links, notes) & Skill Resources
+  useEffect(() => {
+    // 1. Subscribe to real-time changes in roadmap topics & Google Drive links
+    const unsubRoadmap = subscribeToRoadmapRealtime((event) => {
+      if (event.type === 'UPDATE' && event.step) {
+        const updatedStep = event.step;
+        const targetSkillId = updatedStep.skill_id;
+        setRoadmapSteps(prev => {
+          const list = prev[targetSkillId] || [];
+          const exists = list.some(s => s.id === updatedStep.id);
+          const nextList = exists
+            ? list.map(s => s.id === updatedStep.id ? updatedStep : s)
+            : [...list, updatedStep].sort((a, b) => a.step_order - b.step_order);
+          const nextMap = { ...prev, [targetSkillId]: nextList };
+          saveStoredRoadmapSteps(nextMap);
+          return nextMap;
+        });
+        if (updatedStep.drive_link) {
+          showToast(`⚡ Real-time: Google Drive PDF note updated on "${updatedStep.title}"!`);
+        } else {
+          showToast(`⚡ Real-time: Topic "${updatedStep.title}" updated!`);
+        }
+      } else if (event.type === 'INSERT' && event.step) {
+        const newStep = event.step;
+        const targetSkillId = newStep.skill_id;
+        setRoadmapSteps(prev => {
+          const list = prev[targetSkillId] || [];
+          if (list.some(s => s.id === newStep.id)) return prev;
+          const nextList = [...list, newStep].sort((a, b) => a.step_order - b.step_order);
+          const nextMap = { ...prev, [targetSkillId]: nextList };
+          saveStoredRoadmapSteps(nextMap);
+          return nextMap;
+        });
+        showToast(`⚡ Real-time: New topic "${newStep.title}" added to curriculum!`);
+      } else if (event.type === 'DELETE' && event.skillId && event.stepId) {
+        setRoadmapSteps(prev => {
+          const list = prev[event.skillId!] || [];
+          const nextMap = { ...prev, [event.skillId!]: list.filter(s => s.id !== event.stepId) };
+          saveStoredRoadmapSteps(nextMap);
+          return nextMap;
+        });
+      }
+    });
+
+    // 2. Subscribe to real-time changes in skill resources & PDF materials
+    const unsubResources = subscribeToSkillResourcesRealtime((event) => {
+      if (event.type === 'UPDATE' && event.resource) {
+        const res = event.resource;
+        setSkillResources(prev => {
+          const list = prev[res.skill_id] || [];
+          const nextList = list.map(r => r.id === res.id ? res : r);
+          const nextMap = { ...prev, [res.skill_id]: nextList };
+          saveStoredSkillResources(nextMap);
+          return nextMap;
+        });
+        showToast(`⚡ Real-time: Resource "${res.title}" updated!`);
+      } else if (event.type === 'INSERT' && event.resource) {
+        const res = event.resource;
+        setSkillResources(prev => {
+          const list = prev[res.skill_id] || [];
+          if (list.some(r => r.id === res.id)) return prev;
+          const nextList = [...list, res];
+          const nextMap = { ...prev, [res.skill_id]: nextList };
+          saveStoredSkillResources(nextMap);
+          return nextMap;
+        });
+        showToast(`⚡ Real-time: New resource "${res.title}" added!`);
+      } else if (event.type === 'DELETE' && event.skillId && event.resourceId) {
+        setSkillResources(prev => {
+          const list = prev[event.skillId!] || [];
+          const nextMap = { ...prev, [event.skillId!]: list.filter(r => r.id !== event.resourceId) };
+          saveStoredSkillResources(nextMap);
+          return nextMap;
+        });
+      }
+    });
+
+    // 3. Periodic & visibility-based background re-sync
+    const syncCurriculum = () => {
+      fetchAllRoadmapSteps().then(liveSteps => {
+        if (liveSteps) setRoadmapSteps(liveSteps);
+      });
+      getAllSkillResources().then(liveRes => {
+        if (liveRes) setSkillResources(liveRes);
+      });
+    };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        syncCurriculum();
+      }
+    };
+
+    window.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('focus', syncCurriculum);
+
+    const interval = setInterval(syncCurriculum, 30000);
+
+    return () => {
+      unsubRoadmap();
+      unsubResources();
+      window.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('focus', syncCurriculum);
+      clearInterval(interval);
     };
   }, []);
 
@@ -941,8 +1261,19 @@ export default function App() {
           await refreshAppData(data.user.id);
           showToast(`Welcome back, ${userProf.full_name || 'Student'}!`);
 
+          const pending = intendedAction || (() => {
+            try {
+              const raw = sessionStorage.getItem('pragatii_intended_action');
+              return raw ? JSON.parse(raw) : null;
+            } catch (e) {
+              return null;
+            }
+          })();
+
           if (!userProf.profile_completed) {
             navigate('/profile-setup');
+          } else if (pending) {
+            fulfillIntendedAction(pending, userProf);
           } else {
             navigate('/discover');
           }
@@ -960,27 +1291,15 @@ export default function App() {
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut();
-      setCurrentUser({
-        id: '',
-        email: '',
-        full_name: 'Guest User',
-        department: '',
-        roll_number: '',
-        batch_number: '',
-        profile_completed: false,
-        points: 0,
-        current_streak: 0,
-        longest_streak: 0,
-        is_admin: false,
-        is_banned: false
-      });
+      setCurrentUser(null);
       setActiveProgress(null);
       setUserBadgeIds([]);
       setAuthEmail('');
       setAuthPassword('');
       setAuthName('');
-      navigate('/login');
-      showToast('You have been signed out.');
+      saveIntendedAction(null);
+      navigate('/discover');
+      showToast('You have been signed out. Browsing as guest.');
     } catch (err) {
       console.error('Error signing out:', err);
     }
@@ -1062,8 +1381,22 @@ export default function App() {
 
     setSetupLoading(false);
     showToast('Profile setup completed successfully!');
-    navigate('/discover');
     await refreshAppData(currentUser.id);
+
+    const pending = intendedAction || (() => {
+      try {
+        const raw = sessionStorage.getItem('pragatii_intended_action');
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) {
+        return null;
+      }
+    })();
+
+    if (pending) {
+      fulfillIntendedAction(pending, verifiedProfile);
+    } else {
+      navigate('/discover');
+    }
   };
 
   // Avatar Upload Handler with Automatic Optimization
@@ -1111,14 +1444,33 @@ export default function App() {
 
   // Start Skill Challenge
   const handleStartSkill = async (days: number, hours: number) => {
+    const targetSkill = skills.find(s => s.id === selectedSkillId) || skills[0];
+
+    if (!currentUser || !currentUser.id) {
+      openAuthModal({
+        title: 'Login Required',
+        message: 'Create an account or log in to start this challenge and track your progress.',
+        intendedAction: {
+          type: 'start_challenge',
+          skillId: targetSkill.id,
+          challengeName: targetSkill.name
+        }
+      });
+      setIsDeadlineModalOpen(false);
+      return;
+    }
+
     if (!currentUser.profile_completed) {
+      saveIntendedAction({
+        type: 'start_challenge',
+        skillId: targetSkill.id,
+        challengeName: targetSkill.name
+      });
       showToast('Please complete your profile setup before starting a skill challenge!');
       setIsDeadlineModalOpen(false);
       navigate('/profile-setup');
       return;
     }
-
-    const targetSkill = skills.find(s => s.id === selectedSkillId) || skills[0];
 
     if (currentUserCompletedSkillIds.has(targetSkill.id)) {
       showToast(`You have already completed the ${targetSkill.name} challenge and claimed its points! You cannot retake this challenge.`);
@@ -1602,7 +1954,7 @@ export default function App() {
       )}
 
       {/* Main App Navigation Bar */}
-      {currentUser && currentUser.id && (
+      {currentPage !== 'login' && currentPage !== 'signup' && (
         <Navbar 
           currentPage={currentPage}
           setCurrentPage={(page) => {
@@ -1611,10 +1963,28 @@ export default function App() {
               setSelectedFieldId(null);
               navigate('/discover');
             } else if (page === 'profile') {
-              setSelectedUserId(currentUser.id);
-              navigate(`/profile/${currentUser.id}`);
+              if (!currentUser) {
+                openAuthModal({
+                  title: 'Login Required',
+                  message: 'Log in to view your Pragati profile.',
+                  intendedAction: { type: 'view_profile' }
+                });
+              } else {
+                setSelectedUserId(currentUser.id);
+                navigate(`/profile/${currentUser.id}`);
+              }
             } else if (page === 'roadmap') {
               navigate(`/roadmap/${selectedSkillId || 'skill-html'}`);
+            } else if (page === 'dashboard') {
+              if (!currentUser) {
+                openAuthModal({
+                  title: 'Login Required',
+                  message: 'Log in to access your personal learning dashboard.',
+                  intendedAction: { type: 'view_dashboard' }
+                });
+              } else {
+                navigate('/dashboard');
+              }
             } else {
               navigate(`/${page}`);
             }
@@ -1625,10 +1995,28 @@ export default function App() {
               setSelectedFieldId(null);
               navigate('/discover');
             } else if (page === 'profile') {
-              setSelectedUserId(currentUser.id);
-              navigate(`/profile/${currentUser.id}`);
+              if (!currentUser) {
+                openAuthModal({
+                  title: 'Login Required',
+                  message: 'Log in to view your Pragati profile.',
+                  intendedAction: { type: 'view_profile' }
+                });
+              } else {
+                setSelectedUserId(currentUser.id);
+                navigate(`/profile/${currentUser.id}`);
+              }
             } else if (page === 'roadmap') {
               navigate(`/roadmap/${selectedSkillId || 'skill-html'}`);
+            } else if (page === 'dashboard') {
+              if (!currentUser) {
+                openAuthModal({
+                  title: 'Login Required',
+                  message: 'Log in to access your personal learning dashboard.',
+                  intendedAction: { type: 'view_dashboard' }
+                });
+              } else {
+                navigate('/dashboard');
+              }
             } else {
               navigate(`/${page}`);
             }
@@ -1639,11 +2027,43 @@ export default function App() {
             setSelectedUserId(userId);
             navigate(`/profile/${userId}`);
           }}
-          onOpenSendFeedback={() => setIsFeedbackModalOpen(true)}
-          onOpenMyFeedback={() => setIsMyFeedbackModalOpen(true)}
-          onOpenChangePassword={() => setIsChangePasswordModalOpen(true)}
+          onOpenSendFeedback={() => {
+            if (!currentUser) {
+              openAuthModal({
+                title: 'Login Required',
+                message: 'Log in to send feedback to the Pragati team.'
+              });
+            } else {
+              setIsFeedbackModalOpen(true);
+            }
+          }}
+          onOpenMyFeedback={() => {
+            if (!currentUser) {
+              openAuthModal({
+                title: 'Login Required',
+                message: 'Log in to view your submitted feedback.'
+              });
+            } else {
+              setIsMyFeedbackModalOpen(true);
+            }
+          }}
+          onOpenChangePassword={() => {
+            if (!currentUser) {
+              openAuthModal({
+                title: 'Login Required',
+                message: 'Log in to manage your password settings.'
+              });
+            } else {
+              setIsChangePasswordModalOpen(true);
+            }
+          }}
           theme={theme}
           onToggleTheme={toggleTheme}
+          onOpenAuthModal={(opts) => openAuthModal(opts || {})}
+          onNavigateAuth={(mode) => {
+            setAuthMode(mode);
+            navigate(`/${mode}`);
+          }}
         />
       )}
 
@@ -1664,6 +2084,7 @@ export default function App() {
           authError={authError}
           setAuthError={setAuthError}
           handleAuthSubmit={handleAuthSubmit}
+          onContinueExploring={() => navigate('/discover')}
           onForgotPassword={async (email) => {
             console.log('[Supabase Auth] Requesting resetPasswordForEmail for:', email);
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -1919,11 +2340,11 @@ export default function App() {
                     {/* Academic Stat Pill */}
                     <div className="mt-4 grid grid-cols-2 gap-2 text-center">
                       <div className="p-2.5 rounded-xl bg-purple-50/90 border border-purple-100/90 shadow-2xs">
-                        <div className="text-xs font-black text-[#6c5ce7]">⚡ {currentUser.points}</div>
+                        <div className="text-xs font-black text-[#6c5ce7]">⚡ {currentUser?.points ?? 0}</div>
                         <div className="text-[10px] text-[#64748b] font-semibold">Total Points</div>
                       </div>
                       <div className="p-2.5 rounded-xl bg-orange-50/90 border border-orange-100/90 shadow-2xs">
-                        <div className="text-xs font-black text-orange-600">🔥 {currentUser.current_streak}d</div>
+                        <div className="text-xs font-black text-orange-600">🔥 {currentUser?.current_streak ?? 0}d</div>
                         <div className="text-[10px] text-[#64748b] font-semibold">Active Streak</div>
                       </div>
                     </div>
@@ -2165,25 +2586,25 @@ export default function App() {
             {/* Real Dynamic Hero Banner */}
             <div className="hero-banner shadow-lg">
               <div className="hero-text">
-                <h1>Level up your skills, {getMainName(currentUser.full_name)}.</h1>
+                <h1>Level up your skills{currentUser ? `, ${getMainName(currentUser.full_name)}` : ''}.</h1>
                 <p>Pick a roadmap, challenge your limits, beat the deadline and earn points to rank #1 in your batch.</p>
               </div>
               <HeroProgressCore3D 
-                points={currentUser.points}
-                streak={currentUser.current_streak}
-                batchRank={userBatchRank}
+                points={currentUser?.points ?? 0}
+                streak={currentUser?.current_streak ?? 0}
+                batchRank={userBatchRank || '—'}
               />
               <div className="hero-stats">
                 <div className="stat">
-                  <b>{currentUser.points}</b>
+                  <b>{currentUser?.points ?? 0}</b>
                   <span>points</span>
                 </div>
                 <div className="stat">
-                  <b>{currentUser.current_streak}</b>
+                  <b>{currentUser?.current_streak ?? 0}</b>
                   <span>day streak</span>
                 </div>
                 <div className="stat">
-                  <b>{userBatchRank}</b>
+                  <b>{userBatchRank || '—'}</b>
                   <span>in batch</span>
                 </div>
               </div>
@@ -2251,6 +2672,46 @@ export default function App() {
                     <h3>Browse by Skill</h3>
                     <p>Pick a specific technology roadmap like React, Node.js, Python, Flutter &amp; more.</p>
                   </div>
+                </div>
+
+                {/* AI Skill Gap Analyzer & Personalized Roadmap Banner */}
+                <div 
+                  onClick={() => handleOpenAiFeature('AI Skill Gap Analyzer')}
+                  className="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-purple-50 via-indigo-50 to-purple-50 dark:from-[#161a2e] dark:via-[#1e233d] dark:to-[#161a2e] border-2 border-indigo-100 dark:border-purple-800/40 hover:border-[#6c5ce7] dark:hover:border-[#6c5ce7] shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group"
+                  id="banner-ai-skill-analyzer"
+                >
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#6c5ce7] to-[#8075ff] text-white flex items-center justify-center text-lg shadow-md shadow-[#6c5ce7]/25 shrink-0 group-hover:scale-105 group-hover:rotate-3 transition-transform">
+                      <Sparkles className="w-5 h-5 fill-white/20" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm sm:text-base font-black text-[#22252E] dark:text-white group-hover:text-[#6c5ce7] dark:group-hover:text-purple-300 transition-colors">
+                          AI Skill Gap Analyzer &amp; Personalized Roadmap
+                        </span>
+                        <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#6c5ce7]/10 dark:bg-purple-900/50 text-[#6c5ce7] dark:text-purple-300 border border-[#6c5ce7]/20 uppercase">
+                          AI Mentor
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 leading-relaxed">
+                        Analyze your completed milestones, detect curriculum gaps, and get instant personalized AI sprint recommendations.
+                      </p>
+                    </div>
+                  </div>
+
+                  <button 
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenAiFeature('AI Skill Gap Analyzer');
+                    }}
+                    className="px-4 py-2 rounded-xl bg-[#6c5ce7] hover:bg-[#5b4bc4] text-white text-xs font-black shadow-md shadow-[#6c5ce7]/30 transition-all flex items-center gap-1.5 shrink-0 select-none cursor-pointer w-full sm:w-auto justify-center"
+                    id="btn-run-ai-analyzer"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Run AI Gap Analysis</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
 
                 {/* Search Bar (Line 1) */}
@@ -2688,7 +3149,31 @@ export default function App() {
                     </button>
                   ) : (
                     <button 
-                      onClick={() => setIsDeadlineModalOpen(true)}
+                      onClick={() => {
+                        if (!currentUser || !currentUser.id) {
+                          openAuthModal({
+                            title: 'Login Required',
+                            message: 'Create an account or log in to start this challenge and track your progress.',
+                            intendedAction: {
+                              type: 'start_challenge',
+                              skillId: currentSkill.id,
+                              challengeName: currentSkill.name
+                            }
+                          });
+                          return;
+                        }
+                        if (!currentUser.profile_completed) {
+                          saveIntendedAction({
+                            type: 'start_challenge',
+                            skillId: currentSkill.id,
+                            challengeName: currentSkill.name
+                          });
+                          showToast('Please complete your profile setup before starting a skill challenge!');
+                          navigate('/profile-setup');
+                          return;
+                        }
+                        setIsDeadlineModalOpen(true);
+                      }}
                       className="btn-challenge-cta w-full sm:w-auto group hover:shadow-lg transition-all"
                       id="btn-start-challenge-roadmap"
                     >
@@ -2749,9 +3234,15 @@ export default function App() {
                         </p>
                       </div>
                     </div>
-                    <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#F3F1EC] dark:bg-purple-950/60 text-[#22252E] dark:text-purple-300 border border-[#E8E4DC] dark:border-purple-800/50 shadow-2xs whitespace-nowrap">
-                      {currentSkillSteps.length} Steps
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/40 shadow-2xs" title="Topic PDF notes and curriculum updates sync in real time across all users">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span>Live Sync</span>
+                      </span>
+                      <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#F3F1EC] dark:bg-purple-950/60 text-[#22252E] dark:text-purple-300 border border-[#E8E4DC] dark:border-purple-800/50 shadow-2xs whitespace-nowrap">
+                        {currentSkillSteps.length} Steps
+                      </span>
+                    </div>
                   </div>
 
                   {currentSkillSteps.length === 0 ? (
@@ -2858,7 +3349,66 @@ export default function App() {
       {/* ========================================================================= */}
       {/* PAGE 6 — DASHBOARD / ACTIVE CHALLENGE */}
       {/* ========================================================================= */}
-      {currentPage === 'dashboard' && (
+      {currentPage === 'dashboard' && (!currentUser ? (
+        <div className="page" id="page-dashboard-guest">
+          <div className="content w-full max-w-xl mx-auto py-12 px-4">
+            <div className="bg-white dark:bg-[#141726] border-2 border-indigo-100 dark:border-[#23273e] text-slate-900 dark:text-white rounded-3xl p-8 sm:p-10 shadow-xl flex flex-col items-center text-center gap-6">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#6c5ce7]/20 via-[#6c5ce7]/10 to-indigo-500/20 border border-[#6c5ce7]/30 flex items-center justify-center text-[#6c5ce7] dark:text-purple-400">
+                <LayoutDashboard className="w-8 h-8" />
+              </div>
+              <div>
+                <span className="text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-indigo-50 dark:bg-purple-950/60 text-[#6c5ce7] dark:text-purple-300 border border-indigo-100 dark:border-purple-800/40 mb-3 inline-block shadow-2xs">
+                  Authentication Required
+                </span>
+                <h3 className="text-2xl font-black text-[#22252E] dark:text-white tracking-tight">
+                  Dashboard Access
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-300 font-medium mt-2 leading-relaxed">
+                  Log in to access your personal learning dashboard.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
+                <button
+                  type="button"
+                  onClick={() => {
+                    saveIntendedAction({ type: 'view_dashboard' });
+                    setAuthMode('login');
+                    navigate('/login');
+                  }}
+                  className="w-full sm:flex-1 py-3 px-5 rounded-2xl bg-[#F3F1EC] dark:bg-[#1c2035] hover:bg-[#eae7e0] dark:hover:bg-[#252a45] text-slate-800 dark:text-white border border-[#E8E4DC] dark:border-[#2a2f4c] font-extrabold text-sm tracking-wide transition-all cursor-pointer flex items-center justify-center gap-2"
+                  id="dashboard-guest-login-btn"
+                >
+                  <LogIn className="w-4 h-4 text-[#6c5ce7]" />
+                  <span>Log In</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    saveIntendedAction({ type: 'view_dashboard' });
+                    setAuthMode('signup');
+                    navigate('/signup');
+                  }}
+                  className="w-full sm:flex-1 py-3 px-5 rounded-2xl bg-gradient-to-r from-[#6c5ce7] via-[#7d6dfa] to-[#8075ff] hover:from-[#5b4bc4] hover:to-[#6c5ce7] text-white font-black text-sm tracking-wide shadow-lg shadow-[#6c5ce7]/30 transition-all cursor-pointer flex items-center justify-center gap-2"
+                  id="dashboard-guest-signup-btn"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>Sign Up</span>
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => navigate('/discover')}
+                className="text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <Compass className="w-4 h-4" />
+                <span>Continue Exploring</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
         <div className="page" id="page-dashboard">
           <div className="page-tag">PAGE 6 — DASHBOARD / ACTIVE CHALLENGE</div>
 
@@ -3195,13 +3745,13 @@ export default function App() {
 
           </div>
         </div>
-      )}
+      ))}
 
       {/* ========================================================================= */}
       {/* PAGE 7 — LEADERBOARD */}
       {/* ========================================================================= */}
       {currentPage === 'leaderboard' && (() => {
-        const userRank = filteredLeaderboardProfiles.findIndex(p => p.id === currentUser.id) + 1;
+        const userRank = currentUser ? filteredLeaderboardProfiles.findIndex(p => p.id === currentUser.id) + 1 : 0;
         const batchTabs = [
           { id: 'All departments', label: 'All Students' },
         ];
@@ -3229,26 +3779,46 @@ export default function App() {
                 </div>
 
                 {/* User's quick rank status */}
-                <div className="lb-user-status-card flex items-center gap-2.5 bg-[#f8fafc] border border-[#e2e8f0] px-4 py-2.5 rounded-xl self-stretch sm:self-auto justify-between sm:justify-start shadow-2xs">
-                  <div className="text-left">
-                    <div className="text-[10px] uppercase font-bold text-[#8a8ca3] tracking-wider">Your Position</div>
-                    <div className="text-sm font-black text-[#1a1c2e] flex items-center gap-1.5">
-                      {userRank > 0 ? (
-                        <span className="text-[#6c5ce7] font-extrabold">#{userRank} on Board</span>
-                      ) : (
-                        <span className="text-[#8a8ca3]">Unranked</span>
-                      )}
+                {currentUser ? (
+                  <div className="lb-user-status-card flex items-center gap-2.5 bg-[#f8fafc] border border-[#e2e8f0] px-4 py-2.5 rounded-xl self-stretch sm:self-auto justify-between sm:justify-start shadow-2xs">
+                    <div className="text-left">
+                      <div className="text-[10px] uppercase font-bold text-[#8a8ca3] tracking-wider">Your Position</div>
+                      <div className="text-sm font-black text-[#1a1c2e] flex items-center gap-1.5">
+                        {userRank > 0 ? (
+                          <span className="text-[#6c5ce7] font-extrabold">#{userRank} on Board</span>
+                        ) : (
+                          <span className="text-[#8a8ca3]">Unranked</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="w-[1px] h-7 bg-[#e2e8f0] mx-1" />
+                    <div className="text-right sm:text-left">
+                      <div className="text-[10px] uppercase font-bold text-[#8a8ca3] tracking-wider">Total Score</div>
+                      <div className="text-sm font-black text-[#6c5ce7] flex items-center gap-1">
+                        <Sparkles className="w-3.5 h-3.5 text-[#6c5ce7] fill-[#6c5ce7]/20" />
+                        {currentUser.points} pts
+                      </div>
                     </div>
                   </div>
-                  <div className="w-[1px] h-7 bg-[#e2e8f0] mx-1" />
-                  <div className="text-right sm:text-left">
-                    <div className="text-[10px] uppercase font-bold text-[#8a8ca3] tracking-wider">Total Score</div>
-                    <div className="text-sm font-black text-[#6c5ce7] flex items-center gap-1">
-                      <Sparkles className="w-3.5 h-3.5 text-[#6c5ce7] fill-[#6c5ce7]/20" />
-                      {currentUser.points} pts
+                ) : (
+                  <div className="lb-user-status-card flex items-center gap-3 bg-[#f8fafc] border border-[#e2e8f0] px-4 py-2 rounded-xl self-stretch sm:self-auto justify-between sm:justify-start shadow-2xs">
+                    <div className="text-left">
+                      <div className="text-[10px] uppercase font-bold text-[#8a8ca3] tracking-wider">Compete &amp; Rank</div>
+                      <div className="text-xs text-slate-700 font-bold">Log in to track your rank</div>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => openAuthModal({
+                        title: 'Login Required',
+                        message: 'Log in or sign up to compete on the leaderboard and rank among your peers.'
+                      })}
+                      className="px-3 py-1.5 rounded-lg bg-[#6c5ce7] text-white text-xs font-bold shadow-xs hover:bg-[#5b4bc4] transition-all cursor-pointer"
+                      id="leaderboard-guest-login-btn"
+                    >
+                      Log In
+                    </button>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Filter Tabs */}
@@ -3287,7 +3857,7 @@ export default function App() {
                           {top2.avatar_url ? (
                             <img src={top2.avatar_url} alt={top2.full_name} className="w-full h-full object-cover" />
                           ) : (
-                            top2.id === currentUser.id ? 'YO' : top2.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)
+                            currentUser && top2.id === currentUser.id ? 'YO' : top2.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)
                           )}
                         </div>
                       </div>
@@ -3298,7 +3868,7 @@ export default function App() {
                       </div>
 
                       <div className="pname">
-                        {top2.id === currentUser.id ? `${top2.full_name} (You)` : top2.full_name}
+                        {currentUser && top2.id === currentUser.id ? `${top2.full_name} (You)` : top2.full_name}
                       </div>
                       <div className="pmeta">
                         {top2.department} · {top2.batch_number}
@@ -3322,7 +3892,7 @@ export default function App() {
                           {top1.avatar_url ? (
                             <img src={top1.avatar_url} alt={top1.full_name} className="w-full h-full object-cover" />
                           ) : (
-                            top1.id === currentUser.id ? 'YO' : top1.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)
+                            currentUser && top1.id === currentUser.id ? 'YO' : top1.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)
                           )}
                         </div>
                       </div>
@@ -3333,7 +3903,7 @@ export default function App() {
                       </div>
 
                       <div className="pname">
-                        {top1.id === currentUser.id ? `${top1.full_name} (You)` : top1.full_name}
+                        {currentUser && top1.id === currentUser.id ? `${top1.full_name} (You)` : top1.full_name}
                       </div>
                       <div className="pmeta">
                         {top1.department} · {top1.batch_number}
@@ -3357,7 +3927,7 @@ export default function App() {
                           {top3.avatar_url ? (
                             <img src={top3.avatar_url} alt={top3.full_name} className="w-full h-full object-cover" />
                           ) : (
-                            top3.id === currentUser.id ? 'YO' : top3.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)
+                            currentUser && top3.id === currentUser.id ? 'YO' : top3.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)
                           )}
                         </div>
                       </div>
@@ -3368,7 +3938,7 @@ export default function App() {
                       </div>
 
                       <div className="pname">
-                        {top3.id === currentUser.id ? `${top3.full_name} (You)` : top3.full_name}
+                        {currentUser && top3.id === currentUser.id ? `${top3.full_name} (You)` : top3.full_name}
                       </div>
                       <div className="pmeta">
                         {top3.department} · {top3.batch_number}
@@ -3411,7 +3981,7 @@ export default function App() {
                   {/* Table Rows */}
                   {filteredLeaderboardProfiles.map((p, idx) => {
                     const rank = idx + 1;
-                    const isYou = p.id === currentUser.id;
+                    const isYou = currentUser ? p.id === currentUser.id : false;
                     const initials = isYou ? 'YO' : p.full_name.split(' ').map(n => n[0]).join('').slice(0, 2);
 
                     return (
@@ -3492,6 +4062,69 @@ export default function App() {
       {/* PAGE 8 — PUBLIC PROFILE */}
       {/* ========================================================================= */}
       {currentPage === 'profile' && (() => {
+        if (!targetProfile) {
+          return (
+            <div className="page" id="page-profile-guest">
+              <div className="content w-full max-w-xl mx-auto py-12 px-4">
+                <div className="bg-white dark:bg-[#141726] border-2 border-indigo-100 dark:border-[#23273e] text-slate-900 dark:text-white rounded-3xl p-8 sm:p-10 shadow-xl flex flex-col items-center text-center gap-6">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#6c5ce7]/20 via-[#6c5ce7]/10 to-indigo-500/20 border border-[#6c5ce7]/30 flex items-center justify-center text-[#6c5ce7] dark:text-purple-400">
+                    <User className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-indigo-50 dark:bg-purple-950/60 text-[#6c5ce7] dark:text-purple-300 border border-indigo-100 dark:border-purple-800/40 mb-3 inline-block shadow-2xs">
+                      Authentication Required
+                    </span>
+                    <h3 className="text-2xl font-black text-[#22252E] dark:text-white tracking-tight">
+                      Log in to view your Pragati profile
+                    </h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-300 font-medium mt-2 leading-relaxed">
+                      Access your verified credentials, achievements, completed roadmap milestones, and batch rankings.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        saveIntendedAction({ type: 'view_profile' });
+                        setAuthMode('login');
+                        navigate('/login');
+                      }}
+                      className="w-full sm:flex-1 py-3 px-5 rounded-2xl bg-[#F3F1EC] dark:bg-[#1c2035] hover:bg-[#eae7e0] dark:hover:bg-[#252a45] text-slate-800 dark:text-white border border-[#E8E4DC] dark:border-[#2a2f4c] font-extrabold text-sm tracking-wide transition-all cursor-pointer flex items-center justify-center gap-2"
+                      id="profile-guest-login-btn"
+                    >
+                      <LogIn className="w-4 h-4 text-[#6c5ce7]" />
+                      <span>Log In</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        saveIntendedAction({ type: 'view_profile' });
+                        setAuthMode('signup');
+                        navigate('/signup');
+                      }}
+                      className="w-full sm:flex-1 py-3 px-5 rounded-2xl bg-gradient-to-r from-[#6c5ce7] via-[#7d6dfa] to-[#8075ff] hover:from-[#5b4bc4] hover:to-[#6c5ce7] text-white font-black text-sm tracking-wide shadow-lg shadow-[#6c5ce7]/30 transition-all cursor-pointer flex items-center justify-center gap-2"
+                      id="profile-guest-signup-btn"
+                    >
+                      <UserPlus className="w-4 h-4" />
+                      <span>Sign Up</span>
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => navigate('/discover')}
+                    className="text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Compass className="w-4 h-4" />
+                    <span>Continue Exploring</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
         const isOwn = targetProfile.id === currentUser?.id;
         
         // Dynamically compute targetCompletedSkills ensuring points align with completed skills
@@ -3888,18 +4521,47 @@ export default function App() {
         <div className="page" id="page-admin">
           <div className="page-tag">PAGE 9 — ADMIN PANEL</div>
 
-          {!currentUser.is_admin ? (
+          {!currentUser ? (
+            <div className="content py-16 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400 mx-auto flex items-center justify-center mb-4">
+                <Shield className="w-8 h-8" />
+              </div>
+              <h2 className="text-2xl font-black text-[#1a1c2e] dark:text-white mb-2">Admin Authentication Required</h2>
+              <p className="text-[#8a8ca3] text-sm max-w-md mx-auto mb-6">
+                Please log in with an administrator account to access platform management and student controls.
+              </p>
+              <div className="flex items-center justify-center gap-3">
+                <button
+                  onClick={() => {
+                    saveIntendedAction({ type: 'navigate', path: '/admin' });
+                    setAuthMode('login');
+                    navigate('/login');
+                  }}
+                  className="px-6 py-2.5 bg-[#6c5ce7] hover:opacity-90 text-white font-bold text-sm rounded-xl transition-all shadow-md shadow-[#6c5ce7]/20 cursor-pointer"
+                  id="admin-guest-login-btn"
+                >
+                  Log In
+                </button>
+                <button
+                  onClick={() => navigate('/discover')}
+                  className="px-6 py-2.5 bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-white font-bold text-sm rounded-xl transition-all cursor-pointer"
+                >
+                  Return to Home
+                </button>
+              </div>
+            </div>
+          ) : !currentUser.is_admin ? (
             <div className="content py-16 text-center">
               <div className="w-16 h-16 rounded-2xl bg-red-500/10 text-red-500 mx-auto flex items-center justify-center mb-4">
                 <Shield className="w-8 h-8" />
               </div>
-              <h2 className="text-2xl font-black text-[#1a1c2e] mb-2">Admin Access Restricted</h2>
+              <h2 className="text-2xl font-black text-[#1a1c2e] dark:text-white mb-2">Admin Access Restricted</h2>
               <p className="text-[#8a8ca3] text-sm max-w-md mx-auto mb-6">
                 Only the designated system administrator (<span className="text-[#6c5ce7] font-semibold">{ADMIN_EMAIL}</span>) has permission to manage platform skills, tracks, and student accounts.
               </p>
               <button
                 onClick={() => navigate('/discover')}
-                className="px-6 py-2.5 bg-[#6c5ce7] hover:opacity-90 text-white font-bold text-sm rounded-xl transition-all shadow-md shadow-[#6c5ce7]/20"
+                className="px-6 py-2.5 bg-[#6c5ce7] hover:opacity-90 text-white font-bold text-sm rounded-xl transition-all shadow-md shadow-[#6c5ce7]/20 cursor-pointer"
               >
                 Return to Home
               </button>
@@ -4526,6 +5188,19 @@ export default function App() {
         itemTitle={deleteConfirmState.itemTitle}
         message={deleteConfirmState.message}
         confirmLabel={deleteConfirmState.confirmLabel}
+      />
+
+      {/* AI Skill Gap Analyzer & Career Mentor Modal */}
+      <AiSkillGapModal
+        isOpen={isAiModalOpen}
+        onClose={() => setIsAiModalOpen(false)}
+        currentUser={currentUser}
+        completedProgress={currentUserCompletedProgress}
+        allSkills={skills}
+        onSelectSkill={(skillId) => {
+          setSelectedSkillId(skillId);
+          navigate(`/roadmap/${skillId}`);
+        }}
       />
 
     </div>

@@ -273,9 +273,15 @@ export const AdminRoadmapSection: React.FC<AdminRoadmapSectionProps> = ({
                   </p>
                 </div>
               </div>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/40 shadow-2xs" title="Changes to Drive PDF notes and topic steps broadcast live to all users">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Real-time Sync Active</span>
+              </span>
               <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-purple-50 dark:bg-purple-950/60 text-[#6c5ce7] dark:text-purple-300 border border-purple-100 dark:border-purple-800/40">
                 {currentSteps.length} {currentSteps.length === 1 ? 'Step' : 'Steps'}
               </span>
+            </div>
             </div>
 
             {/* List */}

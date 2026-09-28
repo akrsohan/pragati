@@ -17,6 +17,7 @@ interface LandingPageProps {
   handleAuthSubmit: (e: React.FormEvent) => void;
   onForgotPassword?: (email: string) => Promise<void>;
   onSendMagicLink?: (email: string) => Promise<void>;
+  onContinueExploring?: () => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({
@@ -33,7 +34,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   setAuthError,
   handleAuthSubmit,
   onForgotPassword,
-  onSendMagicLink
+  onSendMagicLink,
+  onContinueExploring
 }) => {
   const [formMode, setFormMode] = useState<'login' | 'signup' | 'forgot'>(authMode);
   const [isResetSent, setIsResetSent] = useState(false);
@@ -499,6 +501,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <div className="switch">
               New here? <span onClick={() => switchMode('signup')}>Create an account</span>
             </div>
+
+            {onContinueExploring && (
+              <div className="mt-3.5 pt-3 border-t border-white/5 text-center">
+                <button
+                  type="button"
+                  onClick={onContinueExploring}
+                  className="text-xs font-semibold text-slate-400 hover:text-cyan-300 transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                  id="landing-explore-guest-login-btn"
+                >
+                  <span>Explore Pragati without logging in</span>
+                  <span>→</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* SIGNUP PANEL */}
@@ -586,6 +602,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <div className="switch">
               Already have an account? <span onClick={() => switchMode('login')}>Log in</span>
             </div>
+
+            {onContinueExploring && (
+              <div className="mt-3.5 pt-3 border-t border-white/5 text-center">
+                <button
+                  type="button"
+                  onClick={onContinueExploring}
+                  className="text-xs font-semibold text-slate-400 hover:text-cyan-300 transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                  id="landing-explore-guest-signup-btn"
+                >
+                  <span>Explore Pragati without logging in</span>
+                  <span>→</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* FORGOT PASSWORD PANEL */}
@@ -644,6 +674,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <div className="switch">
               Remember your password? <span onClick={() => switchMode('login')}>Back to Log in</span>
             </div>
+
+            {onContinueExploring && (
+              <div className="mt-3.5 pt-3 border-t border-white/5 text-center">
+                <button
+                  type="button"
+                  onClick={onContinueExploring}
+                  className="text-xs font-semibold text-slate-400 hover:text-cyan-300 transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                  id="landing-explore-guest-forgot-btn"
+                >
+                  <span>Explore Pragati without logging in</span>
+                  <span>→</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

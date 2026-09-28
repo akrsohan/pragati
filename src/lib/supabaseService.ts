@@ -1408,12 +1408,22 @@ export async function addSkillResource(resData: Omit<SkillResource, 'id'>): Prom
         list[idx] = { ...newItem, id: data.id };
         saveStoredSkillResources(localMap);
       }
+      broadcastSkillResourceRealtime({
+        type: 'INSERT',
+        skillId: newItem.skill_id,
+        resource: { ...newItem, id: data.id }
+      });
       return { ...newItem, id: data.id };
     }
   } catch (err: any) {
     console.error('[addSkillResource exception]:', err?.message || err);
   }
 
+  broadcastSkillResourceRealtime({
+    type: 'INSERT',
+    skillId: newItem.skill_id,
+    resource: newItem
+  });
   return newItem;
 }
 
@@ -1474,10 +1484,22 @@ export async function updateSkillResourceInDb(resData: SkillResource): Promise<S
 
     if (error) {
       console.error('[Supabase updateSkillResource error]:', error.message);
+    } else {
+      broadcastSkillResourceRealtime({
+        type: 'UPDATE',
+        skillId: updatedItem.skill_id,
+        resource: updatedItem
+      });
     }
   } catch (err: any) {
     console.error('[updateSkillResource exception]:', err?.message || err);
   }
+
+  broadcastSkillResourceRealtime({
+    type: 'UPDATE',
+    skillId: updatedItem.skill_id,
+    resource: updatedItem
+  });
 
   return updatedItem;
 }
@@ -1531,6 +1553,12 @@ export async function deleteSkillResource(
       return { success: false, error: error.message };
     }
 
+    broadcastSkillResourceRealtime({
+      type: 'DELETE',
+      skillId: targetSkillId,
+      resourceId: targetId
+    });
+
     return { success: true };
   } catch (err: any) {
     console.error('[Supabase deleteSkillResource exception]:', err);
@@ -1579,9 +1607,188 @@ export async function uploadResourcePdf(file: File, skillId: string): Promise<{ 
 
 /**
  * =========================================================================
- * ROADMAP STEPS / CURRICULUM SYNC
+ * ROADMAP STEPS / CURRICULUM SYNC & REALTIME
  * =========================================================================
  */
+
+export type RoadmapRealtimeEvent = {
+  type: 'INSERT' | 'UPDATE' | 'DELETE';
+  skillId?: string;
+  step?: RoadmapStep;
+  stepId?: string;
+};
+
+export type ResourceRealtimeEvent = {
+  type: 'INSERT' | 'UPDATE' | 'DELETE';
+  skillId?: string;
+  resource?: SkillResource;
+  resourceId?: string;
+};
+
+// Global broadcast channel for instant multi-client curriculum sync
+let roadmapBroadcastChannel: ReturnType<typeof supabase.channel> | null = null;
+let resourceBroadcastChannel: ReturnType<typeof supabase.channel> | null = null;
+
+export function broadcastRoadmapRealtime(event: RoadmapRealtimeEvent) {
+  try {
+    if (!roadmapBroadcastChannel) {
+      roadmapBroadcastChannel = supabase.channel('pragati_curriculum_realtime');
+      roadmapBroadcastChannel.subscribe();
+    }
+    roadmapBroadcastChannel.send({
+      type: 'broadcast',
+      event: 'roadmap_change',
+      payload: event
+    });
+  } catch (err) {
+    console.warn('[Realtime broadcast exception]:', err);
+  }
+}
+
+export function broadcastSkillResourceRealtime(event: ResourceRealtimeEvent) {
+  try {
+    if (!resourceBroadcastChannel) {
+      resourceBroadcastChannel = supabase.channel('pragati_resources_realtime');
+      resourceBroadcastChannel.subscribe();
+    }
+    resourceBroadcastChannel.send({
+      type: 'broadcast',
+      event: 'resource_change',
+      payload: event
+    });
+  } catch (err) {
+    console.warn('[Resource broadcast exception]:', err);
+  }
+}
+
+/**
+ * Subscribe to Realtime Curriculum Updates
+ * Dual-channel: Listens to instant client broadcasts AND Postgres CDC changes
+ */
+export function subscribeToRoadmapRealtime(
+  onEvent: (event: RoadmapRealtimeEvent) => void
+): () => void {
+  try {
+    const channelId = `pragati_roadmap_sub_${Math.random().toString(36).substring(2, 8)}`;
+    const channel = supabase.channel(channelId);
+
+    channel
+      // 1. Instant client-to-client broadcast
+      .on('broadcast', { event: 'roadmap_change' }, ({ payload }) => {
+        if (payload) {
+          onEvent(payload);
+        }
+      })
+      // 2. Direct Postgres database change detection
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'roadmap_steps' },
+        (payload: any) => {
+          const { eventType, new: newRow, old: oldRow } = payload;
+          if (eventType === 'DELETE' && oldRow?.id) {
+            onEvent({
+              type: 'DELETE',
+              skillId: oldRow.skill_id,
+              stepId: oldRow.id
+            });
+          } else if ((eventType === 'INSERT' || eventType === 'UPDATE') && newRow?.id) {
+            let detailsObj: any = null;
+            if (newRow.details) {
+              try {
+                detailsObj = typeof newRow.details === 'string' ? JSON.parse(newRow.details) : newRow.details;
+              } catch (e) {
+                if (typeof newRow.details === 'string' && (newRow.details.includes('drive.google.com') || newRow.details.startsWith('http'))) {
+                  detailsObj = { drive_link: newRow.details };
+                }
+              }
+            }
+
+            const step: RoadmapStep = {
+              id: newRow.id,
+              skill_id: newRow.skill_id,
+              title: newRow.title,
+              description: newRow.description || '',
+              step_order: Number(newRow.step_order) || 1,
+              resource_link: newRow.resource_link || detailsObj?.resource_link || detailsObj?.resourceLink || undefined,
+              drive_link: newRow.drive_link || detailsObj?.drive_link || detailsObj?.driveLink || undefined,
+              created_at: newRow.created_at
+            };
+
+            onEvent({
+              type: eventType as 'INSERT' | 'UPDATE',
+              skillId: step.skill_id,
+              step
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  } catch (err) {
+    console.error('[subscribeToRoadmapRealtime error]:', err);
+    return () => {};
+  }
+}
+
+/**
+ * Subscribe to Realtime Skill Resources Updates
+ */
+export function subscribeToSkillResourcesRealtime(
+  onEvent: (event: ResourceRealtimeEvent) => void
+): () => void {
+  try {
+    const channelId = `pragati_resources_sub_${Math.random().toString(36).substring(2, 8)}`;
+    const channel = supabase.channel(channelId);
+
+    channel
+      .on('broadcast', { event: 'resource_change' }, ({ payload }) => {
+        if (payload) {
+          onEvent(payload);
+        }
+      })
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'skill_resources' },
+        (payload: any) => {
+          const { eventType, new: newRow, old: oldRow } = payload;
+          if (eventType === 'DELETE' && oldRow?.id) {
+            onEvent({
+              type: 'DELETE',
+              skillId: oldRow.skill_id,
+              resourceId: oldRow.id
+            });
+          } else if ((eventType === 'INSERT' || eventType === 'UPDATE') && newRow?.id) {
+            const res: SkillResource = {
+              id: newRow.id,
+              skill_id: newRow.skill_id,
+              title: newRow.title,
+              type: newRow.type,
+              format: newRow.format,
+              url: newRow.url,
+              description: newRow.description,
+              created_at: newRow.created_at
+            };
+            onEvent({
+              type: eventType as 'INSERT' | 'UPDATE',
+              skillId: res.skill_id,
+              resource: res
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  } catch (err) {
+    console.error('[subscribeToSkillResourcesRealtime error]:', err);
+    return () => {};
+  }
+}
 
 export async function fetchAllRoadmapSteps(): Promise<Record<string, RoadmapStep[]>> {
   const localMap = getStoredRoadmapSteps();
@@ -1594,17 +1801,40 @@ export async function fetchAllRoadmapSteps(): Promise<Record<string, RoadmapStep
 
     if (!error && data && Array.isArray(data)) {
       const dbMap: Record<string, RoadmapStep[]> = {};
+      const pendingBackfills: RoadmapStep[] = [];
+
       data.forEach((row: any) => {
+        let detailsObj: any = null;
+        if (row.details) {
+          try {
+            detailsObj = typeof row.details === 'string' ? JSON.parse(row.details) : row.details;
+          } catch (e) {
+            if (typeof row.details === 'string' && (row.details.includes('drive.google.com') || row.details.startsWith('http'))) {
+              detailsObj = { drive_link: row.details };
+            }
+          }
+        }
+
+        const localStep = localMap[row.skill_id]?.find(s => s.id === row.id);
+        const resolvedDrive = row.drive_link || detailsObj?.drive_link || detailsObj?.driveLink || localStep?.drive_link || undefined;
+        const resolvedResource = row.resource_link || detailsObj?.resource_link || detailsObj?.resourceLink || localStep?.resource_link || undefined;
+
         const item: RoadmapStep = {
           id: row.id,
           skill_id: row.skill_id,
           title: row.title,
           description: row.description || '',
           step_order: Number(row.step_order) || 1,
-          resource_link: row.resource_link || undefined,
-          drive_link: row.drive_link || localMap[row.skill_id]?.find(s => s.id === row.id)?.drive_link || undefined,
+          resource_link: resolvedResource,
+          drive_link: resolvedDrive,
           created_at: row.created_at
         };
+
+        // If local client had a drive_link that wasn't saved in Supabase yet, queue for cloud backfill
+        if ((!detailsObj || !detailsObj.drive_link) && localStep?.drive_link) {
+          pendingBackfills.push(item);
+        }
+
         if (!dbMap[item.skill_id]) {
           dbMap[item.skill_id] = [];
         }
@@ -1617,6 +1847,14 @@ export async function fetchAllRoadmapSteps(): Promise<Record<string, RoadmapStep
       });
 
       saveStoredRoadmapSteps(dbMap);
+
+      // Backfill any unsaved local drive links to Supabase in background
+      if (pendingBackfills.length > 0) {
+        Promise.all(
+          pendingBackfills.map(step => updateRoadmapStepInDb(step).catch(() => null))
+        ).catch(() => {});
+      }
+
       return dbMap;
     }
   } catch (err) {}
@@ -1646,27 +1884,45 @@ export async function addRoadmapStepToDb(stepData: Omit<RoadmapStep, 'id'>): Pro
   saveStoredRoadmapSteps(localMap);
 
   try {
-    const payload: Record<string, any> = {
+    const detailsPayload = JSON.stringify({
+      drive_link: newStep.drive_link || null,
+      resource_link: newStep.resource_link || null,
+      synced_at: new Date().toISOString()
+    });
+
+    const fullPayload: Record<string, any> = {
       skill_id: newStep.skill_id,
       title: newStep.title,
       description: newStep.description,
       step_order: newStep.step_order,
+      details: detailsPayload,
       resource_link: newStep.resource_link,
       drive_link: newStep.drive_link
     };
 
     let { data, error } = await supabase
       .from('roadmap_steps')
-      .insert(payload)
+      .insert(fullPayload)
       .select('*')
       .maybeSingle();
 
-    if (error && (error.message?.includes('drive_link') || error.code === '42703')) {
-      // Column drive_link doesn't exist yet in Supabase table; retry without it
-      delete payload.drive_link;
+    if (error && (
+      error.code === 'PGRST204' || 
+      error.code === '42703' || 
+      error.message?.includes('drive_link') || 
+      error.message?.includes('resource_link')
+    )) {
+      // Direct columns drive_link / resource_link not in table schema; safe insert with details JSON column
+      const safePayload = {
+        skill_id: newStep.skill_id,
+        title: newStep.title,
+        description: newStep.description,
+        step_order: newStep.step_order,
+        details: detailsPayload
+      };
       const retryRes = await supabase
         .from('roadmap_steps')
-        .insert(payload)
+        .insert(safePayload)
         .select('*')
         .maybeSingle();
       data = retryRes.data;
@@ -1681,9 +1937,24 @@ export async function addRoadmapStepToDb(stepData: Omit<RoadmapStep, 'id'>): Pro
         list[idx] = { ...newStep, id: data.id };
         saveStoredRoadmapSteps(localMap);
       }
+
+      // Broadcast real-time creation to all active sessions
+      broadcastRoadmapRealtime({
+        type: 'INSERT',
+        skillId: newStep.skill_id,
+        step: { ...newStep, id: data.id }
+      });
+
       return { ...newStep, id: data.id };
     }
   } catch (err) {}
+
+  // Broadcast fallback even if offline
+  broadcastRoadmapRealtime({
+    type: 'INSERT',
+    skillId: newStep.skill_id,
+    step: newStep
+  });
 
   return newStep;
 }
@@ -1711,37 +1982,70 @@ export async function updateRoadmapStepInDb(stepData: RoadmapStep): Promise<Road
   saveStoredRoadmapSteps(localMap);
 
   try {
-    const updatePayload: Record<string, any> = {
+    const detailsPayload = JSON.stringify({
+      drive_link: updatedStep.drive_link || null,
+      resource_link: updatedStep.resource_link || null,
+      synced_at: new Date().toISOString()
+    });
+
+    const fullPayload: Record<string, any> = {
       title: updatedStep.title,
       description: updatedStep.description,
       step_order: updatedStep.step_order,
+      details: detailsPayload,
       resource_link: updatedStep.resource_link,
       drive_link: updatedStep.drive_link
     };
 
     let { error } = await supabase
       .from('roadmap_steps')
-      .update(updatePayload)
+      .update(fullPayload)
       .eq('id', updatedStep.id);
 
-    if (error && (error.message?.includes('drive_link') || error.code === '42703')) {
-      delete updatePayload.drive_link;
+    if (error && (
+      error.code === 'PGRST204' || 
+      error.code === '42703' || 
+      error.message?.includes('drive_link') || 
+      error.message?.includes('resource_link')
+    )) {
+      // Fall back to safe payload with details column which exists and persists in Supabase
+      const safePayload = {
+        title: updatedStep.title,
+        description: updatedStep.description,
+        step_order: updatedStep.step_order,
+        details: detailsPayload
+      };
       const retryRes = await supabase
         .from('roadmap_steps')
-        .update(updatePayload)
+        .update(safePayload)
         .eq('id', updatedStep.id);
       error = retryRes.error;
     }
 
     if (error) {
       console.error('[Supabase updateRoadmapStep error]:', error.message);
+    } else {
+      // Broadcast real-time update to all active sessions immediately
+      broadcastRoadmapRealtime({
+        type: 'UPDATE',
+        skillId: updatedStep.skill_id,
+        step: updatedStep
+      });
     }
   } catch (err) {
     console.error('[updateRoadmapStep exception]:', err);
   }
 
+  // Broadcast to ensure all clients reflect changes
+  broadcastRoadmapRealtime({
+    type: 'UPDATE',
+    skillId: updatedStep.skill_id,
+    step: updatedStep
+  });
+
   return updatedStep;
 }
+
 
 export async function fetchAllFieldsDb(): Promise<Field[]> {
   try {
@@ -2054,6 +2358,13 @@ export async function deleteRoadmapStepFromDb(
       }
       return { success: false, error: error.message };
     }
+
+    // Broadcast delete event in real time
+    broadcastRoadmapRealtime({
+      type: 'DELETE',
+      skillId: targetSkillId,
+      stepId: targetStepId
+    });
 
     return { success: true };
   } catch (err: any) {
