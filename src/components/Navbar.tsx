@@ -18,7 +18,9 @@ import {
   MessageSquare,
   Sun,
   Moon,
-  KeyRound
+  KeyRound,
+  Bot,
+  Sparkles
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -31,6 +33,7 @@ interface NavbarProps {
   onOpenSendFeedback?: () => void;
   onOpenMyFeedback?: () => void;
   onOpenChangePassword?: () => void;
+  onOpenAiTeacher?: () => void;
   theme?: 'light' | 'dark';
   onToggleTheme?: () => void;
   onOpenAuthModal?: (reason?: { title?: string; message?: string; intendedAction?: any }) => void;
@@ -47,6 +50,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenSendFeedback,
   onOpenMyFeedback,
   onOpenChangePassword,
+  onOpenAiTeacher,
   theme = 'light',
   onToggleTheme,
   onOpenAuthModal,
@@ -218,9 +222,31 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
 
-        {/* Right Controls: Theme Toggle & User Avatar Dropdown or Guest Auth */}
-        <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+        {/* Right Controls: AI Teacher, Theme Toggle & User Avatar Dropdown or Guest Auth */}
+        <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
           
+          {/* AI Teacher Header Action Button */}
+          {onOpenAiTeacher && (
+            <button
+              type="button"
+              onClick={onOpenAiTeacher}
+              className={`relative flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 h-11 sm:h-12 rounded-2xl border transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-[#6c5ce7] cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 ${
+                isDark 
+                  ? 'bg-[#181c2e] hover:bg-[#20253e] border-[#2b304c] text-purple-300' 
+                  : 'bg-purple-50/80 hover:bg-purple-100 border-purple-200/80 text-[#6c5ce7]'
+              }`}
+              title="Learn with Pragati AI Teacher"
+              id="navbar-ai-teacher-btn"
+            >
+              <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-[#6c5ce7] dark:text-purple-300 group-hover:scale-110 transition-transform" />
+              <span className="text-xs sm:text-sm font-extrabold tracking-tight hidden md:inline">AI Teacher</span>
+              <span className="flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
+            </button>
+          )}
+
           {/* Dark / Light Mode Toggle Button (Kept next to profile per user request) */}
           {onToggleTheme && (
             <button

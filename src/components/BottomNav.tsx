@@ -15,8 +15,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   currentUser,
   activeProgress
 }) => {
-  // Hide on login/signup pages
-  if (currentPage === 'login' || currentPage === 'signup') {
+  // Hide on login/signup/ai-teacher pages
+  if (currentPage === 'login' || currentPage === 'signup' || currentPage === 'ai-teacher') {
     return null;
   }
 

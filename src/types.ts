@@ -7,7 +7,8 @@ export type PageType =
   | 'dashboard' 
   | 'leaderboard' 
   | 'profile' 
-  | 'admin';
+  | 'admin'
+  | 'ai-teacher';
 
 export interface Profile {
   id: string;
@@ -140,3 +141,70 @@ export interface FeedbackItem {
   updated_at?: string;
 }
 
+export interface SkillGapItem {
+  step_id?: string;
+  step_order: number;
+  topic_title: string;
+  priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  gap_reason: string;
+  recommended_action: string;
+  verified_resource_url?: string | null;
+}
+
+export interface AiSkillGapAnalysis {
+  target_skill_id: string;
+  target_skill_name: string;
+  difficulty?: string;
+  mastery_level: 'Novice' | 'Beginner' | 'Developing' | 'Proficient' | 'Mastered';
+  match_percentage: number;
+  total_milestones: number;
+  completed_milestones_count: number;
+  overall_gap_summary: string;
+  estimated_hours_to_close_gap: number;
+  next_recommended_milestone: string;
+  next_recommended_step_order: number;
+  next_recommended_step_id?: string;
+  skill_gaps: SkillGapItem[];
+  key_strengths: string[];
+}
+
+export interface TeacherMessage {
+  id: string;
+  sender: 'user' | 'teacher';
+  text: string;
+  timestamp: string;
+  teaching_mode?: 'explanation' | 'example' | 'practice' | 'hint' | 'quiz' | 'general';
+  current_topic?: string;
+  related_step_id?: string;
+  related_step_title?: string;
+  practice_question?: string;
+  hint?: string;
+  code_snippet?: string;
+  code_language?: string;
+  verified_resources?: Array<{
+    title: string;
+    url: string;
+    format?: string;
+    type?: string;
+  }>;
+  suggested_followups?: string[];
+}
+
+export interface AiTeacherResponse {
+  answer: string;
+  teaching_mode?: 'explanation' | 'example' | 'practice' | 'hint' | 'quiz' | 'general';
+  current_topic?: string;
+  related_step_id?: string;
+  related_step_title?: string;
+  practice_question?: string;
+  hint?: string;
+  code_snippet?: string;
+  code_language?: string;
+  verified_resources?: Array<{
+    title: string;
+    url: string;
+    format?: string;
+    type?: string;
+  }>;
+  suggested_followups?: string[];
+}

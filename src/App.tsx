@@ -40,7 +40,11 @@ import { AdminRoadmapSection } from './components/AdminRoadmapSection';
 import { HeroProgressCore3D } from './components/HeroProgressCore3D';
 import { ChangePasswordModal } from './components/ChangePasswordModal';
 import { AuthModal } from './components/AuthModal';
+import { LoginRequiredModal } from './components/LoginRequiredModal';
 import { AiSkillGapModal } from './components/AiSkillGapModal';
+import { AiTeacherModal } from './components/AiTeacherModal';
+import { AiTeacherPage } from './components/AiTeacherPage';
+import { AiTeacher } from './features/ai-teacher';
 import { BottomNav } from './components/BottomNav';
 import ScrollToTop from './components/ScrollToTop';
 import { 
@@ -130,7 +134,8 @@ import {
   UserPlus,
   Compass,
   LayoutDashboard,
-  Lock
+  Lock,
+  Bot
 } from 'lucide-react';
 
 // Helper to format social contact links into working URLs
@@ -174,6 +179,7 @@ export type IntendedAction =
   | { type: 'view_dashboard' }
   | { type: 'view_profile' }
   | { type: 'ai_feature'; featureName: string }
+  | { type: 'ai_teacher'; skillId?: string; stepId?: string }
   | { type: 'navigate'; path: string };
 
 export default function App() {
@@ -183,6 +189,7 @@ export default function App() {
   // Navigation derived from current URL path
   const getCurrentPage = (): PageType => {
     const p = location.pathname;
+    if (p.startsWith('/ai-teacher')) return 'ai-teacher';
     if (p.startsWith('/roadmap')) return 'roadmap';
     if (p.startsWith('/profile-setup')) return 'profile-setup';
     if (p.startsWith('/profile')) return 'profile';
@@ -250,6 +257,7 @@ export default function App() {
 
   // Selected Skill for Roadmap view
   const [selectedSkillId, setSelectedSkillId] = useState<string>('skill-html');
+  const [highlightedStepId, setHighlightedStepId] = useState<string | null>(null);
 
   // Loading & Initialization state (Explicit loading state so app does not redirect while restoring session)
   const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
@@ -380,6 +388,14 @@ export default function App() {
       setIsAiModalOpen(true);
       showToast(`Welcome! ${action.featureName} is ready for you.`);
       navigate('/discover');
+    } else if (action.type === 'ai_teacher') {
+      if (action.skillId) setSelectedSkillId(action.skillId);
+      const params = new URLSearchParams();
+      if (action.skillId) params.set('skill', action.skillId);
+      if (action.stepId) params.set('step', action.stepId);
+      const searchStr = params.toString();
+      navigate(`/ai-teacher${searchStr ? `?${searchStr}` : ''}`);
+      showToast(`Welcome! Pragati AI Teacher is ready for you.`);
     } else if (action.type === 'navigate') {
       navigate(action.path);
     } else {
@@ -411,7 +427,31 @@ export default function App() {
 
     // 1. If Guest (Not Authenticated)
     if (!currentUser || !currentUser.id) {
-      if (p === '/profile-setup') {
+      if (p.startsWith('/ai-teacher')) {
+        const searchStr = location.search;
+        const skillFromUrl = new URLSearchParams(searchStr).get('skill') || undefined;
+        const stepFromUrl = new URLSearchParams(searchStr).get('step') || undefined;
+        openAuthModal({
+          title: 'Login Required',
+          message: 'Please log in to your Pragati account to access Pragati AI Teacher.',
+          intendedAction: { type: 'ai_teacher', skillId: skillFromUrl, stepId: stepFromUrl }
+        });
+        navigate('/discover', { replace: true });
+      } else if (p.startsWith('/dashboard')) {
+        openAuthModal({
+          title: 'Login Required',
+          message: 'Please log in to your Pragati account to access your personal learning dashboard.',
+          intendedAction: { type: 'view_dashboard' }
+        });
+        navigate('/discover', { replace: true });
+      } else if (p === '/profile') {
+        openAuthModal({
+          title: 'Login Required',
+          message: 'Please log in to your Pragati account to view your profile.',
+          intendedAction: { type: 'view_profile' }
+        });
+        navigate('/discover', { replace: true });
+      } else if (p === '/profile-setup') {
         navigate('/login', { replace: true });
       } else if (p === '/admin') {
         openAuthModal({
@@ -468,6 +508,9 @@ export default function App() {
   const [isResourceModalOpen, setIsResourceModalOpen] = useState(false);
   const [isSqlModalOpen, setIsSqlModalOpen] = useState(false);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [isAiTeacherOpen, setIsAiTeacherOpen] = useState(false);
+  const [teacherFocusSkillId, setTeacherFocusSkillId] = useState<string | undefined>(undefined);
+  const [teacherFocusStepId, setTeacherFocusStepId] = useState<string | undefined>(undefined);
 
   // AI Feature Handler (Enforces Authentication for AI Features)
   const handleOpenAiFeature = (featureName = 'AI Skill Gap Analyzer') => {
@@ -487,6 +530,25 @@ export default function App() {
       return;
     }
     setIsAiModalOpen(true);
+  };
+
+  // AI Teacher Handler (Navigates to dedicated AI Interactive Learning Workspace)
+  const handleOpenAiTeacher = (skillId?: string, stepId?: string) => {
+    if (!currentUser || !currentUser.id) {
+      openAuthModal({
+        title: 'Login to Learn with AI Teacher',
+        message: 'Log in to chat with your personalized Pragati curriculum tutor.',
+        badge: 'AI Interactive Workspace',
+        intendedAction: { type: 'ai_teacher', skillId, stepId }
+      });
+      return;
+    }
+    const targetSkill = skillId || selectedSkillId || skills[0]?.id;
+    const params = new URLSearchParams();
+    if (targetSkill) params.set('skill', targetSkill);
+    if (stepId) params.set('step', stepId);
+    const searchStr = params.toString();
+    navigate(`/ai-teacher${searchStr ? `?${searchStr}` : ''}`);
   };
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
   const [editingField, setEditingField] = useState<Field | null>(null);
@@ -1055,7 +1117,7 @@ export default function App() {
   }, [profiles, currentUser]);
 
   // Derived current skill and steps
-  const currentSkill = useMemo(() => {
+  const currentSkill: Skill = useMemo(() => {
     return skills.find(s => s.id === selectedSkillId) || skills[0] || { 
       id: '', 
       name: 'No Skill Available', 
@@ -1063,6 +1125,7 @@ export default function App() {
       icon: '⚡', 
       bg_color: '#6c5ce7', 
       difficulty: 'Beginner', 
+      order_index: 0,
       field_id: '' 
     };
   }, [skills, selectedSkillId]);
@@ -1071,6 +1134,32 @@ export default function App() {
     if (!currentSkill || !currentSkill.id) return [];
     return roadmapSteps[currentSkill.id] || [];
   }, [roadmapSteps, currentSkill]);
+
+  // Deep-link to specific roadmap milestone if stepId is provided in URL query
+  useEffect(() => {
+    if (!location.pathname.startsWith('/roadmap')) return;
+    const params = new URLSearchParams(location.search);
+    const targetStepId = params.get('stepId');
+    if (!targetStepId) return;
+
+    // Security & data integrity check: ensure the step belongs to the active skill
+    const stepBelongsToSkill = currentSkillSteps.some(s => s.id === targetStepId);
+    if (!stepBelongsToSkill) return;
+
+    const timeout = setTimeout(() => {
+      const el = document.getElementById(`step-card-${targetStepId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setHighlightedStepId(targetStepId);
+        const clearHighlight = setTimeout(() => {
+          setHighlightedStepId(prev => (prev === targetStepId ? null : prev));
+        }, 2600);
+        return () => clearTimeout(clearHighlight);
+      }
+    }, 150);
+
+    return () => clearTimeout(timeout);
+  }, [location.pathname, location.search, currentSkillSteps]);
 
   // Target profile for Public Profile view
   const targetProfile = useMemo(() => {
@@ -1495,6 +1584,59 @@ export default function App() {
       navigate('/dashboard');
     } else {
       showToast('Could not start challenge. Please try again.');
+    }
+  };
+
+  // Unified challenge initiation flow: validates auth, profile completion, and active sprints before opening DeadlineModal
+  const handleStartChallengeClick = (targetSkill: Skill) => {
+    if (!targetSkill) return;
+    setSelectedSkillId(targetSkill.id);
+
+    if (!currentUser || !currentUser.id) {
+      openAuthModal({
+        title: 'Login Required',
+        message: 'Create an account or log in to start this challenge and track your progress.',
+        intendedAction: {
+          type: 'start_challenge',
+          skillId: targetSkill.id,
+          challengeName: targetSkill.name
+        }
+      });
+      return;
+    }
+
+    if (!currentUser.profile_completed) {
+      saveIntendedAction({
+        type: 'start_challenge',
+        skillId: targetSkill.id,
+        challengeName: targetSkill.name
+      });
+      showToast('Please complete your profile setup before starting a skill challenge!');
+      navigate('/profile-setup');
+      return;
+    }
+
+    if (currentUserCompletedSkillIds.has(targetSkill.id)) {
+      showToast(`You have already completed the ${targetSkill.name} challenge and claimed its points! You cannot retake this challenge.`);
+      return;
+    }
+
+    if (activeProgress && activeProgress.status === 'in_progress') {
+      showToast('You already have an active challenge. Complete or cancel it before starting another.');
+      navigate('/dashboard');
+      return;
+    }
+
+    setIsDeadlineModalOpen(true);
+  };
+
+  // Handler for AI Recommended Next Action: View Milestone
+  const handleViewMilestone = (skillId: string, stepId?: string) => {
+    setSelectedSkillId(skillId);
+    if (stepId) {
+      navigate(`/roadmap/${skillId}?stepId=${encodeURIComponent(stepId)}`);
+    } else {
+      navigate(`/roadmap/${skillId}`);
     }
   };
 
@@ -2059,6 +2201,7 @@ export default function App() {
           }}
           theme={theme}
           onToggleTheme={toggleTheme}
+          onOpenAiTeacher={() => handleOpenAiTeacher()}
           onOpenAuthModal={(opts) => openAuthModal(opts || {})}
           onNavigateAuth={(mode) => {
             setAuthMode(mode);
@@ -2699,19 +2842,35 @@ export default function App() {
                     </div>
                   </div>
 
-                  <button 
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleOpenAiFeature('AI Skill Gap Analyzer');
-                    }}
-                    className="px-4 py-2 rounded-xl bg-[#6c5ce7] hover:bg-[#5b4bc4] text-white text-xs font-black shadow-md shadow-[#6c5ce7]/30 transition-all flex items-center gap-1.5 shrink-0 select-none cursor-pointer w-full sm:w-auto justify-center"
-                    id="btn-run-ai-analyzer"
-                  >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Run AI Gap Analysis</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="flex items-center gap-2.5 w-full sm:w-auto shrink-0 flex-wrap sm:flex-nowrap">
+                    <button 
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenAiTeacher();
+                      }}
+                      className="px-3.5 py-2 rounded-xl bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 dark:hover:bg-purple-900/60 text-[#6c5ce7] dark:text-purple-300 border border-purple-200 dark:border-purple-800/60 text-xs font-black transition-all flex items-center gap-1.5 shrink-0 select-none cursor-pointer w-full sm:w-auto justify-center shadow-xs hover:shadow-md"
+                      id="btn-open-ai-teacher-discover"
+                      title="Open interactive AI Teacher classroom"
+                    >
+                      <Bot className="w-3.5 h-3.5" />
+                      <span>Ask AI Teacher</span>
+                    </button>
+
+                    <button 
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenAiFeature('AI Skill Gap Analyzer');
+                      }}
+                      className="px-4 py-2 rounded-xl bg-[#6c5ce7] hover:bg-[#5b4bc4] text-white text-xs font-black shadow-md shadow-[#6c5ce7]/30 transition-all flex items-center gap-1.5 shrink-0 select-none cursor-pointer w-full sm:w-auto justify-center"
+                      id="btn-run-ai-analyzer"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Run AI Gap Analysis</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Search Bar (Line 1) */}
@@ -3132,7 +3291,18 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 w-full sm:w-auto relative z-10">
+                <div className="flex items-center gap-2 w-full sm:w-auto relative z-10 flex-wrap sm:flex-nowrap">
+                  <button 
+                    type="button"
+                    onClick={() => handleOpenAiTeacher(currentSkill.id)}
+                    className="px-3.5 py-3 rounded-2xl bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 dark:hover:bg-purple-900/60 text-[#6c5ce7] dark:text-purple-300 border border-purple-200 dark:border-purple-800/60 font-extrabold text-xs sm:text-sm shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer w-full sm:w-auto shrink-0"
+                    title="Open Pragati AI Teacher for this skill"
+                    id="btn-ask-ai-teacher-roadmap"
+                  >
+                    <Bot className="w-4 h-4 text-[#6c5ce7] dark:text-purple-300" />
+                    <span>Ask AI Teacher</span>
+                  </button>
+
                   {currentUserCompletedSkillIds.has(currentSkill.id) ? (
                     <div className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#E3F7EC] dark:bg-emerald-950/60 text-[#1B9C63] dark:text-emerald-300 border border-[#1B9C63]/30 dark:border-emerald-800/50 font-extrabold text-sm shadow-xs select-none hover:shadow-md transition-all">
                       <CheckCircle2 className="w-5 h-5 text-[#1B9C63] dark:text-emerald-400 shrink-0 animate-bounce" />
@@ -3149,31 +3319,7 @@ export default function App() {
                     </button>
                   ) : (
                     <button 
-                      onClick={() => {
-                        if (!currentUser || !currentUser.id) {
-                          openAuthModal({
-                            title: 'Login Required',
-                            message: 'Create an account or log in to start this challenge and track your progress.',
-                            intendedAction: {
-                              type: 'start_challenge',
-                              skillId: currentSkill.id,
-                              challengeName: currentSkill.name
-                            }
-                          });
-                          return;
-                        }
-                        if (!currentUser.profile_completed) {
-                          saveIntendedAction({
-                            type: 'start_challenge',
-                            skillId: currentSkill.id,
-                            challengeName: currentSkill.name
-                          });
-                          showToast('Please complete your profile setup before starting a skill challenge!');
-                          navigate('/profile-setup');
-                          return;
-                        }
-                        setIsDeadlineModalOpen(true);
-                      }}
+                      onClick={() => handleStartChallengeClick(currentSkill)}
                       className="btn-challenge-cta w-full sm:w-auto group hover:shadow-lg transition-all"
                       id="btn-start-challenge-roadmap"
                     >
@@ -3259,50 +3405,72 @@ export default function App() {
                         const subtopics = hasDelimiters
                           ? st.description.split('||').map(s => s.trim()).filter(Boolean)
                           : [];
+                        const isHighlighted = highlightedStepId === st.id;
 
                         return (
                           <div 
                             key={st.id} 
-                            className="group relative z-10 bg-white dark:bg-[#181c30] hover:bg-[#FAF8F5] dark:hover:bg-[#1e223d] border border-[#E8E4DC] dark:border-[#262b47] hover:border-[#6C5CE7] dark:hover:border-[#6c5ce7] rounded-2xl p-4 sm:p-5 transition-all duration-250 shadow-2xs hover:shadow-lg hover:-translate-y-1 flex gap-4 items-start cursor-default" 
+                            className={`group relative z-10 bg-white dark:bg-[#181c30] hover:bg-[#FAF8F5] dark:hover:bg-[#1e223d] border ${
+                              isHighlighted 
+                                ? 'border-[#6c5ce7] ring-4 ring-[#6c5ce7]/30 dark:ring-[#6c5ce7]/40 shadow-xl shadow-[#6c5ce7]/20 -translate-y-1 scale-[1.01] bg-indigo-50/40 dark:bg-purple-950/40' 
+                                : 'border-[#E8E4DC] dark:border-[#262b47] hover:border-[#6C5CE7] dark:hover:border-[#6c5ce7] shadow-2xs hover:shadow-lg hover:-translate-y-1'
+                            } rounded-2xl p-4 sm:p-5 transition-all duration-300 flex gap-4 items-start cursor-default`} 
                             id={`step-card-${st.id}`}
                           >
-                            <div className="step-num w-9 h-9 min-w-9 rounded-xl bg-[#F3F1EC] dark:bg-[#121424] text-[#6C5CE7] dark:text-[#a29bfe] font-extrabold text-sm flex items-center justify-center border border-[#E8E4DC] dark:border-purple-800/50 shadow-2xs shrink-0 mt-0.5 group-hover:bg-[#6C5CE7] group-hover:text-white group-hover:border-[#6C5CE7] group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300">
+                            <div className={`step-num w-9 h-9 min-w-9 rounded-xl ${
+                              isHighlighted ? 'bg-[#6c5ce7] text-white scale-110 -rotate-3 ring-2 ring-white dark:ring-[#141726]' : 'bg-[#F3F1EC] dark:bg-[#121424] text-[#6C5CE7] dark:text-[#a29bfe]'
+                            } font-extrabold text-sm flex items-center justify-center border border-[#E8E4DC] dark:border-purple-800/50 shadow-2xs shrink-0 mt-0.5 group-hover:bg-[#6C5CE7] group-hover:text-white group-hover:border-[#6C5CE7] group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300`}>
                               {idx + 1}
                             </div>
                             <div className="step-body flex-1 min-w-0">
                               <div className="flex items-start justify-between gap-2">
-                                <h5 className="font-extrabold text-sm sm:text-base text-[#22252E] dark:text-white group-hover:text-[#6C5CE7] dark:group-hover:text-purple-300 leading-snug transition-colors">
-                                  {st.title}
-                                </h5>
-                                {(st.resource_link || st.drive_link) && (
-                                  <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
-                                    {st.resource_link && (
-                                      <a
-                                        href={st.resource_link}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="text-[11px] font-bold text-[#6C5CE7] dark:text-purple-300 hover:text-white hover:bg-[#6C5CE7] dark:hover:bg-[#6C5CE7] inline-flex items-center gap-1 bg-[#F3F1EC] dark:bg-purple-950/60 px-2.5 py-1 rounded-lg border border-[#E8E4DC] dark:border-purple-800/40 transition-all duration-200 shrink-0 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95"
-                                        title="Official Documentation / Guide Reference"
-                                      >
-                                        <span>Doc</span>
-                                        <ExternalLink className="w-3 h-3" />
-                                      </a>
-                                    )}
-                                    {st.drive_link && (
-                                      <a
-                                        href={st.drive_link}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="text-[11px] font-extrabold text-amber-700 dark:text-amber-300 hover:text-white hover:bg-amber-600 dark:hover:bg-amber-600 inline-flex items-center gap-1.5 bg-amber-50 dark:bg-amber-950/60 px-2.5 py-1 rounded-lg border border-amber-200/80 dark:border-amber-800/40 transition-all duration-200 shrink-0 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95"
-                                        title="Open Google Drive PDF / Lecture Notes for this topic"
-                                      >
-                                        <FileText className="w-3 h-3 text-amber-600 dark:text-amber-400" />
-                                        <span>Drive PDF</span>
-                                        <ExternalLink className="w-2.5 h-2.5" />
-                                      </a>
-                                    )}
-                                  </div>
-                                )}
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <h5 className="font-extrabold text-sm sm:text-base text-[#22252E] dark:text-white group-hover:text-[#6C5CE7] dark:group-hover:text-purple-300 leading-snug transition-colors">
+                                    {st.title}
+                                  </h5>
+                                  {isHighlighted && (
+                                    <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#6c5ce7] text-white animate-pulse shadow-xs">
+                                      AI Recommended
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenAiTeacher(currentSkill.id, st.id)}
+                                    className="text-[11px] font-extrabold text-[#6c5ce7] dark:text-purple-300 hover:text-white hover:bg-[#6c5ce7] dark:hover:bg-[#6c5ce7] inline-flex items-center gap-1 bg-purple-50 dark:bg-purple-950/60 px-2 py-1 rounded-lg border border-purple-200 dark:border-purple-800/40 transition-all duration-200 shrink-0 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95 cursor-pointer"
+                                    title={`Ask Pragati AI Teacher about ${st.title}`}
+                                  >
+                                    <Bot className="w-3 h-3 text-[#6c5ce7] dark:text-purple-300" />
+                                    <span>Ask AI</span>
+                                  </button>
+
+                                  {st.resource_link && (
+                                    <a
+                                      href={st.resource_link}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-[11px] font-bold text-[#6C5CE7] dark:text-purple-300 hover:text-white hover:bg-[#6C5CE7] dark:hover:bg-[#6C5CE7] inline-flex items-center gap-1 bg-[#F3F1EC] dark:bg-purple-950/60 px-2.5 py-1 rounded-lg border border-[#E8E4DC] dark:border-purple-800/40 transition-all duration-200 shrink-0 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95"
+                                      title="Official Documentation / Guide Reference"
+                                    >
+                                      <span>Doc</span>
+                                      <ExternalLink className="w-3 h-3" />
+                                    </a>
+                                  )}
+                                  {st.drive_link && (
+                                    <a
+                                      href={st.drive_link}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-[11px] font-extrabold text-amber-700 dark:text-amber-300 hover:text-white hover:bg-amber-600 dark:hover:bg-amber-600 inline-flex items-center gap-1.5 bg-amber-50 dark:bg-amber-950/60 px-2.5 py-1 rounded-lg border border-amber-200/80 dark:border-amber-800/40 transition-all duration-200 shrink-0 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95"
+                                      title="Open Google Drive PDF / Lecture Notes for this topic"
+                                    >
+                                      <FileText className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                                      <span>Drive PDF</span>
+                                      <ExternalLink className="w-2.5 h-2.5" />
+                                    </a>
+                                  )}
+                                </div>
                               </div>
 
                               {hasDelimiters ? (
@@ -5030,8 +5198,29 @@ export default function App() {
         </div>
       )}
 
+      {/* ========================================================================= */}
+      {/* PAGE 10 — CLAUDE DEDICATED AI TEACHER FULL-PAGE WORKSPACE */}
+      {/* ========================================================================= */}
+      {currentPage === 'ai-teacher' && currentUser && currentUser.id && (
+        <div className="fixed inset-0 z-40 bg-[#FAF9FF] overflow-hidden" id="page-ai-teacher">
+          <AiTeacher 
+            userName={currentUser?.full_name || 'Student'}
+            storageKey={currentUser?.id ? `pragati-ai-teacher:${currentUser.id}` : 'pragati-ai-teacher:guest'}
+            skillId={new URLSearchParams(location.search).get('skill') || teacherFocusSkillId || selectedSkillId}
+            stepId={new URLSearchParams(location.search).get('step') || teacherFocusStepId}
+            onClose={() => {
+              if (window.history.length > 1) {
+                navigate(-1);
+              } else {
+                navigate('/discover');
+              }
+            }}
+          />
+        </div>
+      )}
+
       {/* Main Website Footer */}
-      {currentUser && currentUser.id && currentPage !== 'login' && currentPage !== 'signup' && (
+      {currentUser && currentUser.id && currentPage !== 'login' && currentPage !== 'signup' && currentPage !== 'ai-teacher' && (
         <Footer 
           currentUser={currentUser}
           onNavigate={(page) => {
@@ -5197,10 +5386,43 @@ export default function App() {
         currentUser={currentUser}
         completedProgress={currentUserCompletedProgress}
         allSkills={skills}
+        initialSkillId={selectedSkillId}
+        onOpenAuthModal={(opts) => openAuthModal(opts)}
         onSelectSkill={(skillId) => {
           setSelectedSkillId(skillId);
           navigate(`/roadmap/${skillId}`);
         }}
+        onViewMilestone={handleViewMilestone}
+        onStartChallenge={handleStartChallengeClick}
+        onAskTeacher={(skillId, stepId) => {
+          setIsAiModalOpen(false);
+          handleOpenAiTeacher(skillId, stepId);
+        }}
+      />
+
+      {/* Pragati AI Teacher Classroom Modal */}
+      <AiTeacherModal
+        isOpen={isAiTeacherOpen}
+        onClose={() => setIsAiTeacherOpen(false)}
+        currentUser={currentUser}
+        allSkills={skills}
+        initialSkillId={teacherFocusSkillId || selectedSkillId}
+        initialStepId={teacherFocusStepId}
+        roadmapSteps={roadmapSteps}
+        completedProgress={currentUserCompletedProgress}
+        onOpenAuthModal={(opts) => openAuthModal(opts)}
+        onViewMilestone={handleViewMilestone}
+        onStartChallenge={handleStartChallengeClick}
+      />
+
+      {/* Reusable Login Required Gate Modal */}
+      <LoginRequiredModal
+        isOpen={authModalState.isOpen}
+        onClose={closeAuthModal}
+        onLogin={handleAuthModalLogin}
+        onSignUp={handleAuthModalSignUp}
+        title={authModalState.title}
+        description={authModalState.message}
       />
 
     </div>
