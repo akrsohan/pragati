@@ -49,6 +49,7 @@ export function AiTeacher({
   const [openArtifactId, setOpenArtifactId] = useState<string | null>(null);
   const [focusTick, setFocusTick] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
+  const activeRequestIdRef = useRef<string | null>(null);
 
   const streaming = streamingChatId !== null;
 
@@ -68,6 +69,7 @@ export function AiTeacher({
 
   const newChat = () => {
     abortRef.current?.abort();
+    activeRequestIdRef.current = null;
     store.setActiveId(null);
     setOpenArtifactId(null);
     setInput('');
@@ -112,6 +114,9 @@ export function AiTeacher({
     }
 
     const now = Date.now();
+    const currentReqId = uid();
+    activeRequestIdRef.current = currentReqId;
+
     const userMsg: ChatMessage = { id: uid(), role: 'user', content: text, createdAt: now, attachments: atts.length ? atts : undefined, status: 'done' };
     const aiMsg: ChatMessage = { id: uid(), role: 'assistant', content: '', createdAt: now + 1, status: 'streaming' };
     store.addMessages(chatId, [userMsg, aiMsg]);
@@ -120,6 +125,7 @@ export function AiTeacher({
     const ctrl = new AbortController();
     abortRef.current = ctrl;
     let acc = '';
+    let hasVisualArtifact = false;
     try {
       await streamAnswer({
         history: [...prior, userMsg],
@@ -129,13 +135,20 @@ export function AiTeacher({
         skillId,
         currentStepId: stepId,
         quickAction: quickActionParam,
+        requestId: currentReqId,
         signal: ctrl.signal,
+        onResponseMeta: (meta) => {
+          hasVisualArtifact = meta.hasVisualArtifact;
+        },
         onToken: (t) => {
+          if (activeRequestIdRef.current !== currentReqId) return;
           acc += t;
           store.patchMessage(chatId!, aiMsg.id, { content: acc });
         },
       });
-      store.patchMessage(chatId, aiMsg.id, { status: 'done', content: acc });
+      if (activeRequestIdRef.current === currentReqId) {
+        store.patchMessage(chatId, aiMsg.id, { status: 'done', content: acc });
+      }
     } catch (err) {
       if (ctrl.signal.aborted) {
         store.patchMessage(chatId, aiMsg.id, { status: 'done', content: acc });
@@ -144,13 +157,19 @@ export function AiTeacher({
         store.patchMessage(chatId, aiMsg.id, { status: 'error', content: acc });
       }
     } finally {
-      setStreamingChatId(null);
-      abortRef.current = null;
+      if (activeRequestIdRef.current === currentReqId) {
+        setStreamingChatId(null);
+        abortRef.current = null;
+      }
     }
 
-    // a finished answer that created a file / visual opens the Visual Explainer automatically
-    const auto = parseMessage(aiMsg.id, acc).autoOpenId;
-    if (auto) setOpenArtifactId(auto);
+    // Only open Visual View when an actual artifact is generated or requested:
+    // Normal responses: visualOpen = false
+    // Artifact responses: visualOpen = true
+    if (hasVisualArtifact) {
+      const auto = parseMessage(aiMsg.id, acc).autoOpenId;
+      if (auto) setOpenArtifactId(auto);
+    }
   };
 
   const stop = () => abortRef.current?.abort();

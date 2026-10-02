@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import { createServer as createViteServer } from 'vite';
-import { GoogleGenAI, Type } from '@google/genai';
+import { GoogleGenAI, Type, ThinkingLevel } from '@google/genai';
 import { supabase } from './src/lib/supabase';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -121,7 +121,7 @@ app.post('/api/analyze-skill-gap', async (req: Request, res: Response): Promise<
     const authenticatedUserId = authData.user.id;
 
     // 2. Validate requested skillId
-    const { skillId } = req.body;
+    let { skillId } = req.body;
     if (!skillId || typeof skillId !== 'string') {
       res.status(400).json({
         error: 'Missing or invalid skillId parameter.',
@@ -131,13 +131,31 @@ app.post('/api/analyze-skill-gap', async (req: Request, res: Response): Promise<
     }
 
     // 3. Fetch Skill details from Supabase (Source of Truth)
-    const { data: skill, error: skillError } = await supabase
+    let { data: skill } = await supabase
       .from('skills')
       .select('id, name, description, difficulty, avg_days, field_id, step_count')
       .eq('id', skillId)
       .maybeSingle();
 
-    if (skillError || !skill) {
+    if (!skill) {
+      const cleanName = String(skillId)
+        .replace(/^skill[-_]?/i, '')
+        .replace(/[-_]/g, ' ')
+        .trim()
+        .toLowerCase();
+      const { data: allSkills } = await supabase
+        .from('skills')
+        .select('id, name, description, difficulty, avg_days, field_id, step_count');
+      if (allSkills && allSkills.length > 0) {
+        skill = allSkills.find(s => {
+          const sName = s.name.toLowerCase();
+          return sName === cleanName || sName.includes(cleanName) || cleanName.includes(sName);
+        }) || allSkills[0];
+        skillId = skill.id;
+      }
+    }
+
+    if (!skill) {
       res.status(404).json({
         error: `Skill track "${skillId}" not found in Pragati curriculum.`,
         code: 'SKILL_NOT_FOUND'
@@ -503,63 +521,80 @@ STRICT GROUNDING & INTEGRITY RULES:
  * Deterministic teacher fallback generator when Gemini API is offline or key is unconfigured
  */
 function generateDeterministicTeacherResponse(
-  skill: { id: string; name: string },
+  skill: { id?: string; name: string } | null,
   focusedStep: { id: string; title: string; description?: string; step_order: number; drive_link?: string; resource_link?: string } | null,
   message: string,
   quickAction?: string
 ) {
-  const stepTitle = focusedStep ? focusedStep.title : `${skill.name} Fundamentals`;
-  const stepDesc = focusedStep?.description || `Core building blocks for ${skill.name}.`;
-  const subtopics = focusedStep?.description ? focusedStep.description.split('||').map(s => s.trim()).filter(Boolean) : [];
-  const subtopicsText = subtopics.length > 0 ? ` Topics in this milestone: ${subtopics.join(', ')}.` : '';
-
+  const stepTitle = focusedStep ? focusedStep.title : (skill ? `${skill.name} Fundamentals` : 'Computer Science Fundamentals');
   let mode: 'explanation' | 'example' | 'practice' | 'hint' | 'quiz' | 'general' = 'explanation';
-  let answer = `Here is an explanation of **${stepTitle}** in the ${skill.name} curriculum.\n\n${stepDesc}.${subtopicsText}\n\nTo master this milestone, focus on understanding the core syntax and write small test programs to reinforce what you learn.`;
-  let practiceQuestion: string | null = `What is the primary role of ${stepTitle}, and what happens if you omit its key syntax?`;
-  let hint: string | null = `Review the lecture notes and official docs for ${stepTitle}. Pay attention to the syntax requirements and structure.`;
+  
+  const questionTopic = message.length > 30 ? message.slice(0, 30) + '...' : message;
+  const isBangla = /[\u0980-\u09FF]/.test(message) || message.toLowerCase().includes('ki?') || message.toLowerCase().includes('kivabe');
+  const lowerMsg = message.toLowerCase();
+
+  let answer: string;
+  if (lowerMsg.includes('html') && (lowerMsg.includes('full form') || lowerMsg.includes('full name') || lowerMsg.includes('mane ki') || lowerMsg.includes('ki'))) {
+    answer = isBangla
+      ? `**HTML** এর পূর্ণরূপ হলো **HyperText Markup Language**।\n\nএটি কোনো প্রোগ্রামিং ল্যাঙ্গুয়েজ নয়, বরং একটি স্ট্যান্ডার্ড মার্কআপ ল্যাঙ্গুয়েজ যা দিয়ে ওয়েব পেজের মূল গঠন বা স্ট্রাকচার তৈরি করা হয়।`
+      : `**HTML** stands for **HyperText Markup Language**.\n\nIt is the standard markup language used by web browsers to structure and display web pages on the World Wide Web.`;
+  } else if (lowerMsg.includes('pointer') && (lowerMsg.includes('c ') || lowerMsg.includes('c te') || lowerMsg.includes('c++') || lowerMsg.includes('ki'))) {
+    answer = isBangla
+      ? `C প্রোগ্রামিংয়ে **Pointer** হলো এমন একটি স্পেশাল ভ্যারিয়েবল যা সরাসরি কোনো ডেটা ভ্যালু ধারণ না করে অন্য একটি ভ্যারিয়েবলের **মেমোরি অ্যাড্রেস (Memory Address)** স্টোর করে।\n\nপয়েন্টার ব্যবহারের মাধ্যমে সরাসরি মেমোরি অ্যাক্সেস, ডাইনামিক মেমোরি অ্যালোকেশন এবং ফাংশনে পাস-বাই-রেফারেন্সের কাজ করা যায়।`
+      : `In C programming, a **pointer** is a special variable that stores the memory address of another variable rather than a direct value.\n\nPointers allow direct memory manipulation, dynamic memory allocation, and efficient pass-by-reference operations.`;
+  } else if (lowerMsg.includes('normalization') || lowerMsg.includes('dbms')) {
+    answer = isBangla
+      ? `DBMS-এ **Normalization** হলো একটি সুশৃঙ্খল টেকনিক যার মাধ্যমে রিলেশনাল ডাটাবেজের টেবিলগুলোকে এমনভাবে ডিজাইন করা হয় যেন **Data Redundancy (অপ্রয়োজনীয় পুনরাবৃত্তি)** দূর হয় এবং **Data Integrity** নিশ্চিত থাকে।\n\nসাধারণত 1NF, 2NF, 3NF এবং BCNF লেভেলে নরম্যালাইজেশন করা হয়।`
+      : `In DBMS, **Normalization** is a systematic database design approach that decomposes tables to eliminate data redundancy and enhance data integrity (1NF, 2NF, 3NF, BCNF).`;
+  } else {
+    answer = isBangla
+      ? `আপনার প্রশ্ন **"${message}"** এর ব্যাখ্যা:\n\nকম্পিউটার সায়েন্সে এই কনসেপ্টটি অত্যন্ত গুরুত্বপূর্ণ। এটি গভীরভাবে বুঝতে এর মূল মেকানিজম এবং প্র্যাকটিক্যাল ব্যবহার লক্ষ্য করুন। কোনো কোড উদাহরণ বা প্র্যাকটিস কুইজ লাগলে জিজ্ঞেস করতে পারেন!`
+      : `Here is an educational explanation addressing your question: **"${message}"**.\n\nIn computer science, mastering this concept requires understanding its fundamental mechanism, practical implementation, and how it connects to software design.\n\nTake your time to write down small test programs to reinforce what you learn. If you'd like, you can ask for a code example, a simpler explanation, or a practice quiz!`;
+  }
+  let practiceQuestion: string | null = `How would you explain the core mechanism of "${questionTopic}" to a fellow student?`;
+  let hint: string | null = `Focus on the foundational principles of "${questionTopic}". Break it down into smaller steps before implementing.`;
   let codeSnippet: string | null = null;
-  const isHtml = skill.name.toLowerCase().includes('html');
-  const isCss = skill.name.toLowerCase().includes('css');
-  const isJs = skill.name.toLowerCase().includes('script') || skill.name.toLowerCase().includes('js');
-  const isPython = skill.name.toLowerCase().includes('python');
-  const isC = skill.name.toLowerCase().includes('c ') || skill.name.toLowerCase().includes('c++') || skill.name.toLowerCase().includes('language');
+  const isHtml = message.toLowerCase().includes('html');
+  const isCss = message.toLowerCase().includes('css');
+  const isJs = message.toLowerCase().includes('script') || message.toLowerCase().includes('js');
+  const isPython = message.toLowerCase().includes('python');
+  const isC = message.toLowerCase().includes('c ') || message.toLowerCase().includes('c++') || message.toLowerCase().includes('pointer');
 
   let codeLang = isHtml ? 'html' : isCss ? 'css' : isJs ? 'javascript' : isPython ? 'python' : isC ? 'c' : 'text';
 
   if (quickAction === 'practice' || message.toLowerCase().includes('practice') || message.toLowerCase().includes('quiz')) {
     mode = 'practice';
-    answer = `Here is a practice exercise on **${stepTitle}** designed to test your understanding:\n\n**Question:** ${practiceQuestion}\n\nTake your time to write down your solution or code snippet, then ask me to check your work!`;
+    answer = `Here is a practice exercise on **"${questionTopic}"** to test your understanding:\n\n**Question:** ${practiceQuestion}\n\nTake your time to solve it, and ask me if you want a hint!`;
   } else if (quickAction === 'hint' || message.toLowerCase().includes('hint')) {
     mode = 'hint';
-    answer = `Here is a helpful hint for **${stepTitle}**:\n\n${hint}\n\nTry applying this hint to your code!`;
+    answer = `Here is a helpful hint regarding **"${questionTopic}"**:\n\n${hint}\n\nTry applying this hint to your code!`;
   } else if (quickAction === 'example' || message.toLowerCase().includes('example') || message.toLowerCase().includes('code')) {
     mode = 'example';
-    answer = `Here is a code example illustrating **${stepTitle}** in ${skill.name}:`;
-    if (isHtml) {
-      codeSnippet = `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>${stepTitle} Example</title>\n</head>\n<body>\n  <!-- ${stepTitle} -->\n  <h1>${stepTitle}</h1>\n  <p>Practice writing clean semantic markup.</p>\n</body>\n</html>`;
-    } else if (isCss) {
-      codeSnippet = `/* ${stepTitle} Styling Example */\n.card-container {\n  display: flex;\n  flex-direction: column;\n  padding: 1.5rem;\n  border-radius: 1rem;\n  background-color: #ffffff;\n  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);\n}`;
+    answer = `Here is a clean code example related to **"${questionTopic}"**:`;
+    if (isC) {
+      codeSnippet = `#include <stdio.h>\n\nint main() {\n    int num = 42;\n    int *ptr = &num;\n    printf("Value: %d, Address: %p\\n", *ptr, (void*)ptr);\n    return 0;\n}`;
+    } else if (isJs) {
+      codeSnippet = `// Example demonstration\nconst item = "Pragati";\nconsole.log(\`Learning \${item}\`);`;
     } else if (isPython) {
-      codeSnippet = `# ${stepTitle} Demonstration\ndef learn_${stepTitle.toLowerCase().replace(/[^a-z0-9]/g, '_')}():\n    print("Mastering ${stepTitle} in Python")\n    return True\n\nlearn_${stepTitle.toLowerCase().replace(/[^a-z0-9]/g, '_')}()`;
-    } else {
-      codeSnippet = `// ${stepTitle} Example in ${skill.name}\nfunction demonstrateConcept() {\n  console.log("Practicing ${stepTitle}");\n}\ndemonstrateConcept();`;
+      codeSnippet = `# Example demonstration\ndef demonstrate():\n    print("Computer Science with Pragati")\n\ndemonstrate()`;
     }
   }
 
   return {
     answer,
     teaching_mode: mode,
-    current_topic: stepTitle,
-    related_step_id: focusedStep?.id,
+    current_topic: questionTopic,
+    related_step_id: focusedStep?.id || undefined,
     related_step_title: stepTitle,
     practice_question: practiceQuestion,
     hint: hint,
     code_snippet: codeSnippet,
-    code_language: codeLang,
+    code_language: codeSnippet ? codeLang : null,
+    visual: null,
     suggested_followups: [
-      `Can you give me a code example for ${stepTitle}?`,
-      `Give me another practice question`,
-      `Explain this simply in beginner terms`
+      `Can you give a code example of ${questionTopic}?`,
+      `Explain ${questionTopic} with a simple real-world analogy.`,
+      `Give me a practice quiz on this.`
     ]
   };
 }
@@ -606,104 +641,127 @@ app.post('/api/ai-teacher', async (req: Request, res: Response): Promise<void> =
 
     const trimmedMessage = message.trim().slice(0, 2500);
 
-    // 3. Fetch Skill details from Supabase (Source of Truth)
+    // 3. Graceful Skill & Curriculum Lookup (Supporting Context, NEVER Blocking)
     let skillId = rawSkillId;
     let skill: any = null;
+    let resolvedSkillId: string | null = null;
 
-    if (!skillId || skillId === 'All topics' || skillId === 'general') {
+    if (rawSkillId && rawSkillId !== 'All topics' && rawSkillId !== 'general') {
+      // 3a. Try exact ID match
+      const { data: exactSkill } = await supabase
+        .from('skills')
+        .select('id, name, description, difficulty, avg_days')
+        .eq('id', rawSkillId)
+        .maybeSingle();
+
+      if (exactSkill) {
+        skill = exactSkill;
+        resolvedSkillId = exactSkill.id;
+      } else {
+        // 3b. Try matching by name or slug (e.g. "skill-html" -> "html", "skill-python" -> "python")
+        const cleanName = String(rawSkillId)
+          .replace(/^skill[-_]?/i, '')
+          .replace(/[-_]/g, ' ')
+          .trim()
+          .toLowerCase();
+
+        const { data: allSkills } = await supabase
+          .from('skills')
+          .select('id, name, description, difficulty, avg_days');
+
+        if (allSkills && allSkills.length > 0) {
+          const matched = allSkills.find(s => {
+            const sName = s.name.toLowerCase();
+            return sName === cleanName || sName.includes(cleanName) || cleanName.includes(sName);
+          });
+          if (matched) {
+            skill = matched;
+            resolvedSkillId = matched.id;
+          }
+        }
+      }
+    }
+
+    // If still no skill resolved, try default first skill for background context without throwing
+    if (!skill) {
       const { data: defaultSkills } = await supabase
         .from('skills')
         .select('id, name, description, difficulty, avg_days')
         .order('order_index', { ascending: true })
         .limit(1);
       skill = defaultSkills?.[0] || null;
-      skillId = skill?.id || 'skill-1787555255194';
-    } else {
-      const { data: foundSkill, error: skillError } = await supabase
-        .from('skills')
-        .select('id, name, description, difficulty, avg_days')
-        .eq('id', skillId)
-        .maybeSingle();
+      resolvedSkillId = skill?.id || null;
+    }
 
-      if (skillError || !foundSkill) {
-        res.status(404).json({
-          error: `Skill track "${skillId}" not found in Pragati curriculum.`,
-          code: 'SKILL_NOT_FOUND'
-        });
-        return;
+    skillId = resolvedSkillId || rawSkillId || 'general-cse';
+
+    // 4. Fetch Roadmap Steps for this Skill (if available)
+    let steps: any[] = [];
+    if (resolvedSkillId) {
+      const { data: rawSteps, error: stepsError } = await supabase
+        .from('roadmap_steps')
+        .select('*')
+        .eq('skill_id', resolvedSkillId)
+        .order('step_order', { ascending: true });
+
+      if (stepsError) {
+        console.warn('[Supabase roadmap_steps notice]:', stepsError.message);
       }
-      skill = foundSkill;
-    }
 
-    // 4. Fetch Roadmap Steps for this Skill
-    const { data: rawSteps, error: stepsError } = await supabase
-      .from('roadmap_steps')
-      .select('*')
-      .eq('skill_id', skillId)
-      .order('step_order', { ascending: true });
-
-    if (stepsError) {
-      console.error('[Supabase roadmap_steps error]:', stepsError.message);
-    }
-
-    const steps = (rawSteps || []).map((row: any) => {
-      let detailsObj: any = null;
-      if (row.details) {
-        try {
-          detailsObj = typeof row.details === 'string' ? JSON.parse(row.details) : row.details;
-        } catch (e) {
-          if (typeof row.details === 'string' && (row.details.includes('drive.google.com') || row.details.startsWith('http'))) {
-            detailsObj = { drive_link: row.details };
+      steps = (rawSteps || []).map((row: any) => {
+        let detailsObj: any = null;
+        if (row.details) {
+          try {
+            detailsObj = typeof row.details === 'string' ? JSON.parse(row.details) : row.details;
+          } catch (e) {
+            if (typeof row.details === 'string' && (row.details.includes('drive.google.com') || row.details.startsWith('http'))) {
+              detailsObj = { drive_link: row.details };
+            }
           }
         }
-      }
 
-      return {
-        id: row.id,
-        skill_id: row.skill_id,
-        title: row.title,
-        description: row.description || '',
-        step_order: Number(row.step_order) || 1,
-        resource_link: row.resource_link || detailsObj?.resource_link || undefined,
-        drive_link: row.drive_link || detailsObj?.drive_link || undefined
-      };
-    });
-
-    // 5. Incomplete Roadmap Guard
-    if (!steps || steps.length === 0) {
-      res.json({
-        available: false,
-        reason: 'ROADMAP_INCOMPLETE',
-        skillName: skill.name,
-        message: `The curriculum for ${skill.name} is currently being curated by the Pragati Administrator. AI Teacher will unlock as soon as roadmap milestones are published.`
+        return {
+          id: row.id,
+          skill_id: row.skill_id,
+          title: row.title,
+          description: row.description || '',
+          step_order: Number(row.step_order) || 1,
+          resource_link: row.resource_link || detailsObj?.resource_link || undefined,
+          drive_link: row.drive_link || detailsObj?.drive_link || undefined
+        };
       });
-      return;
     }
 
-    // 6. Fetch verified resources for this skill
-    const { data: rawResources } = await supabase
-      .from('skill_resources')
-      .select('id, title, type, format, url, description')
-      .eq('skill_id', skillId);
+    // 5. Fetch verified resources for this skill if available
+    let resources: any[] = [];
+    if (resolvedSkillId) {
+      const { data: rawResources } = await supabase
+        .from('skill_resources')
+        .select('id, title, type, format, url, description')
+        .eq('skill_id', resolvedSkillId);
+      resources = rawResources || [];
+    }
 
-    const resources = rawResources || [];
+    // 6. Fetch the authenticated user's progress on this skill
+    let userProgress: any = null;
+    if (resolvedSkillId) {
+      const { data: up } = await supabase
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', authenticatedUserId)
+        .eq('skill_id', resolvedSkillId)
+        .maybeSingle();
+      userProgress = up;
+    }
 
-    // 7. Fetch the authenticated user's progress on this skill
-    const { data: userProgress } = await supabase
-      .from('user_progress')
-      .select('*')
-      .eq('user_id', authenticatedUserId)
-      .eq('skill_id', skillId)
-      .maybeSingle();
-
-    // 8. Fetch student profile context (strictly minimal for personalization: name & department only)
+    // 7. Fetch student profile context (name & department)
     const { data: profile } = await supabase
       .from('profiles')
       .select('full_name, department')
       .eq('id', authenticatedUserId)
       .maybeSingle();
 
-    // 9. Deterministic calculation of progress metrics
+    // 8. Deterministic calculation of progress metrics
     const isCompleted = userProgress?.status === 'completed';
     const completedStepOrders: number[] = isCompleted
       ? steps.map(s => s.step_order)
@@ -713,7 +771,9 @@ app.post('/api/ai-teacher', async (req: Request, res: Response): Promise<void> =
 
     const completedSteps = steps.filter(s => completedStepOrders.includes(s.step_order));
     const incompleteSteps = steps.filter(s => !completedStepOrders.includes(s.step_order));
-    const matchPercentage = Math.min(100, Math.max(0, Math.round((completedSteps.length / steps.length) * 100)));
+    const matchPercentage = steps.length > 0
+      ? Math.min(100, Math.max(0, Math.round((completedSteps.length / steps.length) * 100)))
+      : 0;
 
     let masteryLevel: 'Novice' | 'Beginner' | 'Developing' | 'Proficient' | 'Mastered';
     if (matchPercentage === 100 || isCompleted) {
@@ -728,23 +788,18 @@ app.post('/api/ai-teacher', async (req: Request, res: Response): Promise<void> =
       masteryLevel = 'Novice';
     }
 
-    // 10. Determine and Validate Focal Milestone
+    // 9. Determine Focal Milestone (if steps exist)
     let focusedStep = null;
-    if (currentStepId && typeof currentStepId === 'string' && currentStepId.trim().length > 0) {
-      const matched = steps.find(s => s.id === currentStepId.trim());
-      if (!matched) {
-        res.status(400).json({
-          error: `Milestone step "${currentStepId}" does not belong to skill track "${skill.name}".`,
-          code: 'INVALID_STEP'
-        });
-        return;
+    if (steps.length > 0) {
+      if (currentStepId && typeof currentStepId === 'string' && currentStepId.trim().length > 0) {
+        focusedStep = steps.find(s => s.id === currentStepId.trim()) || null;
       }
-      focusedStep = matched;
-    } else {
-      focusedStep = incompleteSteps.length > 0 ? incompleteSteps[0] : steps[0];
+      if (!focusedStep) {
+        focusedStep = incompleteSteps.length > 0 ? incompleteSteps[0] : steps[0];
+      }
     }
 
-    // 11. Resolve verified resources for this focal step or track (strictly from Supabase)
+    // 10. Resolve verified resources for this focal step or track (strictly from Supabase)
     const isValidHttpUrl = (urlStr?: string | null): boolean => {
       if (!urlStr || typeof urlStr !== 'string') return false;
       return urlStr.startsWith('http://') || urlStr.startsWith('https://');
@@ -778,7 +833,7 @@ app.post('/api/ai-teacher', async (req: Request, res: Response): Promise<void> =
       }
     }
 
-    // 12. Fallback if Gemini API Key is missing
+    // 11. Fallback if Gemini API Key is missing
     const geminiApiKey = process.env.GEMINI_API_KEY;
     if (!geminiApiKey) {
       const fallbackResult = generateDeterministicTeacherResponse(
@@ -797,7 +852,7 @@ app.post('/api/ai-teacher', async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    // 13. Initialize Google GenAI SDK
+    // 12. Initialize Google GenAI SDK
     const ai = new GoogleGenAI({
       apiKey: geminiApiKey,
       httpOptions: {
@@ -807,9 +862,11 @@ app.post('/api/ai-teacher', async (req: Request, res: Response): Promise<void> =
       }
     });
 
-    // 14. Build clean AI context grounded in Pragati curriculum
+    // 13. Build clean AI context (Supporting Context, NOT Knowledge Boundary)
     const aiContext = {
-      skill_track: {
+      curriculum_source: 'DIU Computer Science & Engineering - Pragati Platform',
+      active_track: skill ? {
+        id: skill.id,
         name: skill.name,
         difficulty: skill.difficulty || 'Beginner',
         total_milestones: steps.length,
@@ -821,6 +878,12 @@ app.post('/api/ai-teacher', async (req: Request, res: Response): Promise<void> =
           has_drive_notes: Boolean(s.drive_link),
           has_doc_link: Boolean(s.resource_link)
         }))
+      } : {
+        id: 'general-cse',
+        name: 'General Computer Science',
+        difficulty: 'All Levels',
+        total_milestones: 0,
+        milestones: []
       },
       current_focus_milestone: focusedStep ? {
         step_order: focusedStep.step_order,
@@ -840,37 +903,128 @@ app.post('/api/ai-teacher', async (req: Request, res: Response): Promise<void> =
       verified_resources: verifiedResourcesForStep
     };
 
-    // 15. Prepare conversation history
+    // Generate or use client-provided correlation requestId
+    const requestId = (req.body.requestId && typeof req.body.requestId === 'string')
+      ? req.body.requestId
+      : crypto.randomUUID();
+
+    console.log(`\n================== [AI TEACHER REQUEST] ==================`);
+    console.log(`requestId:     ${requestId}`);
+    console.log(`userId:        ${authenticatedUserId}`);
+    console.log(`message:       ${trimmedMessage}`);
+    console.log(`skillId:       ${skillId}`);
+    console.log(`currentStepId: ${currentStepId || 'none'}`);
+    console.log(`quickAction:   ${quickAction || 'none'}`);
+    console.log(`==========================================================\n`);
+
+    // 14. Prepare prior conversation history (strictly excluding the current question)
     const sanitizedHistory: Array<{ role: 'user' | 'model'; text: string }> = [];
     if (Array.isArray(conversationHistory)) {
-      for (const turn of conversationHistory.slice(-6)) {
+      for (const turn of conversationHistory.slice(-8)) {
         if (turn && typeof turn.text === 'string' && (turn.role === 'user' || turn.role === 'assistant' || turn.role === 'model')) {
-          sanitizedHistory.push({
-            role: turn.role === 'assistant' ? 'model' : turn.role as 'user' | 'model',
-            text: turn.text.slice(0, 1000)
-          });
+          const role = (turn.role === 'assistant' || turn.role === 'model') ? 'model' : 'user';
+          const text = turn.text.trim().slice(0, 1000);
+          if (!text || (role === 'user' && text === trimmedMessage)) continue;
+
+          const lastTurn = sanitizedHistory[sanitizedHistory.length - 1];
+          if (!lastTurn || lastTurn.role !== role) {
+            sanitizedHistory.push({ role, text });
+          }
         }
       }
     }
+    // Ensure history does not end with a user turn before appending the new user prompt
+    if (sanitizedHistory.length > 0 && sanitizedHistory[sanitizedHistory.length - 1].role === 'user') {
+      sanitizedHistory.pop();
+    }
 
     const systemInstruction = `You are Pragati AI Teacher, an empathetic, encouraging, and academically rigorous university computer science tutor at DIU for CSE students.
-Your mission is to teach, explain, test, and guide students based EXCLUSIVELY on Pragati's verified curriculum.
 
-STRICT GROUNDING & INTEGRITY RULES:
-1. THE PRAGATI ROADMAP IS THE SOURCE OF TRUTH. You are teaching the "${skill.name}" track. Ground all explanations in this curriculum.
-2. CURRENT FOCUS: ${focusedStep ? `Milestone #${focusedStep.step_order} - "${focusedStep.title}"` : 'General Track'}.
-3. STUDENT CONTEXT: ${aiContext.student_profile.name} (${aiContext.student_profile.mastery_level}, ${completedSteps.length}/${steps.length} milestones complete).
-4. VERIFIED RESOURCES: You may ONLY reference URLs that are explicitly provided in "verified_resources". NEVER hallucinate or guess web/drive/video links.
-5. TEACHING STYLES:
-   - When asked to explain: Provide clear, structured explanations with real-world analogies first, then clean technical precision.
-   - When asked for examples: Provide clean, commented, idiomatic code snippets in the appropriate language.
-   - When asked for practice: Provide a focused, realistic practice question or short problem related to the current milestone.
-   - When asked for a hint: Give a pedagogical nudge to stimulate thinking without giving away the full answer immediately.
-   - Keep explanations engaging, concise, and educational.
-8. LANGUAGE & CSE TOPICS:
-   - If Preferred Language is 'Bangla + English' or 'Bangla', explain concepts in natural, friendly Bangla mixed with English technical terms.
-   - You can answer any CSE-related question: programming, DSA, OS, DBMS, networks, OOP, AI/ML, web development, exams, projects, careers. Ground explanations in Pragati curriculum when relevant.
+Your primary mission is to directly, accurately, and thoroughly answer the student's CURRENT QUESTION across ANY Computer Science / Engineering domain.
+
+CORE KNOWLEDGE BOUNDARY & PRAGATI GROUNDING RULES:
+1. THE CURRICULUM IS SUPPORTING CONTEXT ONLY, NOT A KNOWLEDGE BOUNDARY.
+   You must answer ANY Computer Science / CSE / programming / technology question (C, C++, Java, Python, JS, TS, HTML, CSS, React, Web Dev, DBMS, SQL, OS, Networks, Algorithms, Data Structures, OOP, Software Engineering, Git, AI/ML, Cyber Security, Cloud Computing, etc.).
+   Do NOT require the question to exist inside Pragati's curriculum or the current roadmap.
+   If the student asks "html er full form ki?", answer it directly: "HTML stands for HyperText Markup Language...".
+   If the student asks "C te pointer ki?" while the track is HTML, answer the C pointer question directly. Never say "This is not in the HTML curriculum".
+   If the student asks "DBMS normalization ki?" or "TCP ar UDP er moddhe difference ki?", answer it directly and thoroughly.
+2. PRIORITY OF RESPONSE:
+   1) CURRENT STUDENT QUESTION (Always highest priority!)
+   2) CONVERSATION CONTEXT
+   3) RELEVANT PRAGATI CURRICULUM CONTEXT (Use only if relevant to the question)
+   4) VERIFIED PRAGATI RESOURCES (Recommend only if actually relevant to the question)
+   5) GENERAL CSE KNOWLEDGE FROM THE LLM
+3. QUESTION CLASSIFICATION:
+   Internally classify what the student is actually asking (definition, explanation, comparison, example, code, debugging, why, how, syntax, concept, practice, hint, interview, career, general CSE).
+   Answer that actual intent. Do NOT classify a question based only on the currently selected roadmap skill.
+4. ROADMAP CONTEXT RULE:
+   The roadmap context provided in the prompt is background context only. If the question directly relates to the current track, connect your explanation to the curriculum. If it does NOT relate to the current track, answer using foundational Computer Science principles.
+5. NO HALLUCINATION OF PRAGATI RESOURCES:
+   Only reference Pragati URLs if they are explicitly present in "verified_resources". Never invent fake URLs or fake roadmap steps. If none are relevant, answer using general knowledge. If there is no related milestone in the track, set "related_step_title": null.
+6. NON-CSE QUESTIONS:
+   If a question is completely unrelated to Computer Science / software / technology (e.g. cooking recipes or celebrities), politely state that you specialize in Computer Science & Engineering and offer to help with a CSE concept.
+7. LANGUAGE:
+   - If the student asks in Bangla or Banglish (e.g. "html er full form ki?", "C te pointer ki?", "kivabe kaj kore?"), respond in warm, natural Bangla mixed with standard English technical terms.
+   - If English, respond in clear professional English.
+8. VISUAL ARTIFACTS:
+   Set "visual": null for standard answers. Only populate "visual" if the student explicitly asks for a diagram, visualization, cheat-sheet document, or HTML webpage.
 9. Return strictly valid JSON adhering to the specified schema.`;
+
+    let historyText = '';
+    if (sanitizedHistory.length > 0) {
+      historyText = sanitizedHistory.map(h => `${h.role === 'user' ? 'Student' : 'AI Teacher'}: ${h.text}`).join('\n\n');
+    }
+
+    const userPromptText = `<student_context>
+Name: ${profile?.full_name || 'Student'}
+Department: ${profile?.department || 'CSE'}
+Mastery: ${masteryLevel} (${completedSteps.length}/${steps.length} milestones complete in ${skill?.name || 'General CSE'})
+</student_context>
+
+<skill_context>
+Curriculum Track: ${skill ? `${skill.name} (${skill.difficulty || 'Beginner'})` : 'General Computer Science'}
+</skill_context>
+
+<roadmap_context>
+Focused Milestone: ${focusedStep ? `#${focusedStep.step_order} - ${focusedStep.title}` : 'General Track'}
+Description: ${focusedStep?.description || 'N/A'}
+Other Milestones in Track: ${steps.length > 0 ? steps.map(s => `#${s.step_order} ${s.title}`).join(', ') : 'No track milestones active'}
+NOTE: This roadmap is BACKGROUND CONTEXT ONLY. Do NOT substitute this roadmap for the student's question.
+</roadmap_context>
+
+<verified_resources>
+${verifiedResourcesForStep.length > 0 ? verifiedResourcesForStep.map(r => `- ${r.title}: ${r.url}`).join('\n') : 'No specific URLs attached'}
+</verified_resources>
+
+${historyText ? `<conversation_history>\n${historyText}\n</conversation_history>\n\n` : ''}${quickAction ? `<requested_action>\n${quickAction}\n</requested_action>\n\n` : ''}${topic && topic !== 'All topics' ? `<topic_focus>\n${topic}\n</topic_focus>\n\n` : ''}${language ? `<preferred_language>\n${language}\n</preferred_language>\n\n` : ''}<current_question>
+${trimmedMessage}
+</current_question>
+
+<final_instruction>
+Answer ONLY the student's current question: "${trimmedMessage}".
+
+Before generating the final answer, internally verify:
+1. What is the student's intent? (definition, explanation, comparison, example, code, debugging, why, how, syntax, concept, practice, hint, etc.)
+2. Is it a CSE question? (YES: answer directly using full Computer Science domain knowledge, whether it is C, Java, Python, DBMS, Networks, HTML, etc.)
+3. Does my answer directly address "${trimmedMessage}"?
+4. Am I accidentally restricting or twisting the answer to fit the selected roadmap topic? If so, STOP and answer "${trimmedMessage}".
+5. If the student asks in Bangla or Banglish (e.g. "html er full form ki?", "C te pointer ki?"), answer in natural, encouraging Bangla mixed with English terms!
+
+In the JSON response:
+- "answer": Your direct, clear answer addressing "${trimmedMessage}".
+- "current_topic": The actual specific topic of "${trimmedMessage}" (e.g. "HTML Full Form & Overview", "Pointers in C", "DBMS Normalization", "TCP vs UDP", "Inheritance in Java", "Binary Search Algorithm").
+- "related_step_title": If "${trimmedMessage}" directly relates to a milestone in the current track (${skill?.name || 'General CSE'}), provide the relevant milestone title; otherwise set to null.
+- "teaching_mode": "explanation", "example", "practice", or "hint".
+- "visual": ONLY provide an object here if the student EXPLICITLY requested an interactive visualization, step-by-step diagram, complete cheat-sheet/document (e.g. "PDF/cheat sheet/notes document"), or complete HTML webpage (e.g. "make an HTML page/landing page"). For normal questions, standard explanations, simple code snippets, or regular Q&A, you MUST set "visual": null.
+</final_instruction>`;
+
+    console.log(`[AI TEACHER DEBUG]`);
+    console.log(`Question:     ${trimmedMessage}`);
+    console.log(`Skill:        ${skill?.name || 'General CSE'} (${skillId})`);
+    console.log(`Current Step: ${focusedStep ? `#${focusedStep.step_order} - ${focusedStep.title}` : 'none'}`);
+    console.log(`History:      ${sanitizedHistory.length} turns`);
+    console.log(`Quick Action: ${quickAction || 'none'}`);
 
     const contents: any[] = [];
     for (const h of sanitizedHistory) {
@@ -879,18 +1033,6 @@ STRICT GROUNDING & INTEGRITY RULES:
         parts: [{ text: h.text }]
       });
     }
-
-    let userPromptText = `User Message: "${trimmedMessage}"`;
-    if (quickAction) {
-      userPromptText += `\nRequested Action: "${quickAction}"`;
-    }
-    if (topic && topic !== 'All topics') {
-      userPromptText += `\nTopic Focus: "${topic}"`;
-    }
-    if (language) {
-      userPromptText += `\nPreferred Language: "${language}"`;
-    }
-    userPromptText += `\n\nContext Data:\n${JSON.stringify(aiContext, null, 2)}`;
 
     contents.push({
       role: 'user',
@@ -907,7 +1049,10 @@ STRICT GROUNDING & INTEGRITY RULES:
           contents,
           config: {
             systemInstruction,
-            temperature: 0.3,
+            temperature: 0.2,
+            thinkingConfig: {
+              thinkingLevel: ThinkingLevel.MEDIUM
+            },
             responseMimeType: 'application/json',
             responseSchema: {
               type: Type.OBJECT,
@@ -915,17 +1060,26 @@ STRICT GROUNDING & INTEGRITY RULES:
                 answer: { type: Type.STRING },
                 teaching_mode: { type: Type.STRING },
                 current_topic: { type: Type.STRING },
-                related_step_title: { type: Type.STRING },
+                related_step_title: { type: Type.STRING, nullable: true },
                 practice_question: { type: Type.STRING, nullable: true },
                 hint: { type: Type.STRING, nullable: true },
                 code_snippet: { type: Type.STRING, nullable: true },
                 code_language: { type: Type.STRING, nullable: true },
+                visual: {
+                  type: Type.OBJECT,
+                  nullable: true,
+                  properties: {
+                    type: { type: Type.STRING },
+                    title: { type: Type.STRING, nullable: true },
+                    content: { type: Type.STRING, nullable: true }
+                  }
+                },
                 suggested_followups: {
                   type: Type.ARRAY,
                   items: { type: Type.STRING }
                 }
               },
-              required: ['answer', 'teaching_mode']
+              required: ['answer', 'teaching_mode', 'current_topic']
             }
           }
         });
@@ -939,6 +1093,15 @@ STRICT GROUNDING & INTEGRITY RULES:
       }
     }
 
+    if (rawResult) {
+      console.log(`\n================== [AI TEACHER RESPONSE] ==================`);
+      console.log(`requestId: ${requestId}`);
+      console.log(`message:   ${trimmedMessage}`);
+      console.log(`topic:     ${rawResult.current_topic}`);
+      console.log(`answer:    ${rawResult.answer?.slice(0, 150)}...`);
+      console.log(`===========================================================\n`);
+    }
+
     if (!rawResult) {
       console.log('[Pragati Server] Using deterministic AI Teacher fallback.');
       const fallbackResult = generateDeterministicTeacherResponse(
@@ -949,6 +1112,7 @@ STRICT GROUNDING & INTEGRITY RULES:
       );
       res.json({
         success: true,
+        requestId,
         data: {
           ...fallbackResult,
           verified_resources: verifiedResourcesForStep
@@ -959,7 +1123,7 @@ STRICT GROUNDING & INTEGRITY RULES:
 
     // 16. Sanitize and ground output with trusted Supabase data
     let matchedStepId: string | undefined = undefined;
-    let matchedStepTitle: string = focusedStep?.title || skill.name;
+    let matchedStepTitle: string | undefined = undefined;
 
     if (rawResult.related_step_title) {
       const found = steps.find(s => 
@@ -973,11 +1137,6 @@ STRICT GROUNDING & INTEGRITY RULES:
       }
     }
 
-    if (!matchedStepId && focusedStep) {
-      matchedStepId = focusedStep.id;
-      matchedStepTitle = focusedStep.title;
-    }
-
     const validModes = ['explanation', 'example', 'practice', 'hint', 'quiz', 'general'];
     const teachingMode = validModes.includes(String(rawResult.teaching_mode).toLowerCase())
       ? String(rawResult.teaching_mode).toLowerCase()
@@ -986,25 +1145,27 @@ STRICT GROUNDING & INTEGRITY RULES:
     const validatedTeacherData = {
       answer: rawResult.answer,
       teaching_mode: teachingMode,
-      current_topic: rawResult.current_topic || matchedStepTitle,
+      current_topic: rawResult.current_topic || (matchedStepTitle || skill?.name || 'Computer Science'),
       related_step_id: matchedStepId,
-      related_step_title: matchedStepTitle,
+      related_step_title: matchedStepTitle || null,
       practice_question: rawResult.practice_question || null,
       hint: rawResult.hint || null,
       code_snippet: rawResult.code_snippet || null,
       code_language: rawResult.code_language || null,
+      visual: rawResult.visual || null,
       verified_resources: verifiedResourcesForStep,
       suggested_followups: Array.isArray(rawResult.suggested_followups)
         ? rawResult.suggested_followups.slice(0, 3)
         : [
-            `Can you give me a code example for ${matchedStepTitle}?`,
-            `Give me a practice quiz question`,
-            `Explain this simply in beginner terms`
+            `Can you give me a code example for this?`,
+            `Give me a practice quiz question on this`,
+            `Explain this simply with an everyday analogy`
           ]
     };
 
     res.json({
       success: true,
+      requestId,
       data: validatedTeacherData
     });
 

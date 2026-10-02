@@ -1,8 +1,7 @@
 import type { ChatMessage, Language, TopicFilter } from '../types';
 import { buildSystemPrompt } from './systemPrompt';
-import { streamMock } from './mockAi';
 import { supabase } from '../../../lib/supabase';
-import { extFor } from '../lib/utils';
+import { extFor, uid } from '../lib/utils';
 
 export interface StreamParams {
   history: ChatMessage[];
@@ -12,8 +11,10 @@ export interface StreamParams {
   skillId?: string;
   currentStepId?: string;
   quickAction?: string;
+  requestId?: string;
   signal?: AbortSignal;
   onToken: (chunk: string) => void;
+  onResponseMeta?: (meta: { hasVisualArtifact: boolean; visual?: any }) => void;
 }
 
 function messageText(m: ChatMessage): string {
@@ -28,24 +29,54 @@ function formatTeacherResponse(tData: any, fallbackReply?: string): string {
 
   let text = tData.answer || fallbackReply || '';
 
-  // 1. Code artifact if present and not already formatted inside answer
+  // 1. Explicit visual artifact response (when visual !== null)
+  if (tData.visual && typeof tData.visual === 'object') {
+    const vType = (tData.visual.type || 'document').toLowerCase();
+    const vTitle = tData.visual.title || (tData.current_topic ? `${tData.current_topic}` : 'Artifact');
+    const vContent = tData.visual.content || '';
+
+    if (vType === 'visual') {
+      const visualBody = typeof vContent === 'object' ? JSON.stringify(vContent) : vContent;
+      text += `\n\n\`\`\`visual\n${visualBody}\n\`\`\``;
+    } else if (vType === 'html') {
+      const htmlFilename = vTitle.endsWith('.html') ? vTitle : `${vTitle.toLowerCase().replace(/[^a-z0-9]+/g, '_')}.html`;
+      text += `\n\n\`\`\`html title="${htmlFilename}"\n${vContent}\n\`\`\``;
+    } else if (vType === 'code') {
+      const lang = (tData.code_language || 'python').toLowerCase();
+      const codeFilename = `${vTitle.toLowerCase().replace(/[^a-z0-9]+/g, '_')}.${extFor(lang)}`;
+      text += `\n\n\`\`\`${lang} title="${codeFilename}"\n${vContent || tData.code_snippet || ''}\n\`\`\``;
+    } else {
+      // document / notes / cheat sheet
+      const docFilename = (vTitle.endsWith('.md') || vTitle.endsWith('.pdf')) ? vTitle : `${vTitle}.md`;
+      text += `\n\n\`\`\`document title="${docFilename}"\n${vContent}\n\`\`\``;
+    }
+  }
+
+  // 2. Code snippet: if present and not already formatted inside answer or visual
   if (tData.code_snippet && typeof tData.code_snippet === 'string' && !text.includes(tData.code_snippet.slice(0, 30))) {
     const lang = (tData.code_language || 'python').toLowerCase();
-    const safeTopic = (tData.current_topic || 'solution')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '_')
-      .replace(/^_+|_+$/g, '');
-    const filename = `${safeTopic || 'code'}.${extFor(lang)}`;
-    text += `\n\n\`\`\`${lang} title="${filename}"\n${tData.code_snippet}\n\`\`\``;
+    if (tData.visual) {
+      const safeTopic = (tData.current_topic || 'solution')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '');
+      const filename = `${safeTopic || 'code'}.${extFor(lang)}`;
+      text += `\n\n\`\`\`${lang} title="${filename}"\n${tData.code_snippet}\n\`\`\``;
+    } else {
+      text += `\n\n\`\`\`${lang}\n${tData.code_snippet}\n\`\`\``;
+    }
   }
 
-  // 2. Practice Question / Notes document artifact
+  // 3. Practice Question / Challenge (clean inline challenge, unless explicitly requested as document)
   if (tData.practice_question && typeof tData.practice_question === 'string' && !text.includes(tData.practice_question.slice(0, 30))) {
-    const docTitle = `${(tData.current_topic || 'Practice').slice(0, 24)} Challenge.md`;
-    text += `\n\n\`\`\`document title="${docTitle}"\n# Practice Challenge: ${tData.current_topic || 'Topic'}\n\n${tData.practice_question}\n\n${tData.hint ? `> 💡 **Hint**: ${tData.hint}\n` : ''}\`\`\``;
+    if (tData.visual && tData.visual.type === 'document') {
+      // already in visual document
+    } else {
+      text += `\n\n> 🎯 **Practice Challenge**: ${tData.practice_question}${tData.hint ? `\n> 💡 **Hint**: ${tData.hint}` : ''}`;
+    }
   }
 
-  // 3. Topic & Teaching Mode Summary Cards
+  // 4. Topic & Teaching Mode Summary Cards
   if (tData.current_topic && !text.includes('```cards')) {
     const cards: Array<{ title: string; sub?: string; color: string }> = [
       {
@@ -64,7 +95,7 @@ function formatTeacherResponse(tData: any, fallbackReply?: string): string {
     text += `\n\n\`\`\`cards\n${JSON.stringify(cards)}\n\`\`\``;
   }
 
-  // 4. Sources block: Grounded verified resources
+  // 5. Sources block: Grounded verified resources
   if (Array.isArray(tData.verified_resources) && tData.verified_resources.length > 0 && !text.includes('```sources')) {
     const sourceTitles = tData.verified_resources
       .map((r: any) => r.title || r.url)
@@ -74,7 +105,7 @@ function formatTeacherResponse(tData: any, fallbackReply?: string): string {
     }
   }
 
-  // 5. Follow-ups block: Suggested follow-ups
+  // 6. Follow-ups block: Suggested follow-ups
   if (Array.isArray(tData.suggested_followups) && tData.suggested_followups.length > 0 && !text.includes('```followups')) {
     const followups = tData.suggested_followups
       .filter((q: any): q is string => typeof q === 'string' && q.trim().length > 0)
@@ -89,15 +120,23 @@ function formatTeacherResponse(tData: any, fallbackReply?: string): string {
 
 export async function streamAnswer(p: StreamParams): Promise<void> {
   const lastUser = [...p.history].reverse().find((m) => m.role === 'user');
-  const usable = p.history.filter((m) => m.content.trim() || (m.attachments?.length ?? 0) > 0).slice(-20);
+  const currentQuestion = lastUser ? messageText(lastUser) : '';
+  
+  // Prior conversation history (strictly excluding the current user question)
+  const priorHistory = p.history.slice(0, Math.max(0, p.history.length - 1));
+  const usablePrior = priorHistory
+    .filter((m) => m.content.trim() || (m.attachments?.length ?? 0) > 0)
+    .slice(-10);
+
   const system = buildSystemPrompt({ topic: p.topic, language: p.language, userName: p.userName });
+  const requestId = p.requestId || uid();
 
   try {
     // 1. Get Supabase auth token
     const { data: sessionData } = await supabase.auth.getSession();
     const token = sessionData?.session?.access_token;
 
-    // 2. Call existing server-side /api/ai-teacher endpoint
+    // 2. Call server-side /api/ai-teacher endpoint
     const response = await fetch('/api/ai-teacher', {
       method: 'POST',
       headers: {
@@ -105,19 +144,19 @@ export async function streamAnswer(p: StreamParams): Promise<void> {
         ...(token ? { 'Authorization': `Bearer ${token}` } : {})
       },
       body: JSON.stringify({
+        requestId,
         system,
         topic: p.topic,
         language: p.language,
         skillId: p.skillId,
         currentStepId: p.currentStepId,
         quickAction: p.quickAction,
-        message: lastUser?.content || '',
-        messages: usable.map((m) => ({ role: m.role, content: messageText(m) })),
-        conversationHistory: usable.map((m) => ({
+        message: currentQuestion,
+        conversationHistory: usablePrior.map((m) => ({
           role: m.role === 'user' ? 'user' : 'model',
           text: messageText(m)
         })),
-        stream: true
+        stream: false
       }),
       signal: p.signal
     });
@@ -127,26 +166,12 @@ export async function streamAnswer(p: StreamParams): Promise<void> {
       throw new Error(errJson?.error || `AI Teacher service responded with status ${response.status}`);
     }
 
-    const contentType = response.headers.get('content-type') || '';
-    if (contentType.includes('text/event-stream') || contentType.includes('text/plain')) {
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error('No readable stream available');
-      const decoder = new TextDecoder();
-      while (true) {
-        if (p.signal?.aborted) {
-          reader.cancel();
-          return;
-        }
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        p.onToken(chunk);
-      }
-      return;
-    }
-
     const data = await response.json();
+    const hasVisual = Boolean(data?.data?.visual);
+    p.onResponseMeta?.({ hasVisualArtifact: hasVisual, visual: data?.data?.visual });
+
     const reply = formatTeacherResponse(data.data, data.reply);
+    
     if (reply) {
       for (let i = 0; i < reply.length; i += 24) {
         if (p.signal?.aborted) return;
@@ -157,7 +182,7 @@ export async function streamAnswer(p: StreamParams): Promise<void> {
     }
   } catch (err: any) {
     if (p.signal?.aborted) return;
-    console.warn('[streamAnswer] Backend connection notice, using grounded fallback:', err?.message || err);
-    await streamMock(lastUser?.content ?? '', p.onToken, p.signal);
+    console.error('[streamAnswer Error]:', err);
+    p.onToken(`⚠️ **Notice:** ${err?.message || 'Could not reach AI Teacher. Please check your connection and try again.'}`);
   }
 }
