@@ -605,31 +605,25 @@ function generateDeterministicTeacherResponse(
  */
 app.post('/api/ai-teacher', async (req: Request, res: Response): Promise<void> => {
   try {
-    // 1. Verify Supabase JWT from Authorization header
+    // 1. Resolve user identity from Authorization header (Optional/Graceful)
+    let authenticatedUserId: string | null = null;
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      res.status(401).json({
-        error: 'Authentication required. Please log in to chat with Pragati AI Teacher.',
-        code: 'UNAUTHORIZED'
-      });
-      return;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      if (token && token !== 'undefined' && token !== 'null') {
+        try {
+          const { data: authData, error: authError } = await supabase.auth.getUser(token);
+          if (!authError && authData?.user?.id) {
+            authenticatedUserId = authData.user.id;
+          }
+        } catch (authErr) {
+          console.warn('[AI Teacher Auth notice]:', authErr);
+        }
+      }
     }
-
-    const token = authHeader.split(' ')[1];
-    const { data: authData, error: authError } = await supabase.auth.getUser(token);
-
-    if (authError || !authData?.user) {
-      res.status(401).json({
-        error: 'Invalid or expired session. Please log in again.',
-        code: 'INVALID_SESSION'
-      });
-      return;
-    }
-
-    const authenticatedUserId = authData.user.id;
 
     // 2. Validate request parameters
-    const { skillId: rawSkillId, currentStepId, message, conversationHistory, quickAction, topic, language } = req.body;
+    const { skillId: rawSkillId, currentStepId, message, conversationHistory, quickAction, topic, language, userName: reqUserName } = req.body;
 
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
       res.status(400).json({
@@ -742,9 +736,9 @@ app.post('/api/ai-teacher', async (req: Request, res: Response): Promise<void> =
       resources = rawResources || [];
     }
 
-    // 6. Fetch the authenticated user's progress on this skill
+    // 6. Fetch the authenticated user's progress on this skill (if logged in)
     let userProgress: any = null;
-    if (resolvedSkillId) {
+    if (resolvedSkillId && authenticatedUserId) {
       const { data: up } = await supabase
         .from('user_progress')
         .select('*')
@@ -755,11 +749,18 @@ app.post('/api/ai-teacher', async (req: Request, res: Response): Promise<void> =
     }
 
     // 7. Fetch student profile context (name & department)
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('full_name, department')
-      .eq('id', authenticatedUserId)
-      .maybeSingle();
+    let profile: any = null;
+    if (authenticatedUserId) {
+      const { data: p } = await supabase
+        .from('profiles')
+        .select('full_name, department')
+        .eq('id', authenticatedUserId)
+        .maybeSingle();
+      profile = p;
+    }
+
+    const studentFullName = profile?.full_name || (typeof reqUserName === 'string' && reqUserName.trim()) || 'Student';
+    const studentDept = profile?.department || 'CSE';
 
     // 8. Deterministic calculation of progress metrics
     const isCompleted = userProgress?.status === 'completed';
@@ -893,8 +894,8 @@ app.post('/api/ai-teacher', async (req: Request, res: Response): Promise<void> =
         is_completed: completedStepOrders.includes(focusedStep.step_order)
       } : null,
       student_profile: {
-        name: profile?.full_name || 'Student',
-        department: profile?.department || 'CSE',
+        name: studentFullName,
+        department: studentDept,
         mastery_level: masteryLevel,
         match_percentage: matchPercentage,
         completed_step_count: completedSteps.length,
@@ -1007,8 +1008,8 @@ Prioritize correctness over sounding simple. Never make a technically inaccurate
     }
 
     const userPromptText = `<student_context>
-Name: ${profile?.full_name || 'Student'}
-Department: ${profile?.department || 'CSE'}
+Name: ${studentFullName}
+Department: ${studentDept}
 Mastery: ${masteryLevel} (${completedSteps.length}/${steps.length} milestones complete in ${skill?.name || 'General CSE'})
 </student_context>
 
