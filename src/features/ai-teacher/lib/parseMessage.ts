@@ -140,6 +140,33 @@ export function parseMessage(messageId: string, content: string): ParsedMessage 
 
   // remaining text; hide a half-typed fence such as "```pyth" while streaming
   pushText(content.slice(last).replace(/```[^\n`]*$/, ''));
+
+  // Clean and extract any trailing text-based sources line into structured sources cards
+  for (let i = 0; i < out.segments.length; i++) {
+    const seg = out.segments[i];
+    if (seg.type === 'text') {
+      const srcMatch = /(?:\n|^)(?:\*{0,2}(?:Sources|Verified Resources|উৎস):?\*{0,2})\s*([^\n]+(?:\n[^\n]+)*)$/i.exec(seg.text);
+      if (srcMatch) {
+        if (out.sources.length === 0) {
+          const lines = srcMatch[1]
+            .split(/[\n,;•\-|]+/)
+            .map((s) => s.trim().replace(/^\[|\]$/g, '').replace(/^\d+[\.\)]\s*/, ''))
+            .filter((s) => s.length > 2);
+          if (lines.length > 0) {
+            out.sources = lines.slice(0, 4);
+          }
+        }
+        const cleanedText = seg.text.slice(0, srcMatch.index).trim();
+        if (cleanedText) {
+          seg.text = cleanedText;
+        } else {
+          out.segments.splice(i, 1);
+          i--;
+        }
+      }
+    }
+  }
+
   // visual > web page > document > code file; first one wins inside the same kind
   const priority: Record<Artifact['kind'], number> = { visual: 0, html: 1, document: 2, code: 3 };
   out.autoOpenId = [...autoCandidates].sort((x, y) => priority[x.kind] - priority[y.kind])[0]?.id;

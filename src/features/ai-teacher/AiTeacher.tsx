@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Artifact, Attachment, ChatMessage, Language, Topic, TopicFilter } from './types';
 import { QUICK_ACTIONS, type QuickActionId } from './constants';
 import { parseMessage } from './lib/parseMessage';
-import { cn, uid } from './lib/utils';
+import { cn, uid, generateChatTitle } from './lib/utils';
 import { streamAnswer } from './services/aiService';
 import { useChats } from './store/useChats';
 import { Sidebar } from './components/Sidebar';
@@ -45,13 +45,35 @@ export function AiTeacher({
   const [language, setLanguage] = useState<Language>('Bangla + English');
   const [topic, setTopic] = useState<TopicFilter>('All topics');
   const [streamingChatId, setStreamingChatId] = useState<string | null>(null);
+  
+  // Mobile drawer state
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Desktop collapsible sidebar state (persisted)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('pragati-ai-teacher-sidebar-collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
   const [openArtifactId, setOpenArtifactId] = useState<string | null>(null);
   const [focusTick, setFocusTick] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
   const activeRequestIdRef = useRef<string | null>(null);
 
   const streaming = streamingChatId !== null;
+
+  const toggleSidebarCollapsed = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('pragati-ai-teacher-sidebar-collapsed', String(next));
+      } catch {}
+      return next;
+    });
+  };
 
   const artifacts = useMemo<Artifact[]>(
     () => (activeChat ? activeChat.messages.filter((m) => m.role === 'assistant').flatMap((m) => parseMessage(m.id, m.content).artifacts) : []),
@@ -108,7 +130,7 @@ export function AiTeacher({
     let chatId = activeChat?.id;
     let prior: ChatMessage[] = activeChat?.messages ?? [];
     if (!chatId) {
-      const title = (text || atts[0]?.name || 'New chat').slice(0, 48);
+      const title = generateChatTitle(text || atts[0]?.name || 'New discussion');
       chatId = store.createChat(topic, title);
       prior = [];
     }
@@ -139,6 +161,9 @@ export function AiTeacher({
         signal: ctrl.signal,
         onResponseMeta: (meta) => {
           hasVisualArtifact = meta.hasVisualArtifact;
+          if (meta.currentTopic && chatId) {
+            store.renameChat(chatId, meta.currentTopic.trim());
+          }
         },
         onToken: (t) => {
           if (activeRequestIdRef.current !== currentReqId) return;
@@ -195,8 +220,8 @@ export function AiTeacher({
   };
 
   const explainerOpen = Boolean(openArtifact);
-  // when the explainer panel is open the sidebar becomes a slide-over until 2xl screens
-  const menuClass = explainerOpen ? '2xl:hidden' : 'lg:hidden';
+  // Show menu button on mobile or when desktop sidebar is collapsed
+  const menuClass = explainerOpen ? '2xl:hidden' : (sidebarCollapsed ? 'flex' : 'lg:hidden');
 
   const common = {
     input,
@@ -209,25 +234,52 @@ export function AiTeacher({
     onRemoveAttachment: (n: string) => setAttachments((p) => p.filter((a) => a.name !== n)),
     focusTick,
     onQuickAction: quickAction,
-    onMenu: () => setSidebarOpen(true),
+    onMenu: () => {
+      if (window.innerWidth >= 1024 && sidebarCollapsed) {
+        toggleSidebarCollapsed();
+      } else {
+        setSidebarOpen(true);
+      }
+    },
     menuClass,
     onClose,
   };
 
   const shell = (
     <div className={cn('relative flex h-full w-full overflow-hidden bg-[#FAF9FF] text-[#1B1B2F]', className)}>
-      {sidebarOpen && <div className={cn('fixed inset-0 z-40 bg-black/30', explainerOpen ? '2xl:hidden' : 'lg:hidden')} onClick={() => setSidebarOpen(false)} />}
+      {/* Mobile Drawer Backdrop */}
+      {sidebarOpen && (
+        <div
+          className={cn('fixed inset-0 z-40 bg-black/40 backdrop-blur-2xs', explainerOpen ? '2xl:hidden' : 'lg:hidden')}
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Responsive Collapsible Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 h-full w-[290px] shrink-0 border-r border-[#E2DFF5] bg-[#F1EEFF] transition-transform duration-200',
+          'fixed inset-y-0 left-0 z-50 h-full shrink-0 border-r border-[#E2DFF5] dark:border-[#25243C] bg-[#F8F7FF] dark:bg-[#141424] transition-all duration-300 ease-in-out',
           explainerOpen ? '2xl:static 2xl:translate-x-0' : 'lg:static lg:translate-x-0',
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full',
+          sidebarOpen ? 'translate-x-0 w-[290px]' : '-translate-x-full lg:translate-x-0',
+          sidebarCollapsed ? 'lg:w-[68px]' : 'lg:w-[290px]',
         )}
       >
-        <Sidebar chats={store.chats} activeId={store.activeId} userName={userName} onNew={newChat} onSelect={selectChat} onDelete={store.deleteChat} />
+        <Sidebar
+          chats={store.chats}
+          activeId={store.activeId}
+          userName={userName}
+          isCollapsed={sidebarCollapsed}
+          onToggleCollapse={toggleSidebarCollapsed}
+          onNew={newChat}
+          onSelect={selectChat}
+          onRename={store.renameChat}
+          onDelete={store.deleteChat}
+          onCloseMobile={() => setSidebarOpen(false)}
+        />
       </aside>
 
-      <main className="flex min-w-0 flex-1">
+      {/* Main Conversation & Teaching Area (Expands smoothly) */}
+      <main className="flex min-w-0 flex-1 transition-all duration-300 ease-in-out">
         <section className="min-w-0 flex-1">
           {activeChat && activeChat.messages.length > 0 ? (
             <ChatView

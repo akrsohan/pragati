@@ -8,6 +8,12 @@
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
+.font-ai-reading {
+  font-family: 'Inter', 'Noto Sans Bengali', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: -0.005em;
+  word-spacing: 0.015em;
+}
+
 html, body {
   background: #f4f5f7;
   color: #1a1c2e;

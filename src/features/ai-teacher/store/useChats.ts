@@ -29,7 +29,7 @@ export function useChats(storageKey: string) {
       } catch {
         /* storage full or blocked: ignore */
       }
-    }, 400);
+    }, 300);
     return () => clearTimeout(t);
   }, [chats, storageKey]);
 
@@ -41,6 +41,14 @@ export function useChats(storageKey: string) {
     setChats((prev) => [{ id, title, topic, createdAt: now, updatedAt: now, messages: [] }, ...prev]);
     setActiveId(id);
     return id;
+  }, []);
+
+  const renameChat = useCallback((id: string, newTitle: string) => {
+    const clean = newTitle.trim();
+    if (!clean) return;
+    setChats((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, title: clean, updatedAt: Date.now() } : c)),
+    );
   }, []);
 
   const addMessages = useCallback((chatId: string, msgs: ChatMessage[]) => {
@@ -62,5 +70,5 @@ export function useChats(storageKey: string) {
     setActiveId((cur) => (cur === id ? null : cur));
   }, []);
 
-  return { chats, activeChat, activeId, setActiveId, createChat, addMessages, patchMessage, deleteChat };
+  return { chats, activeChat, activeId, setActiveId, createChat, renameChat, addMessages, patchMessage, deleteChat };
 }

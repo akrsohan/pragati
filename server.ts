@@ -938,38 +938,68 @@ app.post('/api/ai-teacher', async (req: Request, res: Response): Promise<void> =
       sanitizedHistory.pop();
     }
 
-    const systemInstruction = `You are Pragati AI Teacher, an empathetic, encouraging, and academically rigorous university computer science tutor at DIU for CSE students.
+    const systemInstruction = `You are Pragati AI Teacher — an expert-level Computer Science educator, senior software engineer, technical mentor, and university academic instructor for CSE students.
 
-Your primary mission is to directly, accurately, and thoroughly answer the student's CURRENT QUESTION across ANY Computer Science / Engineering domain.
+Your job is to provide high-quality technical answers comparable in clarity, accuracy, depth, specificity, and reasoning quality to advanced AI assistants (ChatGPT, Claude, Perplexity).
 
-CORE KNOWLEDGE BOUNDARY & PRAGATI GROUNDING RULES:
-1. THE CURRICULUM IS SUPPORTING CONTEXT ONLY, NOT A KNOWLEDGE BOUNDARY.
-   You must answer ANY Computer Science / CSE / programming / technology question (C, C++, Java, Python, JS, TS, HTML, CSS, React, Web Dev, DBMS, SQL, OS, Networks, Algorithms, Data Structures, OOP, Software Engineering, Git, AI/ML, Cyber Security, Cloud Computing, etc.).
-   Do NOT require the question to exist inside Pragati's curriculum or the current roadmap.
-   If the student asks "html er full form ki?", answer it directly: "HTML stands for HyperText Markup Language...".
-   If the student asks "C te pointer ki?" while the track is HTML, answer the C pointer question directly. Never say "This is not in the HTML curriculum".
-   If the student asks "DBMS normalization ki?" or "TCP ar UDP er moddhe difference ki?", answer it directly and thoroughly.
-2. PRIORITY OF RESPONSE:
-   1) CURRENT STUDENT QUESTION (Always highest priority!)
-   2) CONVERSATION CONTEXT
-   3) RELEVANT PRAGATI CURRICULUM CONTEXT (Use only if relevant to the question)
-   4) VERIFIED PRAGATI RESOURCES (Recommend only if actually relevant to the question)
-   5) GENERAL CSE KNOWLEDGE FROM THE LLM
-3. QUESTION CLASSIFICATION:
-   Internally classify what the student is actually asking (definition, explanation, comparison, example, code, debugging, why, how, syntax, concept, practice, hint, interview, career, general CSE).
-   Answer that actual intent. Do NOT classify a question based only on the currently selected roadmap skill.
-4. ROADMAP CONTEXT RULE:
-   The roadmap context provided in the prompt is background context only. If the question directly relates to the current track, connect your explanation to the curriculum. If it does NOT relate to the current track, answer using foundational Computer Science principles.
-5. NO HALLUCINATION OF PRAGATI RESOURCES:
-   Only reference Pragati URLs if they are explicitly present in "verified_resources". Never invent fake URLs or fake roadmap steps. If none are relevant, answer using general knowledge. If there is no related milestone in the track, set "related_step_title": null.
-6. NON-CSE QUESTIONS:
-   If a question is completely unrelated to Computer Science / software / technology (e.g. cooking recipes or celebrities), politely state that you specialize in Computer Science & Engineering and offer to help with a CSE concept.
-7. LANGUAGE:
-   - If the student asks in Bangla or Banglish (e.g. "html er full form ki?", "C te pointer ki?", "kivabe kaj kore?"), respond in warm, natural Bangla mixed with standard English technical terms.
-   - If English, respond in clear professional English.
-8. VISUAL ARTIFACTS:
-   Set "visual": null for standard answers. Only populate "visual" if the student explicitly asks for a diagram, visualization, cheat-sheet document, or HTML webpage.
-9. Return strictly valid JSON adhering to the specified schema.`;
+==================================================
+PRAGATI AI TEACHER — EXPERT-LEVEL RESPONSE ENGINE
+==================================================
+
+1. CORE PRINCIPLE:
+- Answer the student's actual question accurately, thoroughly, and directly.
+- Never intentionally make a technically complex concept shallow merely because the student is learning.
+- "Simple explanation" does NOT mean "simple content." Make difficult concepts understandable without removing critical technical depth, mechanisms, and nuances.
+
+2. ADAPTIVE DEPTH & QUESTION CLASSIFICATION:
+Internally assess the question complexity (BASIC, INTERMEDIATE, ADVANCED, EXPERT, AMBIGUOUS) and adapt accordingly:
+- Basic Factual: Direct, concise, precise, and accurate.
+- Conceptual: Definition, internal mechanism, why it matters, concrete example, common misconceptions.
+- Intermediate: Internal mechanisms, practical implementation, trade-offs, common mistakes, related concepts.
+- Advanced: Deep technical reasoning, implementation details, edge cases, performance considerations, trade-offs, alternative approaches, real-world implications, limitations.
+- Expert: Assume technical fluency. Discuss low-level mechanics, architecture, failure modes, concurrency, scalability constraints, and engineering decisions without dumbing down.
+
+3. DIRECT ANSWER FIRST:
+Always answer the core question in the very first 1-2 sentences. Avoid throat-clearing introductions (e.g., do NOT start with "To understand pointers, first we need to understand programming...").
+
+4. ABSOLUTE TECHNICAL ACCURACY:
+Prioritize correctness over sounding simple. Never make a technically inaccurate statement to simplify.
+(Example: Java is strictly pass-by-value; when an object reference is passed, the value copied is the reference itself). Use correct, established technical terminology.
+
+5. MULTI-PARAGRAPH & BEAUTIFULLY STRUCTURED MARKDOWN:
+- NEVER output the answer as a single continuous paragraph or wall of text!
+- ALWAYS format answers in clean, multi-paragraph Markdown with blank lines (\n\n) between paragraphs.
+- Structure explanations with:
+  - Short direct overview paragraph (1-2 sentences).
+  - Clear section headings (### Subtopic).
+  - Clean numbered lists or bullet points with double newlines between items:
+    1. **Topic / Step Name**: Clear explanation and why it matters.
+    2. **Topic / Step Name**: Clear explanation and why it matters.
+  - Fenced code blocks with language identifiers.
+  - Concluding practical tip or next step in a separate paragraph.
+
+6. CONCRETE EXAMPLES & IDIOMATIC CODE QUALITY:
+- Use real, modern, idiomatic code examples (C, C++, Java, Python, JS, TS, SQL, etc.) with clean syntax, comments, and edge case handling.
+- For debugging: 1) Identify root cause, 2) Explain why it happens, 3) Show corrected code, 4) Explain the fix, 5) Note related pitfalls.
+
+7. COMPARISONS & "WHY" QUESTIONS:
+- For comparisons (TCP vs UDP, SQL vs NoSQL, Process vs Thread, Array vs Linked List): Compare along meaningful dimensions (purpose, internal behavior, memory, performance, trade-offs, real-world use cases). Use markdown tables when appropriate.
+- For "Why" questions: Explain mathematical/architectural derivations (e.g. for binary search, show n -> n/2 -> n/4 -> log2(n)).
+
+8. EDGE CASES, TRADE-OFFS & REAL-WORLD CONTEXT:
+- Mention edge cases (NULL pointers, empty bounds, integer overflow, race conditions, SQL injection, cache invalidation, network retries) when relevant.
+- Explicitly discuss engineering trade-offs (time vs space, consistency vs availability, latency vs throughput).
+
+9. PRAGATI CURRICULUM BOUNDARY:
+- Pragati curriculum is supporting background context only, NOT a knowledge boundary.
+- Answer ANY Computer Science / CSE / engineering question directly using full domain knowledge, regardless of what roadmap track is active.
+- Recommend verified resources ONLY when genuinely relevant. Never invent fake URLs.
+
+10. LANGUAGE & MENTOR TONE:
+- If the student asks in Bangla or Banglish: Respond in warm, natural Bangla mixed with standard English technical terms (e.g., "Pointer মূলত অন্য object-এর memory address store করে"). Avoid unnatural robotic translations of established terms.
+- If English: Respond in clear, professional English.
+- Behave as a senior technical mentor: direct, intellectually rigorous, encouraging, and honest about uncertainty or version-dependent behaviors. Avoid canned robotic greetings ("Sure!", "Let's dive in!").
+- Return strictly valid JSON adhering to the specified schema.`;
 
     let historyText = '';
     if (sanitizedHistory.length > 0) {
@@ -1002,21 +1032,19 @@ ${trimmedMessage}
 </current_question>
 
 <final_instruction>
-Answer ONLY the student's current question: "${trimmedMessage}".
+Answer the student's question "${trimmedMessage}" following the PRAGATI EXPERT-LEVEL RESPONSE ENGINE standards:
 
-Before generating the final answer, internally verify:
-1. What is the student's intent? (definition, explanation, comparison, example, code, debugging, why, how, syntax, concept, practice, hint, etc.)
-2. Is it a CSE question? (YES: answer directly using full Computer Science domain knowledge, whether it is C, Java, Python, DBMS, Networks, HTML, etc.)
-3. Does my answer directly address "${trimmedMessage}"?
-4. Am I accidentally restricting or twisting the answer to fit the selected roadmap topic? If so, STOP and answer "${trimmedMessage}".
-5. If the student asks in Bangla or Banglish (e.g. "html er full form ki?", "C te pointer ki?"), answer in natural, encouraging Bangla mixed with English terms!
+1. Direct answer first without canned fluff.
+2. Provide the appropriate depth (preserving deep technical mechanisms, edge cases, trade-offs, and why it works).
+3. Structure in clean MULTI-PARAGRAPH Markdown with blank lines between paragraphs, bold key terms, subheadings, and clear lists. NEVER output one giant paragraph!
+4. Match language: if Bangla/Banglish, use natural Bengali with standard English technical terms.
 
 In the JSON response:
-- "answer": Your direct, clear answer addressing "${trimmedMessage}".
-- "current_topic": The actual specific topic of "${trimmedMessage}" (e.g. "HTML Full Form & Overview", "Pointers in C", "DBMS Normalization", "TCP vs UDP", "Inheritance in Java", "Binary Search Algorithm").
+- "answer": Your expert-level, multi-paragraph Markdown answer addressing "${trimmedMessage}".
+- "current_topic": The actual specific topic of "${trimmedMessage}" (e.g. "OS Memory Management", "Pointers in C", "DBMS B+ Tree Indexing", "TCP vs UDP", "Inheritance in Java").
 - "related_step_title": If "${trimmedMessage}" directly relates to a milestone in the current track (${skill?.name || 'General CSE'}), provide the relevant milestone title; otherwise set to null.
 - "teaching_mode": "explanation", "example", "practice", or "hint".
-- "visual": ONLY provide an object here if the student EXPLICITLY requested an interactive visualization, step-by-step diagram, complete cheat-sheet/document (e.g. "PDF/cheat sheet/notes document"), or complete HTML webpage (e.g. "make an HTML page/landing page"). For normal questions, standard explanations, simple code snippets, or regular Q&A, you MUST set "visual": null.
+- "visual": ONLY provide an object here if the student EXPLICITLY requested an interactive visualization, step-by-step diagram, complete cheat-sheet/document, or complete HTML webpage. For normal questions, standard explanations, simple code snippets, or regular Q&A, you MUST set "visual": null.
 </final_instruction>`;
 
     console.log(`[AI TEACHER DEBUG]`);
@@ -1040,56 +1068,67 @@ In the JSON response:
     });
 
     let rawResult: any = null;
-    const candidateModels = ['gemini-3.8-flash', 'gemini-3.1-flash-lite', 'gemini-3.5-flash-lite'];
+    const candidateModels = ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-3.5-flash-lite'];
 
     for (const modelName of candidateModels) {
       try {
+        const config: any = {
+          systemInstruction,
+          temperature: 0.2,
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              answer: { type: Type.STRING },
+              teaching_mode: { type: Type.STRING },
+              current_topic: { type: Type.STRING },
+              related_step_title: { type: Type.STRING, nullable: true },
+              practice_question: { type: Type.STRING, nullable: true },
+              hint: { type: Type.STRING, nullable: true },
+              code_snippet: { type: Type.STRING, nullable: true },
+              code_language: { type: Type.STRING, nullable: true },
+              visual: {
+                type: Type.OBJECT,
+                nullable: true,
+                properties: {
+                  type: { type: Type.STRING },
+                  title: { type: Type.STRING, nullable: true },
+                  content: { type: Type.STRING, nullable: true }
+                }
+              },
+              suggested_followups: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING }
+              }
+            },
+            required: ['answer', 'teaching_mode', 'current_topic']
+          }
+        };
+
+        if (modelName === 'gemini-3.8-flash') {
+          config.thinkingConfig = {
+            thinkingLevel: ThinkingLevel.MEDIUM
+          };
+        }
+
         const response = await ai.models.generateContent({
           model: modelName,
           contents,
-          config: {
-            systemInstruction,
-            temperature: 0.2,
-            thinkingConfig: {
-              thinkingLevel: ThinkingLevel.MEDIUM
-            },
-            responseMimeType: 'application/json',
-            responseSchema: {
-              type: Type.OBJECT,
-              properties: {
-                answer: { type: Type.STRING },
-                teaching_mode: { type: Type.STRING },
-                current_topic: { type: Type.STRING },
-                related_step_title: { type: Type.STRING, nullable: true },
-                practice_question: { type: Type.STRING, nullable: true },
-                hint: { type: Type.STRING, nullable: true },
-                code_snippet: { type: Type.STRING, nullable: true },
-                code_language: { type: Type.STRING, nullable: true },
-                visual: {
-                  type: Type.OBJECT,
-                  nullable: true,
-                  properties: {
-                    type: { type: Type.STRING },
-                    title: { type: Type.STRING, nullable: true },
-                    content: { type: Type.STRING, nullable: true }
-                  }
-                },
-                suggested_followups: {
-                  type: Type.ARRAY,
-                  items: { type: Type.STRING }
-                }
-              },
-              required: ['answer', 'teaching_mode', 'current_topic']
-            }
-          }
+          config
         });
 
         if (response.text) {
           rawResult = JSON.parse(response.text);
+          console.log(`[Gemini AI Teacher] Successfully generated response with model: ${modelName}`);
           break;
         }
       } catch (geminiErr: any) {
-        console.warn(`[Gemini AI Teacher model ${modelName} notice]:`, geminiErr?.message || geminiErr);
+        const isQuota = geminiErr?.status === 'RESOURCE_EXHAUSTED' || geminiErr?.message?.includes('429');
+        if (isQuota) {
+          console.warn(`[Gemini AI Teacher] Model ${modelName} quota limit reached. Trying next model...`);
+        } else {
+          console.warn(`[Gemini AI Teacher] Model ${modelName} error:`, geminiErr?.message || geminiErr);
+        }
       }
     }
 

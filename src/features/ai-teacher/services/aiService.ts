@@ -14,7 +14,7 @@ export interface StreamParams {
   requestId?: string;
   signal?: AbortSignal;
   onToken: (chunk: string) => void;
-  onResponseMeta?: (meta: { hasVisualArtifact: boolean; visual?: any }) => void;
+  onResponseMeta?: (meta: { hasVisualArtifact: boolean; visual?: any; currentTopic?: string }) => void;
 }
 
 function messageText(m: ChatMessage): string {
@@ -168,7 +168,7 @@ export async function streamAnswer(p: StreamParams): Promise<void> {
 
     const data = await response.json();
     const hasVisual = Boolean(data?.data?.visual);
-    p.onResponseMeta?.({ hasVisualArtifact: hasVisual, visual: data?.data?.visual });
+    p.onResponseMeta?.({ hasVisualArtifact: hasVisual, visual: data?.data?.visual, currentTopic: data?.data?.current_topic });
 
     const reply = formatTeacherResponse(data.data, data.reply);
     

@@ -16,19 +16,26 @@ const PATHS = {
   file: ['M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z', 'M14 2v6h6'],
   external: ['M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6', 'M15 3h6v6', 'M10 14L21 3'],
   chevronDown: ['M6 9l6 6 6-6'],
-  paperclip: ['M21.4 11.1l-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5'],
   panel: ['M3 5h18v14H3z', 'M15 5v14'],
+  book: ['M4 19.5A2.5 2.5 0 0 1 6.5 17H20', 'M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z'],
+  link: ['M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71', 'M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71'],
+  dots: ['M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2z', 'M19 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2z', 'M5 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2z'],
+  edit: ['M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7', 'M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'],
+  sidebarCollapse: ['M18 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12z', 'M9 3v18', 'M14 9l-3 3 3 3'],
+  sidebarExpand: ['M18 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12z', 'M9 3v18', 'M13 15l3-3-3-3'],
+  messageSquare: ['M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'],
 } as const;
 
 export type IconName = keyof typeof PATHS | 'play' | 'pause' | 'stop';
 
 export function Icon({ name, className }: { name: IconName; className?: string }) {
-  if (name === 'play') return <svg viewBox="0 0 24 24" className={cn('h-5 w-5', className)} fill="currentColor"><path d="M7 4l13 8-13 8z" /></svg>;
-  if (name === 'pause') return <svg viewBox="0 0 24 24" className={cn('h-5 w-5', className)} fill="currentColor"><path d="M6 4h4v16H6zM14 4h4v16h-4z" /></svg>;
-  if (name === 'stop') return <svg viewBox="0 0 24 24" className={cn('h-5 w-5', className)} fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>;
+  const finalClass = cn(className || 'h-5 w-5');
+  if (name === 'play') return <svg viewBox="0 0 24 24" className={finalClass} fill="currentColor"><path d="M7 4l13 8-13 8z" /></svg>;
+  if (name === 'pause') return <svg viewBox="0 0 24 24" className={finalClass} fill="currentColor"><path d="M6 4h4v16H6zM14 4h4v16h-4z" /></svg>;
+  if (name === 'stop') return <svg viewBox="0 0 24 24" className={finalClass} fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>;
   return (
-    <svg viewBox="0 0 24 24" className={cn('h-5 w-5', className)} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      {PATHS[name].map((d) => <path key={d} d={d} />)}
+    <svg viewBox="0 0 24 24" className={finalClass} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      {PATHS[name]?.map((d) => <path key={d} d={d} />)}
     </svg>
   );
 }

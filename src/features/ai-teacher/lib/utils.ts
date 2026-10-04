@@ -30,11 +30,35 @@ export function groupChats(chats: Chat[]): { label: string; items: Chat[] }[] {
   const now = new Date();
   const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   const startYesterday = startToday - 86_400_000;
+  const startLast7Days = startToday - 7 * 86_400_000;
   const sorted = [...chats].sort((a, b) => b.updatedAt - a.updatedAt);
   const groups = [
     { label: 'Today', items: sorted.filter((c) => c.updatedAt >= startToday) },
     { label: 'Yesterday', items: sorted.filter((c) => c.updatedAt >= startYesterday && c.updatedAt < startToday) },
-    { label: 'Earlier', items: sorted.filter((c) => c.updatedAt < startYesterday) },
+    { label: 'Previous 7 Days', items: sorted.filter((c) => c.updatedAt >= startLast7Days && c.updatedAt < startYesterday) },
+    { label: 'Older', items: sorted.filter((c) => c.updatedAt < startLast7Days) },
   ];
   return groups.filter((g) => g.items.length > 0);
+}
+
+export function generateChatTitle(firstMessage: string): string {
+  if (!firstMessage) return 'New discussion';
+  let clean = firstMessage.trim();
+  
+  // Remove common prefix patterns
+  clean = clean
+    .replace(/^I want to learn\s+/i, '')
+    .replace(/^Give me a beginner-friendly roadmap\s*(and what to study first)?\.?/i, '')
+    .replace(/^(Please\s+)?(Explain|Teach me|What is|What are|What's|How does|How to|How do I)\s+/i, '')
+    .replace(/\s*(ki\?|kivabe kaj kore\?|explain koro|ki|bujhe bolo)\s*$/i, '')
+    .replace(/\?+$/, '')
+    .trim();
+
+  if (!clean) clean = firstMessage.trim();
+
+  if (clean.length > 42) {
+    clean = clean.slice(0, 39).trim() + '...';
+  }
+
+  return clean.charAt(0).toUpperCase() + clean.slice(1);
 }

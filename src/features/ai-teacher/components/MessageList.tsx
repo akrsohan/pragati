@@ -35,21 +35,32 @@ export function MessageList({ messages, activeArtifactId, onOpenArtifact, onFoll
       }}
       className="min-h-0 flex-1 overflow-y-auto"
     >
-      <div className="mx-auto w-full max-w-[900px] space-y-6 px-4 py-6">
+      <div className="mx-auto w-full max-w-[860px] space-y-7 px-4 py-6 sm:px-6 sm:py-8">
         {messages.map((m) =>
           m.role === 'user' ? (
             <div key={m.id} className="flex flex-col items-end gap-1.5">
-              <div className="max-w-[85%] whitespace-pre-wrap rounded-[20px] bg-gradient-to-r from-[#7C6CFF] to-[#A78BFA] px-5 py-3 text-[14px] leading-relaxed text-white shadow-sm sm:max-w-[70%]">
+              <div className="max-w-[85%] sm:max-w-[76%] whitespace-pre-wrap rounded-[22px] rounded-br-[6px] bg-gradient-to-r from-[#6E5CF6] to-[#8C76FA] px-4.5 py-3 sm:px-5 sm:py-3.5 text-[14.5px] sm:text-[15px] leading-[1.65] text-white shadow-[0_2px_10px_rgba(110,92,246,0.18)]">
                 {m.content}
               </div>
               {m.attachments?.map((a) => (
-                <span key={a.name} className="flex items-center gap-1.5 rounded-full bg-[#F1EEFF] px-3 py-1 text-[11px] font-semibold text-[#5B4BDB]">
-                  <Icon name="file" className="h-3.5 w-3.5" /> {a.name}
+                <span
+                  key={a.name}
+                  className="flex items-center gap-1.5 rounded-full border border-[#E2DFF5] dark:border-[#333054] bg-[#F1EEFF] dark:bg-[#262248] px-3 py-1 text-[11px] font-semibold text-[#5B4BDB] dark:text-[#A78BFA]"
+                >
+                  <Icon name="file" className="h-3.5 w-3.5" />
+                  <span>{a.name}</span>
                 </span>
               ))}
             </div>
           ) : (
-            <TeacherMessage key={m.id} message={m} activeArtifactId={activeArtifactId} onOpenArtifact={onOpenArtifact} onFollowUp={onFollowUp} onFeedback={onFeedback} />
+            <TeacherMessage
+              key={m.id}
+              message={m}
+              activeArtifactId={activeArtifactId}
+              onOpenArtifact={onOpenArtifact}
+              onFollowUp={onFollowUp}
+              onFeedback={onFeedback}
+            />
           ),
         )}
         <div ref={endRef} />
