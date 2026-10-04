@@ -2,6 +2,7 @@ import type { ChatMessage, Language, TopicFilter } from '../types';
 import { buildSystemPrompt } from './systemPrompt';
 import { supabase } from '../../../lib/supabase';
 import { extFor, uid } from '../lib/utils';
+import { streamMock } from './mockAi';
 
 export interface StreamParams {
   history: ChatMessage[];
@@ -132,7 +133,7 @@ export async function streamAnswer(p: StreamParams): Promise<void> {
   const requestId = p.requestId || uid();
 
   try {
-    // 1. Get Supabase auth token
+    // 1. Get Supabase auth token (if logged in)
     const { data: sessionData } = await supabase.auth.getSession();
     const token = sessionData?.session?.access_token;
 
@@ -148,6 +149,7 @@ export async function streamAnswer(p: StreamParams): Promise<void> {
         system,
         topic: p.topic,
         language: p.language,
+        userName: p.userName,
         skillId: p.skillId,
         currentStepId: p.currentStepId,
         quickAction: p.quickAction,
@@ -161,28 +163,32 @@ export async function streamAnswer(p: StreamParams): Promise<void> {
       signal: p.signal
     });
 
-    if (!response.ok) {
-      const errJson = await response.json().catch(() => null);
-      throw new Error(errJson?.error || `AI Teacher service responded with status ${response.status}`);
-    }
+    if (response.ok) {
+      const data = await response.json();
+      const hasVisual = Boolean(data?.data?.visual);
+      p.onResponseMeta?.({ hasVisualArtifact: hasVisual, visual: data?.data?.visual, currentTopic: data?.data?.current_topic });
 
-    const data = await response.json();
-    const hasVisual = Boolean(data?.data?.visual);
-    p.onResponseMeta?.({ hasVisualArtifact: hasVisual, visual: data?.data?.visual, currentTopic: data?.data?.current_topic });
-
-    const reply = formatTeacherResponse(data.data, data.reply);
-    
-    if (reply) {
-      for (let i = 0; i < reply.length; i += 24) {
-        if (p.signal?.aborted) return;
-        p.onToken(reply.slice(i, i + 24));
-        await new Promise((r) => setTimeout(r, 8));
+      const reply = formatTeacherResponse(data.data, data.reply);
+      if (reply) {
+        for (let i = 0; i < reply.length; i += 24) {
+          if (p.signal?.aborted) return;
+          p.onToken(reply.slice(i, i + 24));
+          await new Promise((r) => setTimeout(r, 8));
+        }
+        return;
       }
-      return;
     }
+
+    // If server returned 405 (e.g. static hosting without API routes) or non-OK:
+    console.warn(`[AI Teacher] Backend returned status ${response.status}. Falling back to resilient mode.`);
+    await streamMock(currentQuestion, p.onToken, p.signal);
   } catch (err: any) {
     if (p.signal?.aborted) return;
-    console.error('[streamAnswer Error]:', err);
-    p.onToken(`⚠️ **Notice:** ${err?.message || 'Could not reach AI Teacher. Please check your connection and try again.'}`);
+    console.warn('[streamAnswer Exception]:', err?.message || err);
+    try {
+      await streamMock(currentQuestion, p.onToken, p.signal);
+    } catch {
+      p.onToken(`⚠️ **Notice:** Could not reach AI Teacher service. Please check your network connection.`);
+    }
   }
 }
