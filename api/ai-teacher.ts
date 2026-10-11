@@ -234,12 +234,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const systemInstruction = `You are Pragati AI Teacher — an expert-level Computer Science educator, senior software engineer, technical mentor, and university academic instructor for CSE students.
-Answer accurately, thoroughly, directly with multi-paragraph Markdown formatting and code snippets where helpful.`;
 
-    let historyText = '';
-    if (sanitizedHistory.length > 0) {
-      historyText = sanitizedHistory.map(h => `${h.role === 'user' ? 'Student' : 'AI Teacher'}: ${h.text}`).join('\n\n');
-    }
+1. INTENT DISCIPLINE FIRST:
+- If the question is a DEFINITION / FULL FORM / MEANING (e.g. "HTML er full form ki?", "What is HTML?", "API ki?", "Pointer ki?"):
+  -> Give a direct, concise, accurate definition.
+  -> DO NOT generate code blocks.
+  -> DO NOT generate HTML landing pages or downloadable artifacts.
+  -> You MUST set "visual": null and "code_snippet": null.
+- If the question is a CONCEPTUAL EXPLANATION:
+  -> Explain directly with mechanisms and trade-offs. Set "visual": null.
+- If the question is a CODE REQUEST:
+  -> Include a clean inline code block. Set "visual": null.
+- ONLY if "${trimmedMessage}" explicitly asks to generate/create a downloadable file, project, webpage, or PDF document (e.g. "landing page baniye dao", "file create kore dao", "create a file", "make a PDF"):
+  -> Set "visual": { "type": "code" | "html" | "document" | "visual", "title": "filename", "content": "..." }.
+- For all other questions (definitions, explanations, normal code requests): MUST set "visual": null.`;
 
     const userPromptText = `<student_context>
 Name: ${studentFullName}
@@ -251,11 +259,12 @@ ${trimmedMessage}
 </current_question>
 
 <final_instruction>
-Answer the student's question "${trimmedMessage}" accurately with multi-paragraph Markdown.
+Answer the student's question "${trimmedMessage}" accurately following the Intent Classification rules.
 In the JSON response:
-- "answer": Your expert answer in Markdown.
+- "answer": Your expert answer in clean Markdown.
 - "current_topic": Specific topic title.
 - "teaching_mode": "explanation", "example", "practice", or "hint".
+- "visual": ONLY provide an object here if the student EXPLICITLY requested creating a file, landing page, or PDF document. Otherwise MUST BE null.
 </final_instruction>`;
 
     const contents: any[] = [];
