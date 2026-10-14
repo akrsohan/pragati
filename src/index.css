@@ -23,6 +23,19 @@ html, body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Prism Syntax Highlighting Tokens */
+.token.comment, .token.prolog, .token.doctype, .token.cdata { color: #828a9f; font-style: italic; }
+.token.punctuation { color: #9ca3af; }
+.token.namespace { opacity: 0.7; }
+.token.property, .token.tag, .token.boolean, .token.number, .token.constant, .token.symbol, .token.deleted { color: #f87171; }
+.token.selector, .token.attr-name, .token.string, .token.char, .token.builtin, .token.inserted { color: #34d399; }
+.token.operator, .token.entity, .token.url, .language-css .token.string, .style .token.string { color: #38bdf8; }
+.token.atrule, .token.attr-value, .token.keyword { color: #c084fc; font-weight: 600; }
+.token.function, .token.class-name { color: #60a5fa; font-weight: 600; }
+.token.regex, .token.important, .token.variable { color: #fbbf24; }
+.token.important, .token.bold { font-weight: bold; }
+.token.italic { font-style: italic; }
+
 /* Custom utility for clean horizontal scroll without scrollbar */
 .no-scrollbar::-webkit-scrollbar {
   display: none;

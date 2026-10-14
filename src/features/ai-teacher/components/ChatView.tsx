@@ -90,9 +90,9 @@ export function ChatView(p: Props) {
         onFeedback={p.onFeedback}
       />
 
-      {/* Bottom Controls & Composer (Stable & Fixed) */}
-      <div className="shrink-0 mx-auto w-full max-w-[860px] px-4 pb-4 pt-1 sm:pb-5">
-        <div className="mb-2">
+      {/* Bottom Controls & Composer (Stable & Responsive) */}
+      <div className="shrink-0 mx-auto w-full max-w-[860px] px-2.5 pb-2 pt-1 sm:px-4 sm:pb-4">
+        <div className="mb-1.5 sm:mb-2">
           <QuickActions onAction={p.onQuickAction} />
         </div>
         <Composer

@@ -53,7 +53,28 @@ export function useChats(storageKey: string) {
 
   const addMessages = useCallback((chatId: string, msgs: ChatMessage[]) => {
     setChats((prev) =>
-      prev.map((c) => (c.id === chatId ? { ...c, updatedAt: Date.now(), messages: [...c.messages, ...msgs] } : c)),
+      prev.map((c) => {
+        if (c.id !== chatId) return c;
+        const existingIds = new Set(c.messages.map((m) => m.id));
+        const newUnique: ChatMessage[] = [];
+        for (const m of msgs) {
+          if (existingIds.has(m.id)) continue;
+          // Guard against duplicate consecutive user messages with identical content in rapid succession
+          const lastMsg = newUnique.length > 0 ? newUnique[newUnique.length - 1] : c.messages[c.messages.length - 1];
+          if (
+            m.role === 'user' &&
+            lastMsg &&
+            lastMsg.role === 'user' &&
+            lastMsg.content.trim() === m.content.trim() &&
+            Math.abs(m.createdAt - lastMsg.createdAt) < 4000
+          ) {
+            continue;
+          }
+          newUnique.push(m);
+          existingIds.add(m.id);
+        }
+        return { ...c, updatedAt: Date.now(), messages: [...c.messages, ...newUnique] };
+      }),
     );
   }, []);
 

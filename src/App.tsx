@@ -262,8 +262,15 @@ export default function App() {
   // Loading & Initialization state (Explicit loading state so app does not redirect while restoring session)
   const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
 
-  // Logged-in User Profile (null when not authenticated)
-  const [currentUser, setCurrentUser] = useState<Profile | null>(null);
+  // Logged-in User Profile (restores immediately from localStorage to avoid tab-switch flicker)
+  const [currentUser, setCurrentUser] = useState<Profile | null>(() => {
+    try {
+      const saved = localStorage.getItem('pragatii_current_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
 
   // Memoized Completed Progress & Skill IDs for the Current Logged-in User
   const currentUserCompletedProgress = useMemo(() => {
@@ -427,17 +434,7 @@ export default function App() {
 
     // 1. If Guest (Not Authenticated)
     if (!currentUser || !currentUser.id) {
-      if (p.startsWith('/ai-teacher')) {
-        const searchStr = location.search;
-        const skillFromUrl = new URLSearchParams(searchStr).get('skill') || undefined;
-        const stepFromUrl = new URLSearchParams(searchStr).get('step') || undefined;
-        openAuthModal({
-          title: 'Login Required',
-          message: 'Please log in to your Pragati account to access Pragati AI Teacher.',
-          intendedAction: { type: 'ai_teacher', skillId: skillFromUrl, stepId: stepFromUrl }
-        });
-        navigate('/discover', { replace: true });
-      } else if (p.startsWith('/dashboard')) {
+      if (p.startsWith('/dashboard')) {
         openAuthModal({
           title: 'Login Required',
           message: 'Please log in to your Pragati account to access your personal learning dashboard.',
@@ -871,6 +868,9 @@ export default function App() {
         }
         if (isMounted) {
           setCurrentUser(profile);
+          try {
+            localStorage.setItem('pragatii_current_user', JSON.stringify(profile));
+          } catch (e) {}
           await refreshAppData(uid);
 
           const stored = sessionStorage.getItem('pragatii_intended_action');
@@ -899,6 +899,9 @@ export default function App() {
       } else if (event === 'SIGNED_OUT') {
         if (isMounted) {
           setCurrentUser(null);
+          try {
+            localStorage.removeItem('pragatii_current_user');
+          } catch (e) {}
           setActiveProgress(null);
           setUserBadgeIds([]);
           navigate('/discover');
@@ -5201,8 +5204,8 @@ export default function App() {
       {/* ========================================================================= */}
       {/* PAGE 10 — CLAUDE DEDICATED AI TEACHER FULL-PAGE WORKSPACE */}
       {/* ========================================================================= */}
-      {currentPage === 'ai-teacher' && currentUser && currentUser.id && (
-        <div className="fixed inset-0 z-40 bg-[#FAF9FF] overflow-hidden" id="page-ai-teacher">
+      {currentPage === 'ai-teacher' && (
+        <div className="fixed inset-0 z-40 bg-[#FAF9FF] overflow-hidden h-[100dvh]" id="page-ai-teacher">
           <AiTeacher 
             userName={currentUser?.full_name || 'Student'}
             storageKey={currentUser?.id ? `pragati-ai-teacher:${currentUser.id}` : 'pragati-ai-teacher:guest'}
@@ -5423,6 +5426,43 @@ export default function App() {
         onSignUp={handleAuthModalSignUp}
         title={authModalState.title}
         description={authModalState.message}
+      />
+
+      {/* Mobile Floating Bottom Navigation (Native App Style for screens < 768px) */}
+      <BottomNav
+        currentPage={currentPage}
+        onNavigate={(page) => {
+          if (page === 'discover') {
+            setDiscoverView('main');
+            setSelectedFieldId(null);
+            navigate('/discover');
+          } else if (page === 'profile') {
+            if (currentUser) {
+              setSelectedUserId(currentUser.id);
+              navigate(`/profile/${currentUser.id}`);
+            } else {
+              openAuthModal({
+                title: 'Login Required',
+                message: 'Please log in to your Pragati account to view your profile.',
+                intendedAction: { type: 'view_profile' }
+              });
+            }
+          } else if (page === 'dashboard') {
+            if (currentUser) {
+              navigate('/dashboard');
+            } else {
+              openAuthModal({
+                title: 'Login Required',
+                message: 'Please log in to access your personal learning dashboard.',
+                intendedAction: { type: 'view_dashboard' }
+              });
+            }
+          } else {
+            navigate(`/${page}`);
+          }
+        }}
+        currentUser={currentUser}
+        activeProgress={activeProgress}
       />
 
     </div>

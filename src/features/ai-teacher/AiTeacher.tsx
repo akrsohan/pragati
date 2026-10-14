@@ -62,6 +62,7 @@ export function AiTeacher({
   const [focusTick, setFocusTick] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
   const activeRequestIdRef = useRef<string | null>(null);
+  const isSendingRef = useRef<boolean>(false);
 
   const streaming = streamingChatId !== null;
 
@@ -118,8 +119,11 @@ export function AiTeacher({
   };
 
   const sendMessage = async (raw?: string, quickActionParam?: string) => {
+    if (isSendingRef.current || streaming) return;
     const text = (raw ?? input).trim();
-    if ((!text && attachments.length === 0) || streaming) return;
+    if (!text && attachments.length === 0) return;
+
+    isSendingRef.current = true;
 
     const atts = raw ? [] : attachments;
     if (!raw) {
@@ -182,15 +186,14 @@ export function AiTeacher({
         store.patchMessage(chatId, aiMsg.id, { status: 'error', content: acc });
       }
     } finally {
+      isSendingRef.current = false;
       if (activeRequestIdRef.current === currentReqId) {
         setStreamingChatId(null);
         abortRef.current = null;
       }
     }
 
-    // Only open Visual View when an actual artifact is generated or requested:
-    // Normal responses: visualOpen = false
-    // Artifact responses: visualOpen = true
+    // Only open Visual View when an actual artifact is generated or requested
     if (hasVisualArtifact) {
       const auto = parseMessage(aiMsg.id, acc).autoOpenId;
       if (auto) setOpenArtifactId(auto);

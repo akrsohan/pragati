@@ -73,14 +73,14 @@ export function Composer({
           </div>
         )}
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
             title="Attach a code or text file"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F0FF] dark:bg-[#252245] text-[#6E5CF6] dark:text-[#B4A2FF] transition hover:bg-[#EAE4FF] dark:hover:bg-[#312B5E] cursor-pointer"
+            className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F0FF] dark:bg-[#252245] text-[#6E5CF6] dark:text-[#B4A2FF] transition hover:bg-[#EAE4FF] dark:hover:bg-[#312B5E] cursor-pointer"
           >
-            <Icon name="plus" className="h-5 w-5" />
+            <Icon name="plus" className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
           </button>
           <input
             ref={fileRef}
@@ -105,8 +105,8 @@ export function Composer({
                 if (!streaming && canSend) onSend();
               }
             }}
-            placeholder={placeholder ?? 'Ask any CSE question — DSA, OS, DBMS, career...'}
-            className="max-h-36 min-h-[42px] flex-1 resize-none bg-transparent px-2 py-2.5 text-[14.5px] sm:text-[15px] leading-relaxed text-[#18182E] dark:text-white outline-none border-none placeholder:text-[#9A98B8] dark:placeholder:text-[#6A688A]"
+            placeholder={placeholder ?? 'Ask any CSE question — DSA, OS, DBMS...'}
+            className="max-h-36 min-h-[38px] sm:min-h-[42px] flex-1 resize-none bg-transparent px-1.5 sm:px-2 py-2 sm:py-2.5 text-[14px] sm:text-[15px] leading-relaxed text-[#18182E] dark:text-white outline-none border-none placeholder:text-[#9A98B8] dark:placeholder:text-[#6A688A]"
           />
           
           {streaming ? (
@@ -114,7 +114,7 @@ export function Composer({
               type="button"
               onClick={onStop}
               title="Stop generating"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#18182E] dark:bg-white text-white dark:text-[#18182E] transition hover:opacity-90 cursor-pointer shadow-xs"
+              className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-[#18182E] dark:bg-white text-white dark:text-[#18182E] transition hover:opacity-90 cursor-pointer shadow-xs"
             >
               <Icon name="stop" className="h-4 w-4" />
             </button>
@@ -124,9 +124,9 @@ export function Composer({
               onClick={onSend}
               disabled={!canSend}
               title="Send question"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#6E5CF6] to-[#8C76FA] text-white transition enabled:hover:opacity-95 enabled:active:scale-95 disabled:opacity-35 cursor-pointer shadow-xs"
+              className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#6E5CF6] to-[#8C76FA] text-white transition enabled:hover:opacity-95 enabled:active:scale-95 disabled:opacity-35 cursor-pointer shadow-xs"
             >
-              <Icon name="send" className="h-4.5 w-4.5" />
+              <Icon name="send" className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
             </button>
           )}
         </div>

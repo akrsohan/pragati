@@ -208,13 +208,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const geminiApiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
     if (!geminiApiKey) {
-      const fallbackResult = generateDeterministicTeacherResponse(skill, focusedStep, trimmedMessage, quickAction);
-      res.status(200).json({
-        success: true,
-        data: {
-          ...fallbackResult,
-          verified_resources: verifiedResourcesForStep
-        }
+      res.status(503).json({
+        success: false,
+        error: 'AI Teacher service is temporarily unavailable (Gemini API key is not configured).',
+        code: 'API_KEY_MISSING'
       });
       return;
     }
@@ -223,10 +220,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const sanitizedHistory: Array<{ role: 'user' | 'model'; text: string }> = [];
     if (Array.isArray(conversationHistory)) {
-      for (const turn of conversationHistory.slice(-8)) {
+      for (const turn of conversationHistory.slice(-10)) {
         if (turn && typeof turn.text === 'string' && (turn.role === 'user' || turn.role === 'assistant' || turn.role === 'model')) {
           const role = (turn.role === 'assistant' || turn.role === 'model') ? 'model' : 'user';
-          const text = turn.text.trim().slice(0, 1000);
+          const text = turn.text.trim().slice(0, 4000);
           if (!text || (role === 'user' && text === trimmedMessage)) continue;
           sanitizedHistory.push({ role, text });
         }
@@ -244,10 +241,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 - If the question is a CONCEPTUAL EXPLANATION:
   -> Explain directly with mechanisms and trade-offs. Set "visual": null.
 - If the question is a CODE REQUEST:
-  -> Include a clean inline code block. Set "visual": null.
+  -> Include a clean inline code block with clear explanations of critical parts. Set "visual": null.
+- For DEBUGGING:
+  -> 1) Identify root cause, 2) Explain why it happens, 3) Show corrected code, 4) Explain the fix. Set "visual": null.
 - ONLY if "${trimmedMessage}" explicitly asks to generate/create a downloadable file, project, webpage, or PDF document (e.g. "landing page baniye dao", "file create kore dao", "create a file", "make a PDF"):
   -> Set "visual": { "type": "code" | "html" | "document" | "visual", "title": "filename", "content": "..." }.
-- For all other questions (definitions, explanations, normal code requests): MUST set "visual": null.`;
+- For all other questions (definitions, explanations, normal code requests): MUST set "visual": null.
+
+2. COMPLETE, COMPILABLE & RUNNABLE CODE QUALITY:
+- Every code example (C, Python, Java, JS, etc.) MUST be complete and compilable/runnable where appropriate, including all required headers (e.g. #include <stdio.h>) and standard imports. Never omit essential headers or generate incomplete snippets when full solutions are needed.
+- For factorial in C: Always clearly explain the base cases (0! = 1 and 1! = 1), handle negative input appropriately (e.g. return -1 or validate n < 0 as undefined in natural factorial), and explicitly mention the limitation of 32-bit signed int (overflows at n >= 13; recommend unsigned long long up to n = 20, or BigInt/GMP for larger).
+- NEVER claim that code was executed or run unless it was actually executed. Present execution results accurately as expected / theoretical outputs.
+
+3. LANGUAGE:
+- Match student language: natural Bangla (Bengali script) with English technical terms for Bangla/Banglish queries, clear English for English queries.`;
 
     const userPromptText = `<student_context>
 Name: ${studentFullName}
@@ -274,7 +281,7 @@ In the JSON response:
     contents.push({ role: 'user', parts: [{ text: userPromptText }] });
 
     let rawResult: any = null;
-    const candidateModels = ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-3.5-flash-lite'];
+    const candidateModels = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-3.8-flash'];
 
     for (const modelName of candidateModels) {
       try {
@@ -293,6 +300,15 @@ In the JSON response:
               hint: { type: Type.STRING, nullable: true },
               code_snippet: { type: Type.STRING, nullable: true },
               code_language: { type: Type.STRING, nullable: true },
+              visual: {
+                type: Type.OBJECT,
+                nullable: true,
+                properties: {
+                  type: { type: Type.STRING },
+                  title: { type: Type.STRING, nullable: true },
+                  content: { type: Type.STRING, nullable: true }
+                }
+              },
               suggested_followups: {
                 type: Type.ARRAY,
                 items: { type: Type.STRING }
@@ -322,15 +338,34 @@ In the JSON response:
     }
 
     if (!rawResult) {
-      rawResult = generateDeterministicTeacherResponse(skill, focusedStep, trimmedMessage, quickAction);
+      res.status(503).json({
+        success: false,
+        error: 'The AI Teacher service is temporarily unavailable due to high demand. Please try asking your question again in a moment.',
+        code: 'AI_SERVICE_UNAVAILABLE'
+      });
+      return;
     }
+
+    let matchedStepTitle: string | null = null;
+    if (rawResult.related_step_title && steps.length > 0) {
+      const found = steps.find(s =>
+        s.title.toLowerCase().trim() === String(rawResult.related_step_title).toLowerCase().trim() ||
+        s.title.toLowerCase().includes(String(rawResult.related_step_title).toLowerCase())
+      );
+      if (found) matchedStepTitle = found.title;
+    }
+
+    const relevantResources = (matchedStepTitle && matchedStepTitle !== 'General Track')
+      ? verifiedResourcesForStep
+      : [];
 
     res.status(200).json({
       success: true,
       requestId: crypto.randomUUID(),
       data: {
         ...rawResult,
-        verified_resources: verifiedResourcesForStep
+        related_step_title: matchedStepTitle,
+        verified_resources: relevantResources
       }
     });
   } catch (err: any) {

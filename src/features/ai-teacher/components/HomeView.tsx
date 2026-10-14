@@ -53,18 +53,18 @@ export function HomeView(p: Props) {
       </div>
 
       {/* Main Home Scrollable Content */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-16 pt-3 sm:pt-8 [scrollbar-width:thin]">
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 sm:px-4 pb-16 pt-3 sm:pt-8 [scrollbar-width:thin]">
         <div className="mx-auto flex max-w-[840px] flex-col items-center">
-          <BotAvatar size={64} />
+          <BotAvatar size={56} />
           
-          <div className="mt-5 text-center px-2">
-            <h1 className="text-[26px] sm:text-[30px] font-extrabold tracking-tight text-[#18182E] dark:text-white">
+          <div className="mt-4 sm:mt-5 text-center px-1 sm:px-2">
+            <h1 className="text-[22px] sm:text-[30px] font-extrabold tracking-tight text-[#18182E] dark:text-white">
               Hello, {displayName}
             </h1>
-            <h2 className="mt-1 text-[22px] sm:text-[26px] font-extrabold text-[#6E5CF6] dark:text-[#9F8EFF] tracking-tight">
+            <h2 className="mt-1 text-[18px] sm:text-[25px] font-extrabold text-[#6E5CF6] dark:text-[#9F8EFF] tracking-tight">
               What would you like to explore today?
             </h2>
-            <p className="mt-2.5 text-[13.5px] sm:text-[14px] text-[#7A78A0] dark:text-[#9A98BD] font-medium max-w-[560px] mx-auto leading-relaxed">
+            <p className="mt-2 text-[13px] sm:text-[14px] text-[#7A78A0] dark:text-[#9A98BD] font-medium max-w-[560px] mx-auto leading-relaxed">
               Ask anything about Computer Science — algorithms, operating systems, DBMS, code examples, or career advice.
             </p>
           </div>

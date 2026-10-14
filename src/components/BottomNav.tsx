@@ -71,7 +71,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#141726]/95 backdrop-blur-xl border-t border-[#E8E4DC] dark:border-[#23273e] shadow-2xl transition-all pb-[env(safe-area-inset-bottom,0px)]"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#141726]/95 backdrop-blur-xl border-t border-[#E8E4DC] dark:border-[#23273e] shadow-2xl transition-all pb-[env(safe-area-inset-bottom,0px)]"
       id="app-bottom-navbar"
       aria-label="Bottom Navigation"
     >

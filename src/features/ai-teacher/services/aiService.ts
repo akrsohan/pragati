@@ -2,7 +2,6 @@ import type { ChatMessage, Language, TopicFilter } from '../types';
 import { buildSystemPrompt } from './systemPrompt';
 import { supabase } from '../../../lib/supabase';
 import { extFor, uid } from '../lib/utils';
-import { streamMock } from './mockAi';
 
 export interface StreamParams {
   history: ChatMessage[];
@@ -30,7 +29,7 @@ function formatTeacherResponse(tData: any, fallbackReply?: string): string {
 
   let text = tData.answer || fallbackReply || '';
 
-  // 1. Explicit visual artifact response (when visual !== null)
+  // 1. Explicit visual artifact response (when visual !== null and explicitly requested)
   if (tData.visual && typeof tData.visual === 'object') {
     const vType = (tData.visual.type || 'document').toLowerCase();
     const vTitle = tData.visual.title || (tData.current_topic ? `${tData.current_topic}` : 'Artifact');
@@ -53,50 +52,17 @@ function formatTeacherResponse(tData: any, fallbackReply?: string): string {
     }
   }
 
-  // 2. Code snippet: if present and not already formatted inside answer or visual
-  if (tData.code_snippet && typeof tData.code_snippet === 'string' && !text.includes(tData.code_snippet.slice(0, 30))) {
-    const lang = (tData.code_language || 'python').toLowerCase();
-    if (tData.visual) {
-      const safeTopic = (tData.current_topic || 'solution')
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '_')
-        .replace(/^_+|_+$/g, '');
-      const filename = `${safeTopic || 'code'}.${extFor(lang)}`;
-      text += `\n\n\`\`\`${lang} title="${filename}"\n${tData.code_snippet}\n\`\`\``;
-    } else {
-      text += `\n\n\`\`\`${lang}\n${tData.code_snippet}\n\`\`\``;
-    }
+  // 2. Practice Question / Challenge: ONLY when in practice/quiz mode
+  if (
+    (tData.teaching_mode === 'practice' || tData.teaching_mode === 'quiz') &&
+    tData.practice_question &&
+    typeof tData.practice_question === 'string' &&
+    !text.includes(tData.practice_question.slice(0, 30))
+  ) {
+    text += `\n\n> 🎯 **Practice Challenge**: ${tData.practice_question}${tData.hint ? `\n> 💡 **Hint**: ${tData.hint}` : ''}`;
   }
 
-  // 3. Practice Question / Challenge (clean inline challenge, unless explicitly requested as document)
-  if (tData.practice_question && typeof tData.practice_question === 'string' && !text.includes(tData.practice_question.slice(0, 30))) {
-    if (tData.visual && tData.visual.type === 'document') {
-      // already in visual document
-    } else {
-      text += `\n\n> 🎯 **Practice Challenge**: ${tData.practice_question}${tData.hint ? `\n> 💡 **Hint**: ${tData.hint}` : ''}`;
-    }
-  }
-
-  // 4. Topic & Teaching Mode Summary Cards
-  if (tData.current_topic && !text.includes('```cards')) {
-    const cards: Array<{ title: string; sub?: string; color: string }> = [
-      {
-        title: tData.current_topic,
-        sub: tData.related_step_title ? `Milestone: ${tData.related_step_title}` : 'Pragati Curriculum',
-        color: '#7C6CFF'
-      }
-    ];
-    if (tData.teaching_mode && tData.teaching_mode !== 'explanation') {
-      cards.push({
-        title: `Mode: ${tData.teaching_mode.toUpperCase()}`,
-        sub: 'Interactive Learning Mode',
-        color: '#10B981'
-      });
-    }
-    text += `\n\n\`\`\`cards\n${JSON.stringify(cards)}\n\`\`\``;
-  }
-
-  // 5. Sources block: Grounded verified resources
+  // 3. Sources block: ONLY grounded verified resources that actually relate to the topic
   if (Array.isArray(tData.verified_resources) && tData.verified_resources.length > 0 && !text.includes('```sources')) {
     const sourceTitles = tData.verified_resources
       .map((r: any) => r.title || r.url)
@@ -106,7 +72,7 @@ function formatTeacherResponse(tData: any, fallbackReply?: string): string {
     }
   }
 
-  // 6. Follow-ups block: Suggested follow-ups
+  // 4. Follow-ups block: Clean suggested follow-ups
   if (Array.isArray(tData.suggested_followups) && tData.suggested_followups.length > 0 && !text.includes('```followups')) {
     const followups = tData.suggested_followups
       .filter((q: any): q is string => typeof q === 'string' && q.trim().length > 0)
@@ -165,6 +131,11 @@ export async function streamAnswer(p: StreamParams): Promise<void> {
 
     if (response.ok) {
       const data = await response.json();
+      if (data && data.success === false) {
+        p.onToken(`⚠️ **Service Notice:** ${data.error || 'The AI Teacher service is temporarily unavailable.'} Please try again in a moment.`);
+        return;
+      }
+
       const hasVisual = Boolean(data?.data?.visual);
       p.onResponseMeta?.({ hasVisualArtifact: hasVisual, visual: data?.data?.visual, currentTopic: data?.data?.current_topic });
 
@@ -179,16 +150,12 @@ export async function streamAnswer(p: StreamParams): Promise<void> {
       }
     }
 
-    // If server returned 405 (e.g. static hosting without API routes) or non-OK:
-    console.warn(`[AI Teacher] Backend returned status ${response.status}. Falling back to resilient mode.`);
-    await streamMock(currentQuestion, p.onToken, p.signal);
+    const errJson = await response.json().catch(() => null);
+    const errorMsg = errJson?.error || `AI Teacher service responded with status ${response.status}`;
+    p.onToken(`⚠️ **Service Notice:** ${errorMsg}. Please try asking your question again in a moment.`);
   } catch (err: any) {
     if (p.signal?.aborted) return;
-    console.warn('[streamAnswer Exception]:', err?.message || err);
-    try {
-      await streamMock(currentQuestion, p.onToken, p.signal);
-    } catch {
-      p.onToken(`⚠️ **Notice:** Could not reach AI Teacher service. Please check your network connection.`);
-    }
+    console.error('[streamAnswer Exception]:', err?.message || err);
+    p.onToken(`⚠️ **Notice:** Unable to connect to the AI Teacher service (${err?.message || 'Network error'}). Please check your connection and try again.`);
   }
 }

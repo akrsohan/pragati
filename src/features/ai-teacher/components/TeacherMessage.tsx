@@ -38,17 +38,17 @@ export function TeacherMessage({ message, activeArtifactId, onOpenArtifact, onFo
   };
 
   return (
-    <div className="flex gap-3 sm:gap-3.5">
-      <BotAvatar size={32} className="mt-1 shrink-0" />
+    <div className="flex gap-2 sm:gap-3.5">
+      <BotAvatar size={30} className="mt-1 shrink-0" />
       <div className="min-w-0 flex-1 max-w-[760px] sm:max-w-[820px]">
         {/* Teacher identity & timestamp */}
-        <div className="mb-1.5 flex items-center gap-2 text-[12px]">
+        <div className="mb-1 flex items-center gap-2 text-[12px]">
           <span className="font-bold text-[#6E5CF6] dark:text-[#9F8EFF]">Pragati AI Teacher</span>
-          <span className="text-[10.5px] text-[#8A8CB0] dark:text-[#7A7A9A]">{formatTime(message.createdAt)}</span>
+          <span className="text-[10px] sm:text-[10.5px] text-[#8A8CB0] dark:text-[#7A7A9A]">{formatTime(message.createdAt)}</span>
         </div>
 
         {/* AI Response Card Container */}
-        <div className="rounded-2xl border border-[#E6E4F5] dark:border-[#2D2D45] bg-white dark:bg-[#18192A] px-5 py-4.5 sm:px-6 sm:py-5 text-[#1B1B2F] dark:text-[#E2E1F0] shadow-[0_2px_12px_rgba(27,27,80,0.03)] transition-colors">
+        <div className="rounded-2xl border border-[#E6E4F5] dark:border-[#2D2D45] bg-white dark:bg-[#18192A] px-3.5 py-3.5 sm:px-6 sm:py-5 text-[#1B1B2F] dark:text-[#E2E1F0] shadow-[0_2px_12px_rgba(27,27,80,0.03)] transition-colors">
           {message.status === 'error' && !message.content && (
             <p className="text-[13.5px] text-[#E11D48] dark:text-[#FB7185]">
               Sorry, could not generate a response. Please check your connection and try again.

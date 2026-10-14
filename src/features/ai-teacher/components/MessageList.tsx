@@ -35,11 +35,11 @@ export function MessageList({ messages, activeArtifactId, onOpenArtifact, onFoll
       }}
       className="min-h-0 flex-1 overflow-y-auto"
     >
-      <div className="mx-auto w-full max-w-[860px] space-y-7 px-4 py-6 sm:px-6 sm:py-8">
+      <div className="mx-auto w-full max-w-[860px] space-y-5 sm:space-y-7 px-2.5 py-4 sm:px-6 sm:py-8">
         {messages.map((m) =>
           m.role === 'user' ? (
             <div key={m.id} className="flex flex-col items-end gap-1.5">
-              <div className="max-w-[85%] sm:max-w-[76%] whitespace-pre-wrap rounded-[22px] rounded-br-[6px] bg-gradient-to-r from-[#6E5CF6] to-[#8C76FA] px-4.5 py-3 sm:px-5 sm:py-3.5 text-[14.5px] sm:text-[15px] leading-[1.65] text-white shadow-[0_2px_10px_rgba(110,92,246,0.18)]">
+              <div className="max-w-[92%] sm:max-w-[76%] whitespace-pre-wrap rounded-[20px] rounded-br-[6px] bg-gradient-to-r from-[#6E5CF6] to-[#8C76FA] px-3.5 py-2.5 sm:px-5 sm:py-3.5 text-[14px] sm:text-[15px] leading-[1.65] text-white shadow-[0_2px_10px_rgba(110,92,246,0.18)] break-words">
                 {m.content}
               </div>
               {m.attachments?.map((a) => (

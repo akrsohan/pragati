@@ -47,8 +47,13 @@ function normalizeMarkdown(raw: string): string {
   return normalized;
 }
 
+import { highlightCode } from '../lib/highlighter';
+
 function CodeBlock({ language, code }: { language: string; code: string }) {
   const [copied, setCopied] = useState(false);
+  const lines = code.split('\n');
+  const isLong = lines.length > 25;
+  const [isExpanded, setIsExpanded] = useState(!isLong);
 
   const handleCopy = () => {
     copyText(code);
@@ -57,34 +62,65 @@ function CodeBlock({ language, code }: { language: string; code: string }) {
   };
 
   const displayLang = language && language !== 'text' ? language.toUpperCase() : 'CODE';
+  const displayCode = isExpanded ? code : lines.slice(0, 14).join('\n');
+  const highlightedHtml = highlightCode(displayCode, language);
 
   return (
     <div className="my-4 overflow-hidden rounded-xl border border-[#252538] bg-[#0F1020] text-white shadow-sm">
       <div className="flex items-center justify-between border-b border-[#252538] bg-[#16172B] px-3.5 py-1.5 text-[11px]">
-        <span className="font-mono font-semibold tracking-wider text-[#A78BFA]">{displayLang}</span>
-        <button
-          type="button"
-          onClick={handleCopy}
-          className="flex items-center gap-1.5 rounded px-2 py-0.5 text-[11px] font-medium text-[#C5C4DB] transition hover:bg-[#25253D] hover:text-white cursor-pointer"
-        >
-          {copied ? (
-            <>
-              <span className="text-[#10B981]">✓</span>
-              <span className="text-[#10B981]">Copied</span>
-            </>
-          ) : (
-            <>
-              <Icon name="copy" className="h-3 w-3" />
-              <span>Copy</span>
-            </>
+        <div className="flex items-center gap-2">
+          <span className="font-mono font-semibold tracking-wider text-[#A78BFA]">{displayLang}</span>
+          <span className="text-[10.5px] font-mono text-[#7D7FAD]">{lines.length} lines</span>
+        </div>
+        <div className="flex items-center gap-2">
+          {isLong && (
+            <button
+              type="button"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="text-[11px] font-medium text-[#C5C4DB] hover:text-white px-2 py-0.5 rounded hover:bg-[#25253D] transition cursor-pointer"
+            >
+              {isExpanded ? 'Collapse' : 'Expand full code'}
+            </button>
           )}
-        </button>
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="flex items-center gap-1.5 rounded px-2 py-0.5 text-[11px] font-medium text-[#C5C4DB] transition hover:bg-[#25253D] hover:text-white cursor-pointer"
+          >
+            {copied ? (
+              <>
+                <span className="text-[#10B981]">✓</span>
+                <span className="text-[#10B981]">Copied</span>
+              </>
+            ) : (
+              <>
+                <Icon name="copy" className="h-3 w-3" />
+                <span>Copy</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
-      <div className="overflow-x-auto p-4 text-[13.5px] sm:text-[14px] leading-relaxed font-mono">
+      <div className="overflow-x-auto p-4 text-[13px] sm:text-[13.5px] leading-relaxed font-mono">
         <pre className="!bg-transparent !p-0 !m-0 overflow-visible font-mono">
-          <code>{code}</code>
+          <code
+            className="font-mono"
+            dangerouslySetInnerHTML={{ __html: highlightedHtml }}
+          />
         </pre>
       </div>
+      {!isExpanded && isLong && (
+        <div className="border-t border-[#252538] bg-[#141528] px-4 py-2 flex items-center justify-between text-[11.5px]">
+          <span className="text-[#8C8EA9]">Showing 14 of {lines.length} lines</span>
+          <button
+            type="button"
+            onClick={() => setIsExpanded(true)}
+            className="font-bold text-[#A78BFA] hover:text-white cursor-pointer transition"
+          >
+            Show full code ({lines.length} lines) ↓
+          </button>
+        </div>
+      )}
     </div>
   );
 }

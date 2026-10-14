@@ -688,18 +688,8 @@ app.post('/api/ai-teacher', async (req: Request, res: Response): Promise<void> =
       }
     }
 
-    // If still no skill resolved, try default first skill for background context without throwing
-    if (!skill) {
-      const { data: defaultSkills } = await supabase
-        .from('skills')
-        .select('id, name, description, difficulty, avg_days')
-        .order('order_index', { ascending: true })
-        .limit(1);
-      skill = defaultSkills?.[0] || null;
-      resolvedSkillId = skill?.id || null;
-    }
-
-    skillId = resolvedSkillId || rawSkillId || 'general-cse';
+    // If no skill specified or not found, skill remains null for general CSE inquiry
+    skillId = resolvedSkillId || null;
 
     // 4. Fetch Roadmap Steps for this Skill (if available)
     let steps: any[] = [];
@@ -846,21 +836,14 @@ app.post('/api/ai-teacher', async (req: Request, res: Response): Promise<void> =
       }
     }
 
-    // 11. Fallback if Gemini API Key is missing
+    // 11. Error handling if Gemini API Key is missing
     const geminiApiKey = process.env.GEMINI_API_KEY;
     if (!geminiApiKey) {
-      const fallbackResult = generateDeterministicTeacherResponse(
-        skill,
-        focusedStep,
-        trimmedMessage,
-        quickAction
-      );
-      res.json({
-        success: true,
-        data: {
-          ...fallbackResult,
-          verified_resources: verifiedResourcesForStep
-        }
+      console.error('[POST /api/ai-teacher] GEMINI_API_KEY is not configured.');
+      res.status(503).json({
+        success: false,
+        error: 'AI Teacher service is temporarily unavailable (Gemini API key is not configured on the server).',
+        code: 'API_KEY_MISSING'
       });
       return;
     }
@@ -933,10 +916,10 @@ app.post('/api/ai-teacher', async (req: Request, res: Response): Promise<void> =
     // 14. Prepare prior conversation history (strictly excluding the current question)
     const sanitizedHistory: Array<{ role: 'user' | 'model'; text: string }> = [];
     if (Array.isArray(conversationHistory)) {
-      for (const turn of conversationHistory.slice(-8)) {
+      for (const turn of conversationHistory.slice(-10)) {
         if (turn && typeof turn.text === 'string' && (turn.role === 'user' || turn.role === 'assistant' || turn.role === 'model')) {
           const role = (turn.role === 'assistant' || turn.role === 'model') ? 'model' : 'user';
-          const text = turn.text.trim().slice(0, 1000);
+          const text = turn.text.trim().slice(0, 4000);
           if (!text || (role === 'user' && text === trimmedMessage)) continue;
 
           const lastTurn = sanitizedHistory[sanitizedHistory.length - 1];
@@ -991,9 +974,11 @@ Prioritize correctness over sounding simple. Use correct, established technical 
 - ALWAYS format answers in clean, multi-paragraph Markdown with blank lines (\n\n) between paragraphs.
 - Structure explanations with short overview, clear subheadings (###), and clean bullet/numbered lists.
 
-6. CONCRETE EXAMPLES & IDIOMATIC CODE QUALITY:
-- Use real, modern, idiomatic code examples when code is asked for or genuinely needed for technical explanation.
-- For debugging: 1) Identify root cause, 2) Explain why it happens, 3) Show corrected code, 4) Explain the fix, 5) Note related pitfalls.
+6. COMPLETE, COMPILABLE & RUNNABLE CODE QUALITY:
+- Every code example (C, Python, Java, JS, etc.) MUST be complete and compilable/runnable where appropriate, including all required headers (e.g. #include <stdio.h>) and standard imports. Never omit essential headers or generate incomplete snippets when full solutions are needed.
+- For factorial in C: Always clearly explain the base cases (0! = 1 and 1! = 1), handle negative input appropriately (e.g. return -1 or validate n < 0 as undefined in natural factorial), and explicitly mention the limitation of 32-bit signed int (overflows at n >= 13; recommend unsigned long long up to n = 20, or BigInt/GMP for larger).
+- NEVER claim that code was executed or run unless it was actually executed. Present execution results accurately as expected / theoretical outputs.
+- For debugging: 1) Identify root cause, 2) Explain why it happens, 3) Show complete corrected code, 4) Explain the fix, 5) Note related pitfalls.
 
 7. COMPARISONS & "WHY" QUESTIONS:
 - For comparisons (TCP vs UDP, SQL vs NoSQL, Process vs Thread): Compare along meaningful dimensions with tables when appropriate.
@@ -1091,7 +1076,7 @@ In the JSON response:
     });
 
     let rawResult: any = null;
-    const candidateModels = ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-3.5-flash-lite'];
+    const candidateModels = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-3.8-flash'];
 
     for (const modelName of candidateModels) {
       try {
@@ -1165,20 +1150,11 @@ In the JSON response:
     }
 
     if (!rawResult) {
-      console.log('[Pragati Server] Using deterministic AI Teacher fallback.');
-      const fallbackResult = generateDeterministicTeacherResponse(
-        skill,
-        focusedStep,
-        trimmedMessage,
-        quickAction
-      );
-      res.json({
-        success: true,
-        requestId,
-        data: {
-          ...fallbackResult,
-          verified_resources: verifiedResourcesForStep
-        }
+      console.error('[Gemini AI Teacher] All candidate models failed to generate content.');
+      res.status(503).json({
+        success: false,
+        error: 'The AI Teacher service is temporarily unavailable due to high demand. Please try asking your question again in a moment.',
+        code: 'AI_SERVICE_UNAVAILABLE'
       });
       return;
     }
@@ -1187,7 +1163,7 @@ In the JSON response:
     let matchedStepId: string | undefined = undefined;
     let matchedStepTitle: string | undefined = undefined;
 
-    if (rawResult.related_step_title) {
+    if (rawResult.related_step_title && steps.length > 0) {
       const found = steps.find(s => 
         s.title.toLowerCase().trim() === String(rawResult.related_step_title).toLowerCase().trim() ||
         s.title.toLowerCase().includes(String(rawResult.related_step_title).toLowerCase()) ||
@@ -1204,6 +1180,11 @@ In the JSON response:
       ? String(rawResult.teaching_mode).toLowerCase()
       : 'explanation';
 
+    // Only attach verified resources if the question genuinely matched an active milestone in the curriculum track!
+    const relevantResources = (matchedStepTitle && matchedStepTitle !== 'General Track')
+      ? verifiedResourcesForStep
+      : [];
+
     const validatedTeacherData = {
       answer: rawResult.answer,
       teaching_mode: teachingMode,
@@ -1215,14 +1196,10 @@ In the JSON response:
       code_snippet: rawResult.code_snippet || null,
       code_language: rawResult.code_language || null,
       visual: rawResult.visual || null,
-      verified_resources: verifiedResourcesForStep,
+      verified_resources: relevantResources,
       suggested_followups: Array.isArray(rawResult.suggested_followups)
         ? rawResult.suggested_followups.slice(0, 3)
-        : [
-            `Can you give me a code example for this?`,
-            `Give me a practice quiz question on this`,
-            `Explain this simply with an everyday analogy`
-          ]
+        : []
     };
 
     res.json({
