@@ -2414,7 +2414,7 @@ export default function App() {
                     <div className="relative inline-block mb-3">
                       <div className="profile-avatar-uploader profile-avatar-uploader-3d">
                         {setupAvatarPreview ? (
-                          <img src={setupAvatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                          <img src={setupAvatarPreview} alt="Student profile avatar preview" className="w-full h-full object-cover" />
                         ) : (
                           <span className="text-white text-3xl font-black">
                             {setupFullName ? setupFullName.split(' ').map(n => n[0]).join('').slice(0, 2) : 'DIU'}
@@ -2805,7 +2805,7 @@ export default function App() {
                     id="card-browse-by-field"
                   >
                     <div className="icon-badge">🧭</div>
-                    <h3>Browse by Field</h3>
+                    <h2>Browse by Field</h2>
                     <p>Explore roadmap tracks organized by software fields — Web, AI, DevOps, Mobile &amp; more.</p>
                   </div>
 
@@ -2815,7 +2815,7 @@ export default function App() {
                     id="card-browse-by-skill"
                   >
                     <div className="icon-badge">⚡</div>
-                    <h3>Browse by Skill</h3>
+                    <h2>Browse by Skill</h2>
                     <p>Pick a specific technology roadmap like React, Node.js, Python, Flutter &amp; more.</p>
                   </div>
                 </div>
@@ -2953,13 +2953,13 @@ export default function App() {
 
                 {/* Popular Skill Tracks Header */}
                 <div className="flex items-center justify-between mb-3">
-                  <div className="section-title" style={{ margin: 0 }}>
+                  <h2 className="section-title" style={{ margin: 0 }}>
                     {skillFilter 
                       ? `Selected Skill: ${skills.find(s => s.id === skillFilter)?.name || ''}` 
                       : fieldFilter 
                         ? `${fields.find(f => f.id === fieldFilter)?.name || ''} Roadmaps`
                         : 'Popular Roadmap Tracks'}
-                  </div>
+                  </h2>
                   <div className="flex items-center gap-3">
                     {(skillFilter || fieldFilter || searchQuery) && (
                       <button
@@ -3004,7 +3004,7 @@ export default function App() {
                             {s.icon}
                           </div>
                           <div className="flex items-center justify-between gap-1 mb-1">
-                            <h4 className="truncate">{s.name}</h4>
+                            <h3 className="truncate">{s.name}</h3>
                             {isCompleted && (
                               <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 shrink-0 flex items-center gap-1">
                                 <Check className="w-2.5 h-2.5" /> Done
@@ -3034,7 +3034,7 @@ export default function App() {
                 )}
 
                 {/* Category Exploration Banner */}
-                <div className="mt-10 mb-4 section-title">Explore by Domain</div>
+                <h2 className="mt-10 mb-4 section-title">Explore by Domain</h2>
                 {fields.length === 0 ? (
                   <div className="p-6 text-center bg-white rounded-2xl border border-dashed border-[#e4e5ee]">
                     <span className="text-2xl block mb-1">🧭</span>
@@ -3055,7 +3055,7 @@ export default function App() {
                         <div className="flex items-center gap-3.5">
                           <span className="domain-card-icon text-2xl">{f.icon}</span>
                           <div>
-                            <div className="font-bold text-sm text-[#1a1c2e]">{f.name}</div>
+                            <h3 className="font-bold text-sm text-[#1a1c2e]">{f.name}</h3>
                             <div className="text-xs text-[#8a8ca3]">{skills.filter(s => skillBelongsToField(s, f.id)).length} Roadmaps</div>
                           </div>
                         </div>
@@ -3083,7 +3083,7 @@ export default function App() {
                     Overview
                   </span>
                 </button>
-                <div className="section-title">All Engineering Disciplines</div>
+                <h2 className="section-title">All Engineering Disciplines</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {fields.map(f => (
                     <div 
@@ -3095,7 +3095,7 @@ export default function App() {
                       className="p-5 rounded-2xl bg-white dark:bg-[#141726] border border-[#e4e5ee] dark:border-[#23273e] hover:border-[#6c5ce7] dark:hover:border-[#6c5ce7] transition-all cursor-pointer shadow-xs hover:shadow-md"
                     >
                       <span className="text-3xl block mb-2">{f.icon}</span>
-                      <div className="font-bold text-base text-[#1a1c2e] dark:text-white mb-1">{f.name}</div>
+                      <h3 className="font-bold text-base text-[#1a1c2e] dark:text-white mb-1">{f.name}</h3>
                       <div className="text-xs text-[#8a8ca3] dark:text-slate-400 mb-3">{f.description}</div>
                       <div className="text-xs font-bold text-[#6c5ce7] dark:text-[#a29bfe] flex items-center gap-1">
                         View {skills.filter(s => skillBelongsToField(s, f.id)).length} Tracks <ArrowRight className="w-3 h-3" />
@@ -3122,9 +3122,9 @@ export default function App() {
                     Fields
                   </span>
                 </button>
-                <div className="section-title">
+                <h2 className="section-title">
                   {fields.find(f => f.id === selectedFieldId)?.name || 'Field'} Roadmaps
-                </div>
+                </h2>
                 <div className="skills-grid">
                   {skills.filter(s => skillBelongsToField(s, selectedFieldId)).map(s => {
                     const isCompleted = currentUserCompletedSkillIds.has(s.id);
@@ -3142,7 +3142,7 @@ export default function App() {
                           {s.icon}
                         </div>
                         <div className="flex items-center justify-between gap-1 mb-1">
-                          <h4 className="truncate">{s.name}</h4>
+                          <h3 className="truncate">{s.name}</h3>
                           {isCompleted && (
                             <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50 shrink-0 flex items-center gap-1">
                               <Check className="w-2.5 h-2.5" /> Done
@@ -3180,7 +3180,7 @@ export default function App() {
                   </span>
                 </button>
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
-                  <div className="section-title" style={{ margin: 0 }}>All Available Roadmap Tracks ({skills.length})</div>
+                  <h2 className="section-title" style={{ margin: 0 }}>All Available Roadmap Tracks ({skills.length})</h2>
                   <div className="search-wrapper max-w-sm">
                     <span className="search-icon-inside">
                       <Search className="w-4 h-4" />
@@ -3213,7 +3213,7 @@ export default function App() {
                             {s.icon}
                           </div>
                           <div className="flex items-center justify-between gap-1 mb-1">
-                            <h4 className="truncate">{s.name}</h4>
+                            <h3 className="truncate">{s.name}</h3>
                             {isCompleted && (
                               <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 shrink-0 flex items-center gap-1">
                                 <Check className="w-2.5 h-2.5" /> Done
@@ -4026,7 +4026,7 @@ export default function App() {
                         <div className="podium-medal-icon medal-silver">🥈</div>
                         <div className="avatar-big">
                           {top2.avatar_url ? (
-                            <img src={top2.avatar_url} alt={top2.full_name} className="w-full h-full object-cover" />
+                            <img src={top2.avatar_url} alt={`${top2.full_name} profile avatar`} className="w-full h-full object-cover" />
                           ) : (
                             currentUser && top2.id === currentUser.id ? 'YO' : top2.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)
                           )}
@@ -4061,7 +4061,7 @@ export default function App() {
                         <div className="podium-crown-icon">👑</div>
                         <div className="avatar-big">
                           {top1.avatar_url ? (
-                            <img src={top1.avatar_url} alt={top1.full_name} className="w-full h-full object-cover" />
+                            <img src={top1.avatar_url} alt={`${top1.full_name} profile avatar`} className="w-full h-full object-cover" />
                           ) : (
                             currentUser && top1.id === currentUser.id ? 'YO' : top1.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)
                           )}
@@ -4096,7 +4096,7 @@ export default function App() {
                         <div className="podium-medal-icon medal-bronze">🥉</div>
                         <div className="avatar-big">
                           {top3.avatar_url ? (
-                            <img src={top3.avatar_url} alt={top3.full_name} className="w-full h-full object-cover" />
+                            <img src={top3.avatar_url} alt={`${top3.full_name} profile avatar`} className="w-full h-full object-cover" />
                           ) : (
                             currentUser && top3.id === currentUser.id ? 'YO' : top3.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)
                           )}
@@ -4180,7 +4180,7 @@ export default function App() {
                             }}
                           >
                             {p.avatar_url ? (
-                              <img src={p.avatar_url} alt={p.full_name} className="w-full h-full object-cover" />
+                              <img src={p.avatar_url} alt={`${p.full_name} profile avatar`} className="w-full h-full object-cover" />
                             ) : (
                               initials
                             )}
@@ -4363,7 +4363,7 @@ export default function App() {
                 <div className="profile-avatar-3d-wrap">
                   <div className="profile-avatar-big" id="profile-hero-avatar">
                     {targetProfile.avatar_url ? (
-                      <img src={targetProfile.avatar_url} alt={targetProfile.full_name} className="w-full h-full object-cover rounded-full" />
+                      <img src={targetProfile.avatar_url} alt={`${targetProfile.full_name} profile avatar`} className="w-full h-full object-cover rounded-full" />
                     ) : (
                       targetProfile.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
                     )}
@@ -4968,7 +4968,7 @@ export default function App() {
                             {/* Avatar Thumbnail */}
                             <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 flex items-center justify-center bg-purple-100 dark:bg-purple-950/70 text-[#6c5ce7] dark:text-purple-300 font-bold text-xs border border-purple-200 dark:border-purple-800/40">
                               {p.avatar_url ? (
-                                <img src={p.avatar_url} alt={displayName} className="w-full h-full object-cover" />
+                                <img src={p.avatar_url} alt={`${displayName} profile avatar`} className="w-full h-full object-cover" />
                               ) : (
                                 displayName.slice(0, 2).toUpperCase()
                               )}

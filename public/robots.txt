@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://pragatii.vercel.app/sitemap.xml

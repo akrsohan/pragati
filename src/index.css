@@ -722,6 +722,7 @@ html, body {
   transform: translateY(-2px) scale(1.1) rotate(-3deg);
 }
 
+.choice-card h2,
 .choice-card h3 {
   font-size: 17px;
   margin-bottom: 4px;
@@ -793,6 +794,7 @@ html, body {
   transform: translateY(-2px) scale(1.08) rotate(3deg);
 }
 
+.skill-card h3,
 .skill-card h4 {
   font-size: 14px;
   color: #1a1c2e;
@@ -3639,6 +3641,8 @@ body.dark-mode .skill-card {
   color: #f1f5f9 !important;
 }
 
+html.dark .skill-card h3,
+body.dark-mode .skill-card h3,
 html.dark .skill-card h4,
 body.dark-mode .skill-card h4 {
   color: #ffffff !important;
