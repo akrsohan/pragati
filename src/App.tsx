@@ -47,6 +47,7 @@ import { AiTeacherPage } from './components/AiTeacherPage';
 import { AiTeacher } from './features/ai-teacher';
 import { BottomNav } from './components/BottomNav';
 import ScrollToTop from './components/ScrollToTop';
+import { useRouteSeo, RouteSeoConfig } from './lib/useRouteSeo';
 import { 
   getProfile,
   updateProfile,
@@ -1137,6 +1138,127 @@ export default function App() {
     if (!currentSkill || !currentSkill.id) return [];
     return roadmapSteps[currentSkill.id] || [];
   }, [roadmapSteps, currentSkill]);
+
+  const routeSeo = useMemo<RouteSeoConfig>(() => {
+    const origin = 'https://pragatii.vercel.app';
+    const pathname = location.pathname;
+
+    if (pathname.startsWith('/roadmap')) {
+      const rawSkillId = pathname.startsWith('/roadmap/')
+        ? pathname.slice('/roadmap/'.length).split('/')[0]
+        : '';
+
+      if (rawSkillId) {
+        const matchedSkill = skills.find(s => s.id === rawSkillId);
+        if (matchedSkill?.name) {
+          const baseTitle = `${matchedSkill.name} Roadmap | Pragati`;
+          const title = baseTitle.length <= 59
+            ? baseTitle
+            : `${matchedSkill.name.slice(0, 39).trim()}… Roadmap | Pragati`;
+          const fullDesc = `Follow the ${matchedSkill.name} step-by-step roadmap, official resources, and timed challenge milestones on Pragati.`;
+          const description = fullDesc.length <= 159
+            ? fullDesc
+            : `${fullDesc.slice(0, 156).trim()}...`;
+          return {
+            title,
+            description,
+            canonical: `${origin}/roadmap/${encodeURIComponent(rawSkillId)}`,
+          };
+        }
+
+        return {
+          title: 'Skill Roadmap & Learning Milestones | Pragati',
+          description: 'Follow step-by-step skill roadmaps, explore official resources, and complete milestones on Pragati.',
+          canonical: `${origin}/roadmap/${encodeURIComponent(rawSkillId)}`,
+        };
+      }
+
+      return {
+        title: 'Skill Roadmaps & Learning Milestones | Pragati',
+        description: 'Follow step-by-step skill roadmaps, explore official resources, and complete milestones on Pragati.',
+        canonical: `${origin}/roadmap`,
+      };
+    }
+
+    if (pathname.startsWith('/leaderboard')) {
+      return {
+        title: 'Campus Leaderboard & Student Rankings | Pragati',
+        description: 'View live student rankings, earned points, and learning streaks across skill challenges on Pragati.',
+        canonical: `${origin}/leaderboard`,
+      };
+    }
+
+    if (pathname.startsWith('/login')) {
+      return {
+        title: 'Log In to Pragati – Skill Roadmaps & Challenges',
+        description: 'Log in to your Pragati account to continue your skill roadmaps, timed challenges, and progress tracking.',
+        canonical: `${origin}/login`,
+        noindex: true,
+      };
+    }
+
+    if (pathname.startsWith('/signup')) {
+      return {
+        title: 'Sign Up for Pragati – Start Learning Roadmaps',
+        description: 'Create a Pragati student account to follow skill roadmaps, set learning deadlines, and join the leaderboard.',
+        canonical: `${origin}/signup`,
+        noindex: true,
+      };
+    }
+
+    if (pathname.startsWith('/dashboard')) {
+      return {
+        title: 'Learning Dashboard & Active Challenge | Pragati',
+        description: 'Manage your active timed skill challenge, track milestone progress, and view earned badges on Pragati.',
+        canonical: `${origin}/dashboard`,
+        noindex: true,
+      };
+    }
+
+    if (pathname.startsWith('/profile-setup')) {
+      return {
+        title: 'Complete Profile Setup | Pragati',
+        description: 'Complete your Pragati student profile with department, roll, batch, and contact details.',
+        canonical: `${origin}/profile-setup`,
+        noindex: true,
+      };
+    }
+
+    if (pathname.startsWith('/profile')) {
+      return {
+        title: 'Student Profile & Progress | Pragati',
+        description: 'View student profile details, completed skill roadmaps, badges, and learning progress on Pragati.',
+        canonical: `${origin}${pathname}`,
+        noindex: true,
+      };
+    }
+
+    if (pathname.startsWith('/admin')) {
+      return {
+        title: 'Admin Portal | Pragati',
+        description: 'Manage Pragati fields, skill roadmaps, roadmap steps, users, and student feedback.',
+        canonical: `${origin}/admin`,
+        noindex: true,
+      };
+    }
+
+    if (pathname.startsWith('/ai-teacher')) {
+      return {
+        title: 'AI Teacher Workspace | Pragati',
+        description: 'Interactive Pragati AI Teacher classroom for Computer Science concepts, roadmaps, and coding help.',
+        canonical: `${origin}/ai-teacher`,
+        noindex: true,
+      };
+    }
+
+    return {
+      title: 'Pragati – Skill Roadmaps & Challenges for Students',
+      description: 'Explore CSE skill roadmaps, start timed learning challenges, and track your progress on Pragati.',
+      canonical: `${origin}/discover`,
+    };
+  }, [location.pathname, skills]);
+
+  useRouteSeo(routeSeo);
 
   // Deep-link to specific roadmap milestone if stepId is provided in URL query
   useEffect(() => {
